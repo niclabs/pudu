@@ -1,4 +1,36 @@
 .App {
     text-align: justify;
     text-align-last: left;
+    padding-top: 30px;
+    padding-right: 30px;
+    padding-bottom: 50px;
+    padding-left: 80px;
   }
+
+.App {
+  font-family: 'Roboto', sans-serif;
+  padding: 20px;
+}
+
+.node-container {
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  margin-left: 10px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+
+.react-arborist-node {
+  margin-left: 20px;  /* Adjust this to match the Ant Design indentation */
+}
+
+.node-container:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.react-arborist-expand-icon {
+  color: #1890ff;
+}

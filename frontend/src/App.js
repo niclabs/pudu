@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Tree, useSimpleTree } from "react-arborist";
 import "./styles.css";
+import Node from "./Node";
 
 
 import "./App.css";
@@ -112,14 +113,16 @@ function App() {
 
   return (
     <div className="App">
-        <p>Ejemplo de arbol para investigación </p>
+        <p>Ejemplo de arbol para investigación Medica </p>
         <Tree data={data}
         openByDefault={true}
         width={500}
         height={1000}
         indent={24}
         rowHeight={32}
-         {...controller}></Tree>
+         {...controller}>
+         {Node}
+         </Tree>
     </div>
   );
 }
