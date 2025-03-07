@@ -10,5 +10,5 @@ class TagSerializer(serializers.ModelSerializer):
 
 #recursively obtains children for each tag
     def get_children(self, obj):
-        children = Tag.objects.filter(parent_tag=obj)
-        return TagSerializer(children, many=True).data
+        serializer = TagSerializer(obj.child_tags.all(), many=True)
+        return serializer.data
