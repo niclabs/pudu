@@ -10,5 +10,8 @@ class TagSerializer(serializers.ModelSerializer):
 
 #recursively obtains children for each tag
     def get_children(self, obj):
-        serializer = TagSerializer(obj.child_tags.all(), many=True)
-        return serializer.data
+        if obj.child_tags.exists():
+            return TagSerializer(obj.child_tags.all(), many=True).data
+        return []
+    
+    
