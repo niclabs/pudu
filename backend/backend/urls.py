@@ -21,6 +21,6 @@ from sysrev.views import TagTreeView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/tags/', TagTreeView.as_view(), name='tag-tree'),
-    path('api/tags/<int:tag_id>/', TagTreeView.as_view(), name='tag-detail'),  # 🔹 Add this
+    path('api/tags/<int:tag_id>/', TagTreeView.as_view(), name='tag-detail'),
 
 ]

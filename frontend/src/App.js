@@ -1,128 +1,101 @@
-import { useEffect } from "react";
-import { Tree, useSimpleTree } from "react-arborist";
+import { useEffect, useState } from "react";
+import { Tree } from "react-arborist";
 import "./styles.css";
 import Node from "./Node";
+import { createTag, deleteTag } from "./tagApi";
 
 
 import "./App.css";
 
-const initialData = [
-  {
-    id: "2",
-    name: "Study Characteristics",
-    children: [
-      {
-        id: "2-1",
-        name: "Study Type",
-        children: [
-          { id: "2-1-1", name: "Randomized Controlled Trial (RCT)", children: [] },
-          { id: "2-1-2", name: "Cohort Study", children: [] },
-          { id: "2-1-3", name: "Case-Control Study", children: [] },
-          { id: "2-1-4", name: "Systematic Review/Meta-Analysis", children: [] }
-        ]
-      },
-      {
-        id: "2-2",
-        name: "Study Setting",
-        children: [
-          { id: "2-2-1", name: "Hospital-Based", children: [] },
-          { id: "2-2-2", name: "Community-Based", children: [] },
-          { id: "2-2-3", name: "Multicenter Study", children: [] }
-        ]
-      },
-      {
-        id: "2-3",
-        name: "Sample Size",
-        children: [
-          { id: "2-3-1", name: "Small (<100 participants)", children: [] },
-          { id: "2-3-2", name: "Medium (100–500 participants)", children: [] },
-          { id: "2-3-3", name: "Large (>500 participants)", children: [] }
-        ]
-      }
-    ]
-  },
-  {
-    id: "3",
-    name: "Population Tags",
-    children: [
-      {
-        id: "3-1",
-        name: "Demographics",
-        children: [
-          { id: "3-1-1", name: "Adults", children: [] },
-          { id: "3-1-2", name: "Pediatrics", children: [] },
-          { id: "3-1-3", name: "Elderly", children: [] }
-        ]
-      },
-      {
-        id: "3-2",
-        name: "Condition/Disease",
-        children: [
-          { id: "3-2-1", name: "Diabetes Mellitus", children: [] },
-          { id: "3-2-2", name: "Hypertension", children: [] },
-          { id: "3-2-3", name: "Breast Cancer", children: [] },
-          { id: "3-2-4", name: "Lung Cancer", children: [] }
-        ]
-      },
-      {
-        id: "3-3",
-        name: "Comorbidities",
-        children: [
-          { id: "3-3-1", name: "Obesity", children: [] },
-          { id: "3-3-2", name: "Cardiovascular Disease", children: [] },
-          { id: "3-3-3", name: "Chronic Kidney Disease", children: [] }
-        ]
-      }
-    ]
-  },
-  {
-    id: "4",
-    name: "Intervention Tags",
-    children: [
-      {
-        id: "4-1",
-        name: "Type of Intervention",
-        children: [
-          { id: "4-1-1", name: "Drug Therapy", children: [] },
-          { id: "4-1-2", name: "Surgical Intervention", children: [] },
-          { id: "4-1-3", name: "Lifestyle Changes (e.g., diet, exercise)", children: [] },
-          { id: "4-1-4", name: "Psychological Therapy", children: [] }
-        ]
-      },
-      {
-        id: "4-2",
-        name: "Drug/Agent Used",
-        children: [
-          { id: "4-2-1", name: "Metformin", children: [] },
-          { id: "4-2-2", name: "Checkpoint Inhibitors (Immunotherapy)", children: [] },
-          { id: "4-2-3", name: "Antibiotics (e.g., penicillin)", children: [] }
-        ]
-      }
-    ]
-  }
-];
-
-
 function App() {
-  const [data, controller] = useSimpleTree(initialData);
+  const [tags, setTags] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedNode, setSelectedNode] = useState(null);
+
+  //Tree controller functions
+
+  // onCreate creates a new tag and attaches it to the selected tag, then refreshes the tree.
+  const onCreate = async () => {
+    try {
+      // Check if a tag is selected, if not, set a default parent as null
+      const parentId = selectedNode ? selectedNode.data.id : null;
+      const newTag = { name: "New Tag", parent_tag: parentId };
+
+      console.log("Creating tag with parent:", parentId); // Debugging
+      const newTagData = await createTag(newTag);
+
+      // Refetch the tree data after creating the new tag
+      const response = await fetch("http://localhost:8000/api/tags/");
+      const data = await response.json();
+      setTags(data); // Save the updated tree data to state
+
+    } catch (error) {
+      console.error("Error creating tag:", error);
+    }
+  };
+
+  const onDelete = async () => {
+    try {
+        const tagId = selectedNode ? selectedNode.data.id : null;
+        if (!tagId) return; // In case no tag is selected
+        console.log("Deleting tag:", tagId); // Debug
+        const result = await deleteTag(tagId);
+        if (result.success) {
+            // Refetch the tree data after deleting the tag
+            const response = await fetch("http://localhost:8000/api/tags/");
+            const data = await response.json();
+            setTags(data); // Save the updated tree data to state
+        } else {
+            console.error("Error deleting tag:", result.error);
+        }
+    } catch (error) {
+        console.error("Error deleting tag:", error);
+    }
+};
+
+//TODO: Implement the following functions:  
+  // const onRename = ({ id, name }) => {return false};
+    //add a description function?
+  // const onMove = ({ dragIds, parentId, index }) => {return false};
 
   useEffect(() => {
-    console.log(data);
-  }, [data]);
+    fetch("http://localhost:8000/api/tags/")
+      .then((response) => response.json())
+      .then((data) => {
+        setTags(data); //Saves tree data to state
+        setLoading(false); //Complete loading
+      });
+  }, []);
 
+  if (loading) return <div>Loading tree...</div>;
 
   return (
-    <div className="App">
-        <p>Ejemplo de arbol para investigación Medica </p>
-        <Tree data={data}
+    <div>
+      {/* Display the selected tag */}
+      <div className="selected-tag-info">
+        {selectedNode ? (
+          <p>Selected Tag: {selectedNode.data.name}</p>
+        ) : (
+          <p>No tag selected</p>
+        )}
+        <p>Click on a tag to select it</p>
+        <p>Press a to add a tag</p>
+        <p>Press backspace to delete a tag and its children</p>
+      </div>
+
+      {/* Render the tree */}
+      <Tree
+        data={tags}
         openByDefault={true}
         width={500}
         height={1000}
         indent={24}
         rowHeight={32}
-         {...controller}>
-         {Node}
-         </Tree>
+        onCreate={onCreate}
+        onDelete={onDelete}
+      >
+      {(node) => <Node {...node} setSelectedNode={setSelectedNode} />}
+      </Tree>
     </div>
   );
 }

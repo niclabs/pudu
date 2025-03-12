@@ -34,3 +34,12 @@
 .react-arborist-expand-icon {
   color: #1890ff;
 }
+
+.node-container.selected {
+  background-color: #e0f7fa; /* Light blue background for selected node */
+  border: 2px solid #00796b; /* Dark green border for selected node */
+}
+
+.node-content.selected {
+  font-weight: bold; /* Make the content bold to highlight it */
+}

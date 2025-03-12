@@ -1,12 +1,20 @@
 import { AiOutlineMinusSquare, AiOutlinePlusSquare } from "react-icons/ai";
-const Node = ({ node, style, dragHandle, tree }) => {
-  // console.log(node, tree);
+
+const Node = ({ node, style, dragHandle, setSelectedNode }) => {
+  const handleClick = () => {
+    node.toggle();  // Toggle the open/close state
+    node.select();
+    setSelectedNode(node); 
+    }
+  
+
   return (
-    <div className="node-container" style={style} ref={dragHandle}>
-      <div
-        className="node-content"
-        onClick={() => node.isInternal && node.toggle()}
-      >
+    <div
+      className={`node-container ${node.isSelected ? "selected" : ""}`}
+      style={style}
+      ref={dragHandle}
+    >
+      <div className="node-content" onClick={handleClick}>
         {node.isOpen ? (
           <AiOutlineMinusSquare style={{ marginRight: "8px" }} />
         ) : (

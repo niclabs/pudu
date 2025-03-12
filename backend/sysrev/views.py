@@ -15,14 +15,15 @@ class TagTreeView(APIView):
         if tag_id:
             try:
                 tag = Tag.objects.get(id=tag_id)
-                serializer = TagSerializer(tag)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(tag.get_tree(), status=status.HTTP_200_OK)
             except Tag.DoesNotExist:
                 return Response({'error': 'Tag not found.'}, status=status.HTTP_404_NOT_FOUND)
         else:
             root_tags = Tag.objects.filter(parent_tag__isnull=True)
-            serializer = TagSerializer(root_tags, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            tree = [tag.get_tree() for tag in root_tags]
+            return Response(tree, status=status.HTTP_200_OK)
+        
+        
 
     '''
     POST creates a new tag.
@@ -59,7 +60,7 @@ class TagTreeView(APIView):
         tag_id = request.data.get('id')
 
         if not tag_id:
-            return Response({'error': 'Tag ID is required in the request body.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Tag ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             tag = Tag.objects.get(id=tag_id)
@@ -68,15 +69,14 @@ class TagTreeView(APIView):
 
         new_parent_id = request.data.get('parent_tag')
 
-        if new_parent_id is not None:
-            if new_parent_id == "null":  
-                tag.parent_tag = None
-            else:
-                try:
-                    new_parent_tag = Tag.objects.get(id=new_parent_id)
-                    tag.parent_tag = new_parent_tag
-                except Tag.DoesNotExist:
-                    return Response({'error': 'New parent tag not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if new_parent_id is None:  
+            tag.parent_tag = None
+        else:
+            try:
+                new_parent_tag = Tag.objects.get(id=new_parent_id)
+                tag.parent_tag = new_parent_tag
+            except Tag.DoesNotExist:
+                return Response({'error': 'New parent tag not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = TagSerializer(tag, data=request.data, partial=True)
         if serializer.is_valid():
@@ -87,10 +87,45 @@ class TagTreeView(APIView):
 
 
 
-    def delete(self, request, tag_id):
+    def delete(self, request, tag_id=None):
+        if not tag_id:
+            return Response({'error': 'Tag ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             tag = Tag.objects.get(id=tag_id)
             tag.delete()
             return Response({'message': 'Tag deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
         except Tag.DoesNotExist:
             return Response({'error': 'Tag not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+
+    '''
+    PATCH edits a tag's details.
+    
+    # new name for the tag
+    
+    Example PUT request body:
+    {                  
+    "Name": "Obama"          
+    }
+    '''
+   
+    def patch(self, request, tag_id=None):
+        if not tag_id:
+            return Response({'error': 'Tag ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            tag = Tag.objects.get(id=tag_id)
+        except Tag.DoesNotExist:
+            return Response({'error': 'Tag not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        new_name = request.data.get('name')
+        if not new_name:
+            return Response({'error': 'New name is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tag.name = new_name
+        tag.save()
+
+        return Response({'message': 'Tag renamed successfully'}, status=status.HTTP_200_OK)
+    
+    #TODO que patch pueda cambiar una descripción

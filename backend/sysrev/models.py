@@ -18,8 +18,12 @@ class Tag(models.Model):
     def get_tree(self):
         'Recursively builds the tree structure.'
         return {
-            'id': self.id,
+            'id': str(self.id),
             'name': self.name,
             'description': self.description,
             'children': [child.get_tree() for child in self.child_tags.all()]
         }
+    
+
+
+
