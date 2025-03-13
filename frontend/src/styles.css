@@ -21,6 +21,21 @@
   margin-bottom: 4px;
 }
 
+.selected-tag-info {
+  padding: 8px 16px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  padding: 10px;
+  width: 100px;
+  height: 100px;
+  background-color: #e3f2fd; /* Light blue background for selected node */
+  font-weight: bold; /* Optional: make text bold */
+}
+
+.demo-instructions {
+  margin-bottom: 20px;
+  padding: 10px;
+}
 
 .react-arborist-node {
   margin-left: 20px;  /* Adjust this to match the Ant Design indentation */
@@ -35,11 +50,33 @@
   color: #1890ff;
 }
 
-.node-container.selected {
-  background-color: #e0f7fa; /* Light blue background for selected node */
-  border: 2px solid #00796b; /* Dark green border for selected node */
+/* Default node styling */
+.node-container {
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: left;
+  transition: background-color 0.2s ease;
 }
 
-.node-content.selected {
-  font-weight: bold; /* Make the content bold to highlight it */
+/* When node is selected */
+.node-container.selected {
+  background-color: #e3f2fd; /* Light blue background for selected node */
+  font-weight: bold; /* Optional: make text bold */
+}
+
+Node content styling
+.node-content {
+  display: flex;
+  align-items: center;
+}
+
+/* Node text styling */
+.node-text {
+  margin-left: 8px;
+}
+
+/* Adjust icon spacing */
+.node-content svg {
+  margin-right: 8px;
 }

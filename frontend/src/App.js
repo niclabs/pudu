@@ -22,13 +22,14 @@ function App() {
       const newTag = { name: "New Tag", parent_tag: parentId };
 
       console.log("Creating tag with parent:", parentId); // Debugging
-      const newTagData = await createTag(newTag);
-
-      // Refetch the tree data after creating the new tag
-      const response = await fetch("http://localhost:8000/api/tags/");
-      const data = await response.json();
-      setTags(data); // Save the updated tree data to state
-
+      const result = await createTag(newTag);
+      console.log('result: ',result)
+      if (result.id){
+        // Refetch the tree data after creating the new tag
+        const response = await fetch("http://localhost:8000/api/tags/");
+        const data = await response.json();
+        setTags(data); // Save the updated tree data to state
+      }
     } catch (error) {
       console.error("Error creating tag:", error);
     }
@@ -40,6 +41,7 @@ function App() {
         if (!tagId) return; // In case no tag is selected
         console.log("Deleting tag:", tagId); // Debug
         const result = await deleteTag(tagId);
+        console.log('result: ',result)
         if (result.success) {
             // Refetch the tree data after deleting the tag
             const response = await fetch("http://localhost:8000/api/tags/");
@@ -53,10 +55,41 @@ function App() {
     }
 };
 
+const onMove = async ({ dragIds, parentId }) => {
+  try {
+    const moveData = {
+      id: Number(dragIds[0]),
+      parent_tag: parentId === 0 ? null : Number(parentId), // Set parent_tag to null if parentId is 0
+    };
+
+    console.log("Moving tag:", moveData.id, "to parent:", moveData.parent_tag);
+
+    const response = await fetch(`http://localhost:8000/api/tags/`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(moveData),
+    });
+
+    const result = await response.json();
+
+    if (result.id) {
+      // Refetch the tree data after the move operation
+      const response = await fetch("http://localhost:8000/api/tags/");
+      const data = await response.json();
+      setTags(data); // Save the updated tree data to state
+    }
+  } catch (error) {
+    console.error("Error moving tag:", error);
+  }
+};
+
+
 //TODO: Implement the following functions:  
   // const onRename = ({ id, name }) => {return false};
     //add a description function?
-  // const onMove = ({ dragIds, parentId, index }) => {return false};
+  // const onMove = ({ dragId, newParentId }) => {return false};
 
   useEffect(() => {
     fetch("http://localhost:8000/api/tags/")
@@ -78,10 +111,13 @@ function App() {
         ) : (
           <p>No tag selected</p>
         )}
+        </div>
+      <div className="demo-instructions">
         <p>Click on a tag to select it</p>
         <p>Press a to add a tag</p>
         <p>Press backspace to delete a tag and its children</p>
       </div>
+      
 
       {/* Render the tree */}
       <Tree
@@ -93,8 +129,9 @@ function App() {
         rowHeight={32}
         onCreate={onCreate}
         onDelete={onDelete}
+        onMove={onMove}
       >
-      {(node) => <Node {...node} setSelectedNode={setSelectedNode} />}
+      {(node) => <Node {...node} selectedNode setSelectedNode={setSelectedNode} />}
       </Tree>
     </div>
   );

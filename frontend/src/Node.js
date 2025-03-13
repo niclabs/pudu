@@ -2,7 +2,7 @@ import { AiOutlineMinusSquare, AiOutlinePlusSquare } from "react-icons/ai";
 
 const Node = ({ node, style, dragHandle, setSelectedNode }) => {
   const handleClick = () => {
-    node.toggle();  // Toggle the open/close state
+    node.toggle();  
     node.select();
     setSelectedNode(node); 
     }
