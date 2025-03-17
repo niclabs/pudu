@@ -37,10 +37,18 @@ class TagTreeView(APIView):
     '''
 
     def post(self, request):
-        serializer = TagSerializer(data=request.data)
+        data = request.data
+
+        # Check if the request contains multiple tags (list of dicts)
+        if isinstance(data, list):
+            serializer = TagSerializer(data=data, many=True)
+        else:
+            serializer = TagSerializer(data=data)
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     '''

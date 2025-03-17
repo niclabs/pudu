@@ -122,11 +122,11 @@ const onMove = async ({ dragIds, parentId }) => {
       {/* Render the tree */}
       <Tree
         data={tags}
-        openByDefault={true}
-        width={500}
+        openByDefault={false}
+        width={400}
         height={1000}
         indent={24}
-        rowHeight={32}
+        rowHeight={40}
         onCreate={onCreate}
         onDelete={onDelete}
         onMove={onMove}

@@ -1,8 +1,10 @@
 import { AiOutlineMinusSquare, AiOutlinePlusSquare } from "react-icons/ai";
 
 const Node = ({ node, style, dragHandle, setSelectedNode }) => {
-  const handleClick = () => {
-    node.toggle();  
+  const handleClick = (e) => {
+    if (e.target.closest(".toggle-icon")) {
+    node.toggle();
+  }
     node.select();
     setSelectedNode(node); 
     }
@@ -10,16 +12,18 @@ const Node = ({ node, style, dragHandle, setSelectedNode }) => {
 
   return (
     <div
-      className={`node-container ${node.isSelected ? "selected" : ""}`}
+      className={`node-container ${node.isSelected ? "selected" : ""}` }
+      onClick={handleClick}
       style={style}
       ref={dragHandle}
     >
-      <div className="node-content" onClick={handleClick}>
-        {node.isOpen ? (
-          <AiOutlineMinusSquare style={{ marginRight: "8px" }} />
-        ) : (
-          <AiOutlinePlusSquare style={{ marginRight: "8px" }} />
-        )}
+      <div className="node-content">
+      {node.isOpen ? (
+        <AiOutlineMinusSquare className="toggle-icon" style={{ marginRight: "8px" }} />
+      ) : (
+        <AiOutlinePlusSquare className="toggle-icon" style={{ marginRight: "8px" }} />
+      )}
+
         <span className="node-text">
           <span>{node.data.name}</span>
         </span>
