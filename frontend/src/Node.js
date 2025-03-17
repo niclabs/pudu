@@ -1,18 +1,26 @@
 import { AiOutlineMinusSquare, AiOutlinePlusSquare } from "react-icons/ai";
 
-const Node = ({ node, style, dragHandle, setSelectedNode }) => {
+const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
+  // Handle click event: toggle the node if the user clicks the toggle icon, selects the node
   const handleClick = (e) => {
     if (e.target.closest(".toggle-icon")) {
-    node.toggle();
-  }
-    node.select();
-    setSelectedNode(node); 
+      node.toggle();
+      return;
     }
   
-
+    if (selectedNode?.id === node.id) {
+      node.deselect();
+      setSelectedNode(null);
+    } else {
+      node.select();
+      setSelectedNode(node);
+    }
+  };
+  
+  
   return (
     <div
-      className={`node-container ${node.isSelected ? "selected" : ""}` }
+    className={`node-container ${selectedNode?.id === node.id ? "selected" : ""}`}
       onClick={handleClick}
       style={style}
       ref={dragHandle}

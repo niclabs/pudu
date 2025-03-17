@@ -35,6 +35,7 @@ function App() {
     }
   };
 
+  //onDelete deletes the selected tag and its children, then refreshes the tree.
   const onDelete = async () => {
     try {
         const tagId = selectedNode ? selectedNode.data.id : null;
@@ -46,7 +47,8 @@ function App() {
             // Refetch the tree data after deleting the tag
             const response = await fetch("http://localhost:8000/api/tags/");
             const data = await response.json();
-            setTags(data); // Save the updated tree data to state
+            setTags(data);
+            setSelectedNode(null);
         } else {
             console.error("Error deleting tag:", result.error);
         }
@@ -55,6 +57,7 @@ function App() {
     }
 };
 
+// onMove moves the selected tag to a new parent tag, then refreshes the tree.
 const onMove = async ({ dragIds, parentId }) => {
   try {
     const moveData = {
@@ -88,9 +91,8 @@ const onMove = async ({ dragIds, parentId }) => {
 
 //TODO: Implement the following functions:  
   // const onRename = ({ id, name }) => {return false};
-    //add a description function?
-  // const onMove = ({ dragId, newParentId }) => {return false};
 
+  
   useEffect(() => {
     fetch("http://localhost:8000/api/tags/")
       .then((response) => response.json())
@@ -131,7 +133,7 @@ const onMove = async ({ dragIds, parentId }) => {
         onDelete={onDelete}
         onMove={onMove}
       >
-      {(node) => <Node {...node} selectedNode setSelectedNode={setSelectedNode} />}
+      {(node) => <Node {...node} selectedNode= {selectedNode} setSelectedNode={setSelectedNode} />}
       </Tree>
     </div>
   );
