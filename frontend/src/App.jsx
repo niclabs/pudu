@@ -3,6 +3,14 @@ import { Tree } from "react-arborist";
 import "./styles.css";
 import Node from "./Node";
 import { createTag, deleteTag } from "./tagApi";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./components/ui/card"
 
 
 
@@ -107,17 +115,33 @@ const onMove = async ({ dragIds, parentId }) => {
     <div className="m-4">
       {/* Display the selected tag */}
       <div className="selected-tag-info">
+        
         {selectedNode ? (
           <p>Selected Tag: {selectedNode.data.name}</p>
         ) : (
           <p>No tag selected</p>
         )}
         </div>
+
+      {/* dummy card */}
+        <Card className="max-w-sm mx-auto shadow-lg rounded-2xl">
+        <CardHeader>
+          <CardTitle>John Doe</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-500">Software Engineer at Tech Corp</p>
+          <p className="mt-2 text-sm">
+            Passionate about building scalable web applications and exploring new technologies.
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="demo-instructions">
         <p>Click on a tag to select it</p>
         <p>Press a to add a tag</p>
         <p>Press backspace to delete a tag and its children</p>
       </div>
+      
       
 
       {/* Render the tree */}
@@ -134,6 +158,7 @@ const onMove = async ({ dragIds, parentId }) => {
       >
       {(node) => <Node {...node} selectedNode= {selectedNode} setSelectedNode={setSelectedNode} />}
       </Tree>
+      
     </div>
   );
 }
