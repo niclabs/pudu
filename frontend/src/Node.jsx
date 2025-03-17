@@ -7,7 +7,7 @@ const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
       node.toggle();
       return;
     }
-  
+
     if (selectedNode?.id === node.id) {
       node.deselect();
       setSelectedNode(null);
@@ -16,25 +16,23 @@ const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
       setSelectedNode(node);
     }
   };
-  
-  
+
   return (
     <div
-    className={`node-container ${selectedNode?.id === node.id ? "selected" : ""}`}
+      className={`p-2 flex cursor-pointer items-center transition-colors duration-200 
+      ${selectedNode?.id === node.id ? "bg-blue-100 font-bold" : "hover:bg-gray-100"}`}
       onClick={handleClick}
       style={style}
       ref={dragHandle}
     >
-      <div className="node-content">
-      {node.isOpen ? (
-        <AiOutlineMinusSquare className="toggle-icon" style={{ marginRight: "8px" }} />
-      ) : (
-        <AiOutlinePlusSquare className="toggle-icon" style={{ marginRight: "8px" }} />
-      )}
+      <div className="flex items-center">
+        {node.isOpen ? (
+          <AiOutlineMinusSquare className="toggle-icon mr-2 text-blue-500" />
+        ) : (
+          <AiOutlinePlusSquare className="toggle-icon mr-2 text-blue-500" />
+        )}
 
-        <span className="node-text">
-          <span>{node.data.name}</span>
-        </span>
+        <span className="ml-2">{node.data.name}</span>
       </div>
     </div>
   );

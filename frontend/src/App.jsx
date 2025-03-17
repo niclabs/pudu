@@ -5,7 +5,6 @@ import Node from "./Node";
 import { createTag, deleteTag } from "./tagApi";
 
 
-import "./App.css";
 
 function App() {
   const [tags, setTags] = useState([]);
@@ -105,7 +104,7 @@ const onMove = async ({ dragIds, parentId }) => {
   if (loading) return <div>Loading tree...</div>;
 
   return (
-    <div>
+    <div className="m-4">
       {/* Display the selected tag */}
       <div className="selected-tag-info">
         {selectedNode ? (

@@ -77,10 +77,8 @@ class TagTreeView(APIView):
 
         new_parent_id = request.data.get('parent_tag')
 
-        print("pellet",new_parent_id)
         if new_parent_id == 0:
             tag.parent_tag = None  # Tag becomes a root node
-            print("tag",tag.parent_tag)
             request.data['parent_tag'] = None
         else:
             try:
@@ -90,7 +88,6 @@ class TagTreeView(APIView):
                 return Response({'error': 'New parent tag not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = TagSerializer(tag, data=request.data, partial=True)
-        print("pellet",serializer)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
