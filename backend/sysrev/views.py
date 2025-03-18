@@ -131,7 +131,13 @@ class TagTreeView(APIView):
 
         new_name = request.data.get('name')
         if not new_name:
-            return Response({'error': 'New name is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            new_description = request.data.get('description')
+            if not new_description:
+                return Response({'error': 'Name or description is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                tag.description = new_description
+                tag.save()
+                return Response({'message': 'Tag description updated successfully'}, status=status.HTTP_200_OK)
 
         tag.name = new_name
         tag.save()

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Tree } from "react-arborist";
 import "./styles.css";
 import Node from "./Node";
-import { createTag, deleteTag } from "./tagApi";
+import { createTag, deleteTag, editTagName, editTagDescription, moveTag } from "./tagApi";
 import {
   Card,
   CardContent,
@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "./components/ui/card"
+import {AiOutlineEdit} from "react-icons/ai";
 
 
 
@@ -18,6 +19,9 @@ function App() {
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [isNameEditing, setIsNameEditing] = useState(false)
+  const [editNameValue, setEditNameValue] = useState('')
+  const [isDescriptionEditing, setIsDescriptionEditing] = useState(false)
 
   //Tree controller functions
 
@@ -74,15 +78,7 @@ const onMove = async ({ dragIds, parentId }) => {
 
     console.log("Moving tag:", moveData.id, "to parent:", moveData.parent_tag);
 
-    const response = await fetch(`http://localhost:8000/api/tags/`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(moveData),
-    });
-
-    const result = await response.json();
+    const result = await moveTag(moveData);
 
     if (result.id) {
       // Refetch the tree data after the move operation
@@ -95,9 +91,31 @@ const onMove = async ({ dragIds, parentId }) => {
   }
 };
 
+const handleNameSave = async () => {
+  setIsNameEditing(false);
+  const oldNodeId = selectedNode.data.id;
 
-//TODO: Implement the following functions:  
-  // const onRename = ({ id, name }) => {return false};
+  if (editNameValue !== selectedNode.data.name) {
+    try {
+      const result = await editTagName(selectedNode.data.id, editNameValue);
+      
+      if (result) {
+       // Refetch the tree data after updating the tag name
+        const response = await fetch("http://localhost:8000/api/tags/");
+        if (!response.ok) throw new Error("Failed to fetch updated tags");
+
+        const data = await response.json();
+        setTags(data);
+        console.log(selectedNode)
+        selectedNode.data.name = editNameValue;
+      }
+    } catch (error) {
+      console.error("Error updating tag name:", error);
+    }
+  }
+};
+
+
 
   
   useEffect(() => {
@@ -114,28 +132,48 @@ const onMove = async ({ dragIds, parentId }) => {
   return (
     <div className="m-4">
       {/* Display the selected tag */}
-      <div className="selected-tag-info">
-        
-        {selectedNode ? (
-          <p>Selected Tag: {selectedNode.data.name}</p>
-        ) : (
-          <p>No tag selected</p>
-        )}
-        </div>
+      
 
-      {/* dummy card */}
-        <Card className="max-w-sm mx-auto shadow-lg rounded-2xl">
-        <CardHeader>
-          <CardTitle>John Doe</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-500">Software Engineer at Tech Corp</p>
-          <p className="mt-2 text-sm">
-            Passionate about building scalable web applications and exploring new technologies.
-          </p>
-        </CardContent>
-      </Card>
+      {/* Infocard */}
+        <Card className="max-w-sm mx-auto shadow-lg rounded-2xl max-w-xl max-h-xl">
+          <CardHeader>
+            <CardTitle>
+              {selectedNode ? 
+                (isNameEditing ? (
+                  <input
+                  type="text" 
+                  value={editNameValue} 
+                  onChange={(e) => setEditNameValue(e.target.value)} 
+                  onBlur={handleNameSave}
+                  autoFocus
+                  />) : (
+                  <div className="flex items-center justify-between"> 
+                    <p>Selected Tag: {selectedNode.data.name}</p>
+                    <AiOutlineEdit className="cursor-pointer text-gray-500 hover:text-gray-700" onClick={() => { setIsNameEditing(true); setEditNameValue(selectedNode.data.name); }} />
+                  </div>)) : 
+                (<p>No tag selected</p>)
+              } 
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {selectedNode ? (
+              <div className="flex items-center justify-between">
+                <p className="text-gray-500 flex-1">
+                  {selectedNode.data.description || "Create a description for this tag"}
+                </p>
+                <AiOutlineEdit className="cursor-pointer text-gray-500 hover:text-gray-700" onClick={() => setIsDescriptionEditing(true)} />
+              </div>
+            ) : (
+              <p className="text-gray-500">Select a tag to view its description</p>
+            )}
+            </CardContent>
+            <CardFooter
+              className="mt-2 text-sm">There are currently X articles using this tag!
+            </CardFooter>
+        </Card>
 
+      {/* Display instructions */}
+      <h1 className="text-2xl font-bold">Tag Manager</h1>
       <div className="demo-instructions">
         <p>Click on a tag to select it</p>
         <p>Press a to add a tag</p>
