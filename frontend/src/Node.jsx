@@ -20,16 +20,16 @@ const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
   return (
     <div
       className={`p-2 flex cursor-pointer items-center transition-colors duration-200 
-      ${selectedNode?.id === node.id ? "bg-blue-100 font-bold" : "hover:bg-gray-100"}`}
+      ${selectedNode?.id === node.id ? "bg-violet-300 font-bold" : "hover:bg-violet-100"}`  }
       onClick={handleClick}
       style={style}
       ref={dragHandle}
     >
       <div className="flex items-center">
         {node.isOpen ? (
-          <AiOutlineMinusSquare className="toggle-icon mr-2 text-blue-500" />
+          <AiOutlineMinusSquare className="toggle-icon mr-2 text-violet-900" />
         ) : (
-          <AiOutlinePlusSquare className="toggle-icon mr-2 text-blue-500" />
+          <AiOutlinePlusSquare className="toggle-icon mr-2 text-violet-900" />
         )}
 
         <span className="ml-2">{node.data.name}</span>
