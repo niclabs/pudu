@@ -10,6 +10,15 @@ import {
   CardTitle,
 } from "./components/ui/card";
 import { AiOutlineEdit } from "react-icons/ai";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 function App() {
   const [tags, setTags] = useState([]);
@@ -117,21 +126,21 @@ function App() {
 
   return (
     
-    <div className="flex flex-row h-screen">
-      <div className = " m-4 tree-component flex-1">
+    <div className="flex flex-row h-screen bg-violet-50">
+      {/* Tree */}
+      <div className = " m-4 p-4 tree-component  flex-1 bg-indigo-100 rounded-2xl shadow-lg">
         <div className="demo-instructions">
           <h1 className="text-2xl font-bold">Tag Manager</h1>
-            <p>Click on a tag to select it</p>
             <p>Press a to add a tag</p>
             <p>Press backspace to delete a tag and its children</p>
           </div>
 
-        <div className="tree-container flex grow">
+        <div className="tree-container flex grow-1 mt-4">
           <Tree
             data={tags}
             openByDefault={false}
-            width={500}
-            height={screen.height - 300}
+            width={400}
+            height={screen.height - 350}
             indent={24}
             rowHeight={40}
             onCreate={onCreate}
@@ -144,76 +153,128 @@ function App() {
           </Tree>
         </div>
       </div>
-
-      <div className = "m-4 card-component flex-1/2">
-        <Card className="mx-auto shadow-lg rounded-2xl max-w-2xl max-h-2xl">
-          <CardHeader>
-            <CardTitle>
+      {/*  Card and Table */}
+      <div className="m-4 flex-1/2">
+        <div>
+          <Card className="mx-auto shadow-lg rounded-2xl w-full max-w-3xl bg-white">
+            <CardHeader className="p-4 md:p-4">
+              <CardTitle>
+                {selectedNode ? (
+                  isNameEditing ? (
+                    <input
+                      type="text"
+                      value={editNameValue}
+                      onChange={(e) => setEditNameValue(e.target.value)}
+                      onBlur={handleNameSave}
+                      onKeyDown={(e) => e.key === "Enter" && e.target.blur()}
+                      autoFocus
+                      maxLength={30}
+                      className="w-full p-2 border rounded-md"
+                    />
+                  ) : (
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <p className="text-xl md:text-2xl truncate">
+                        <span className="font-bold">Selected Tag: </span>{selectedNode.data.name}
+                      </p>
+                      <AiOutlineEdit
+                        className="cursor-pointer text-gray-500 hover:text-gray-700 flex-shrink-0"
+                        onClick={() => {
+                          setIsNameEditing(true);
+                          setEditNameValue(selectedNode.data.name);
+                        }}
+                      />
+                    </div>
+                  )
+                ) : (
+                  <p className="text-xl md:text-3xl">No tag selected</p>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="md:p-4">
               {selectedNode ? (
-                isNameEditing ? (
-                  <input
-                    type="text"
-                    value={editNameValue}
-                    onChange={(e) => setEditNameValue(e.target.value)}
-                    onBlur={handleNameSave}
+                isDescriptionEditing ? (
+                  <textarea
+                    value={editDescriptionValue}
+                    onChange={(e) => setEditDescriptionValue(e.target.value)}
+                    onBlur={handleDescriptionSave}
                     onKeyDown={(e) => e.key === "Enter" && e.target.blur()}
                     autoFocus
+                    rows={2}
+                    className="resize-none w-full p-2 border rounded-md"
                   />
                 ) : (
-                  <div className="flex items-center justify-between">
-                    <p>Selected Tag: {selectedNode.data.name}</p>
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+                    <div className="flex-1">
+                      <p className="text-gray-500 text-base md:text-xl max-h-20 overflow-y-auto pr-2 break-words">
+                      <span className="font-bold">Description: </span> {selectedNode.data.description || "Create a description for this tag"}
+                      </p>
+                    </div>
                     <AiOutlineEdit
-                      className="cursor-pointer text-gray-500 hover:text-gray-700"
+                      className="cursor-pointer text-gray-500 hover:text-gray-700 flex-shrink-0 mt-1"
                       onClick={() => {
-                        setIsNameEditing(true);
-                        setEditNameValue(selectedNode.data.name);
+                        setIsDescriptionEditing(true);
+                        setEditDescriptionValue(selectedNode.data.description);
                       }}
                     />
                   </div>
                 )
               ) : (
-                <p>No tag selected</p>
+                <p className="text-gray-500 text-base md:text-xl">Select a tag to view its description</p>
               )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-15">
-            {selectedNode ? (
-              isDescriptionEditing ? (
-                <textarea
-                  value={editDescriptionValue}
-                  onChange={(e) => setEditDescriptionValue(e.target.value)}
-                  onBlur={handleDescriptionSave}
-                  onKeyDown={(e) => e.key === "Enter" && e.target.blur()}
-                  autoFocus
-                  rows={2}
-                  className="resize-none w-full p-2 border rounded-md"
-                />
-              ) : (
-                <div className="flex items-center justify-between ">
-                  <p className="text-gray-500 flex-1 max-h-20 overflow-y-auto p-1">
-                    Description: {selectedNode.data.description ||
-                      "Create a description for this tag"}
-                  </p>
-                  <AiOutlineEdit
-                    className="cursor-pointer text-gray-500 hover:text-gray-700"
-                    onClick={() => {
-                      setIsDescriptionEditing(true);
-                      setEditDescriptionValue(selectedNode.data.description);
-                    }}
-                  />
-                </div>
-              )
-            ) : (
-              <p className="text-gray-500">Select a tag to view its description</p>
-            )}
-          </CardContent>
-          <CardFooter className="mt-2 text-sm">
-            There are currently X articles using this tag!
-          </CardFooter>
-        </Card>
-      
+            </CardContent>
+            {selectedNode && <CardFooter className="p-4 md:p-4">
+              <p className="text-base md:text-xl">There are currently X articles using this tag!</p>
+            </CardFooter>}
+            
+          </Card>
+        </div>
+        <div className="mt-6">
+        <Table className="text-base">
+          <TableCaption >Articles related to the selected tag.</TableCaption>
+          <TableHeader className="text-base text-gray-500">
+            <TableRow>
+              <TableHead >Title</TableHead>
+              <TableHead>Year</TableHead>
+              <TableHead>Authors</TableHead>
+              <TableHead>Categorized</TableHead>
+              <TableHead>Tags</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>Baby yoda found dead in miami: an in depth study</TableCell>
+              <TableCell>1993</TableCell>
+              <TableCell>George Lucas</TableCell>
+              <TableCell>Yes</TableCell>
+              <TableCell>Star Wars, Baby Yoda, Miami, Crime, Murder investigations</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Baby yoda found dead in miami: an in depth study</TableCell>
+              <TableCell>1993</TableCell>
+              <TableCell>George Lucas</TableCell>
+              <TableCell>Yes</TableCell>
+              <TableCell>Star Wars, Baby Yoda, Miami, Crime, Murder investigations</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Baby yoda found dead in miami: an in depth study</TableCell>
+              <TableCell>1993</TableCell>
+              <TableCell>George Lucas</TableCell>
+              <TableCell>Yes</TableCell>
+              <TableCell>Star Wars, Baby Yoda, Miami, Crime, Murder investigations</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Baby yoda found dead in miami: an in depth study</TableCell>
+              <TableCell>1993</TableCell>
+              <TableCell>George Lucas</TableCell>
+              <TableCell>Yes</TableCell>
+              <TableCell>Star Wars, Baby Yoda, Miami, Crime, Murder investigations</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+ 
+        </div>
       </div>
-   </div>
+  </div>
   );
 }
 

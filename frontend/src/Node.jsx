@@ -1,7 +1,6 @@
 import { AiOutlineMinusSquare, AiOutlinePlusSquare } from "react-icons/ai";
 
 const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
-  // Handle click event: toggle the node if the user clicks the toggle icon, selects the node
   const handleClick = (e) => {
     if (e.target.closest(".toggle-icon")) {
       node.toggle();
@@ -19,20 +18,21 @@ const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
 
   return (
     <div
-      className={`p-2 flex cursor-pointer items-center transition-colors duration-200 
-      ${selectedNode?.id === node.id ? "bg-violet-300 font-bold" : "hover:bg-violet-100"}`  }
+      className={`p-2 flex cursor-pointer items-center rounded-lg w-11/12 transition-all duration-200
+      ${selectedNode?.id === node.id ? "bg-violet-500 font-bold text-white" : "hover:bg-violet-300"}`}
       onClick={handleClick}
       style={style}
       ref={dragHandle}
     >
-      <div className="flex items-center">
+      <div className="flex items-center ml-2 w-full">
         {node.isOpen ? (
-          <AiOutlineMinusSquare className="toggle-icon mr-2 text-violet-900" />
+          <AiOutlineMinusSquare className="toggle-icon mr-2 text-violet-900 shrink-0" />
         ) : (
-          <AiOutlinePlusSquare className="toggle-icon mr-2 text-violet-900" />
+          <AiOutlinePlusSquare className="toggle-icon mr-2 text-violet-900 shrink-0" />
         )}
 
-        <span className="ml-2">{node.data.name}</span>
+        {/* Ensures text truncation and correct flex behavior */}
+        <span className="ml-2 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{node.data.name}</span>
       </div>
     </div>
   );

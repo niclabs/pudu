@@ -61,6 +61,13 @@
     --chart-5: 340 75% 55%;
   }
 }
+table tr td:first-child {
+  font-weight: bold;
+}
+
+table tr {
+  border-bottom: 1px solid violet; /* Change to your preferred color */
+}
 
 ::-webkit-scrollbar {
   @apply w-2.5 h-2.5;
