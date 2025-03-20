@@ -222,9 +222,10 @@ function App() {
                 <p className="text-gray-500 text-base md:text-xl">Select a tag to view its description</p>
               )}
             </CardContent>
-            {selectedNode && <CardFooter className="p-4 md:p-4">
-              <p className="text-base md:text-xl">There are currently X articles using this tag!</p>
-            </CardFooter>}
+            
+             <CardFooter className="p-4 md:p-4 h-8.5"> {/* h-8.5 ODIO ESTO PORFA REVISAR AAAAAAAA */}
+             {selectedNode && <p className="text-base md:text-xl">There are currently X articles using this tag!</p>}
+            </CardFooter>
             
           </Card>
         </div>
