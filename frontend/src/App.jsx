@@ -128,7 +128,7 @@ function App() {
     
     <div className="flex flex-row h-screen bg-violet-50">
       {/* Tree */}
-      <div className = " m-4 p-4 tree-component  flex-1 bg-indigo-100 rounded-2xl shadow-lg">
+      <div className = " m-4 p-4 tree-component  flex-1 bg-indigo-100 rounded-xl shadow-lg">
         <div className="demo-instructions">
           <h1 className="text-2xl font-bold">Tag Manager</h1>
             <p>Press a to add a tag</p>
@@ -156,7 +156,7 @@ function App() {
       {/*  Card and Table */}
       <div className="m-4 flex-1/2">
         <div>
-          <Card className="mx-auto shadow-lg rounded-2xl w-full max-w-3xl bg-white">
+          <Card className="mx-auto shadow-lg rounded-xl w-full max-w-3xl border-white bg-white">
             <CardHeader className="p-4 md:p-4">
               <CardTitle>
                 {selectedNode ? (
@@ -199,13 +199,13 @@ function App() {
                     onBlur={handleDescriptionSave}
                     onKeyDown={(e) => e.key === "Enter" && e.target.blur()}
                     autoFocus
-                    rows={2}
+                    rows={3}
                     className="resize-none w-full p-2 border rounded-md"
                   />
                 ) : (
-                  <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-1">
                     <div className="flex-1">
-                      <p className="text-gray-500 text-base md:text-xl max-h-20 overflow-y-auto pr-2 break-words">
+                      <p className="text-gray-500 text-base md:text-l max-h-20 overflow-y-auto pr-2 break-words">
                       <span className="font-bold">Description: </span> {selectedNode.data.description || "Create a description for this tag"}
                       </p>
                     </div>
@@ -223,14 +223,14 @@ function App() {
               )}
             </CardContent>
             
-             <CardFooter className="p-4 md:p-4 h-8.5"> {/* h-8.5 ODIO ESTO PORFA REVISAR AAAAAAAA */}
+             <CardFooter className="p-4 md:p- h-8.5"> {/* h-8.5 ODIO ESTO PORFA REVISAR AAAAAAAA */}
              {selectedNode && <p className="text-base md:text-xl">There are currently X articles using this tag!</p>}
             </CardFooter>
             
           </Card>
         </div>
         <div className="mt-6">
-        <Table className="text-base">
+        <Table className="text-base bg-white rounded-xl">
           <TableCaption >Articles related to the selected tag.</TableCaption>
           <TableHeader className="text-base text-gray-500">
             <TableRow>
@@ -243,32 +243,32 @@ function App() {
           </TableHeader>
           <TableBody>
             <TableRow>
-              <TableCell>Baby yoda found dead in miami: an in depth study</TableCell>
-              <TableCell>1993</TableCell>
+              <TableCell>Baby Yoda Found Dead in Miami: An In-Depth Study</TableCell>
+              <TableCell>2005</TableCell>
               <TableCell>George Lucas</TableCell>
               <TableCell>Yes</TableCell>
-              <TableCell>Star Wars, Baby Yoda, Miami, Crime, Murder investigations</TableCell>
+              <TableCell>Star Wars, Baby Yoda, Miami, Crime, Murder Investigations</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell>Baby yoda found dead in miami: an in depth study</TableCell>
-              <TableCell>1993</TableCell>
-              <TableCell>George Lucas</TableCell>
-              <TableCell>Yes</TableCell>
-              <TableCell>Star Wars, Baby Yoda, Miami, Crime, Murder investigations</TableCell>
+              <TableCell>Baby Yoda 2: A Deep-Sea Mystery</TableCell>
+              <TableCell>1995</TableCell>
+              <TableCell>James Cameron</TableCell>
+              <TableCell>No</TableCell>
+              <TableCell>Star Wars, Baby Yoda, Atlantis, Deep Sea, Conspiracy</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell>Baby yoda found dead in miami: an in depth study</TableCell>
-              <TableCell>1993</TableCell>
-              <TableCell>George Lucas</TableCell>
+              <TableCell>UFOs Over Hoth: Baby Yoda’s Disappearance</TableCell>
+              <TableCell>1987</TableCell>
+              <TableCell>Steven Spielberg</TableCell>
               <TableCell>Yes</TableCell>
-              <TableCell>Star Wars, Baby Yoda, Miami, Crime, Murder investigations</TableCell>
+              <TableCell>Star Wars, UFOs, Baby Yoda, Mystery, Government Cover-up</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell>Baby yoda found dead in miami: an in depth study</TableCell>
-              <TableCell>1993</TableCell>
-              <TableCell>George Lucas</TableCell>
-              <TableCell>Yes</TableCell>
-              <TableCell>Star Wars, Baby Yoda, Miami, Crime, Murder investigations</TableCell>
+              <TableCell>Sith Lords and the Miami Connection: Baby Yoda’s Fate</TableCell>
+              <TableCell>1999</TableCell>
+              <TableCell>Christopher Nolan</TableCell>
+              <TableCell>No</TableCell>
+              <TableCell>Star Wars, Sith, Baby Yoda, Miami, Crime, Secret Societies</TableCell>
             </TableRow>
           </TableBody>
         </Table>

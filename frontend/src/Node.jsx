@@ -19,7 +19,7 @@ const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
   return (
     <div
       className={`p-2 flex cursor-pointer items-center rounded-lg w-11/12 transition-all duration-200
-      ${selectedNode?.id === node.id ? "bg-violet-500 font-bold text-white" : "hover:bg-violet-300"}`}
+      ${selectedNode?.id === node.id ? "bg-violet-400 font-bold text-white" : "hover:bg-violet-200"}`}
       onClick={handleClick}
       style={style}
       ref={dragHandle}
