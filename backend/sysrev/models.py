@@ -1,5 +1,10 @@
 from django.db import models
 
+class Study(models.Model):
+    id = models.AutoField(primary_key=True)
+    title = models.CharField(max_length=255)
+    authors = models.CharField(max_length=255)
+
 class Tag(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)

@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import DemoTable from "./Tabledemo/DemoTable";
 
 function App() {
   const [tags, setTags] = useState([]);
@@ -229,51 +230,9 @@ function App() {
             
           </Card>
         </div>
-        <div className="mt-6">
-        <Table className="text-base bg-white rounded-xl">
-          <TableCaption >Articles related to the selected tag.</TableCaption>
-          <TableHeader className="text-base text-gray-500">
-            <TableRow>
-              <TableHead >Title</TableHead>
-              <TableHead>Year</TableHead>
-              <TableHead>Authors</TableHead>
-              <TableHead>Categorized</TableHead>
-              <TableHead>Tags</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell>Baby Yoda Found Dead in Miami: An In-Depth Study</TableCell>
-              <TableCell>2005</TableCell>
-              <TableCell>George Lucas</TableCell>
-              <TableCell>Yes</TableCell>
-              <TableCell>Star Wars, Baby Yoda, Miami, Crime, Murder Investigations</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Baby Yoda 2: A Deep-Sea Mystery</TableCell>
-              <TableCell>1995</TableCell>
-              <TableCell>James Cameron</TableCell>
-              <TableCell>No</TableCell>
-              <TableCell>Star Wars, Baby Yoda, Atlantis, Deep Sea, Conspiracy</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>UFOs Over Hoth: Baby Yoda’s Disappearance</TableCell>
-              <TableCell>1987</TableCell>
-              <TableCell>Steven Spielberg</TableCell>
-              <TableCell>Yes</TableCell>
-              <TableCell>Star Wars, UFOs, Baby Yoda, Mystery, Government Cover-up</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Sith Lords and the Miami Connection: Baby Yoda’s Fate</TableCell>
-              <TableCell>1999</TableCell>
-              <TableCell>Christopher Nolan</TableCell>
-              <TableCell>No</TableCell>
-              <TableCell>Star Wars, Sith, Baby Yoda, Miami, Crime, Secret Societies</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
- 
-        </div>
+          <div className="m-4"> 
+            <DemoTable />
+          </div>
       </div>
   </div>
   );

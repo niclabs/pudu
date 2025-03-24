@@ -65,6 +65,13 @@ table tr td:first-child {
   font-weight: bold;
 }
 
+table {
+  width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
+  overflow: auto; 
+}
+
 table tr {
   border-bottom: 1px solid violet; /* Change to your preferred color */
 }
