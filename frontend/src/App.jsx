@@ -10,16 +10,9 @@ import {
   CardTitle,
 } from "./components/ui/card";
 import { AiOutlineEdit } from "react-icons/ai";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import DemoTable from "./Tabledemo/DemoTable";
+import { DataTable } from "./dataTableDemo/data-table";
+import { columns } from "./dataTableDemo/columns";
+import { studies } from "./dataTableDemo/dummy-data";
 
 function App() {
   const [tags, setTags] = useState([]);
@@ -157,7 +150,7 @@ function App() {
       {/*  Card and Table */}
       <div className="m-4 flex-1/2">
         <div>
-          <Card className="mx-auto shadow-lg rounded-xl w-full max-w-3xl border-white bg-white">
+          <Card className="mx-auto shadow-lg rounded-xl w-full max-w-3xl h-75 border-white bg-white">
             <CardHeader className="p-4 md:p-4">
               <CardTitle>
                 {selectedNode ? (
@@ -224,14 +217,14 @@ function App() {
               )}
             </CardContent>
             
-             <CardFooter className="p-4 md:p- h-8.5"> {/* h-8.5 ODIO ESTO PORFA REVISAR AAAAAAAA */}
+             <CardFooter>
              {selectedNode && <p className="text-base md:text-xl">There are currently X articles using this tag!</p>}
             </CardFooter>
             
           </Card>
         </div>
           <div className="m-4"> 
-            <DemoTable />
+            <DataTable columns={columns} data={studies} />
           </div>
       </div>
   </div>
