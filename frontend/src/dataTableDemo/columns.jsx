@@ -66,7 +66,7 @@ export const columns = [
         id: "actions", // No accessorKey: doesn't map to a data property
         cell: ({ row }) => {
           
-            const study = row.original
+            const study = row.original // The data object for this row
 
             return (
               <DropdownMenu>

@@ -11,6 +11,38 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table.jsx"
 import { Input } from "@/components/ui/input"
 
+// Filter function using AND logic, returns true when all search terms are present in a row
+// dont delete columnId or addMeta, required by tanstacktable
+// eslint-disable-next-line no-unused-vars
+function crossColumnAndFilter(row, columnId, filterValue, addMeta) {
+  if (!filterValue){
+    return true
+  } 
+
+  // Split and clean search terms
+  const searchTerms = filterValue
+    .toString()
+    .split(",")
+    .map((term) => term.trim().toLowerCase())
+    .filter(Boolean)
+
+  // If no search terms, return true
+  if (searchTerms.length === 0) {
+    return true
+  }
+  // For each search term, check if it exists in any column
+  return searchTerms.every((term) => {
+    // Check each column in the row
+    return row.getAllCells().some((cell) => {
+      const cellValue = cell.getValue()
+      if (cellValue == null){
+        return false
+      } 
+      return String(cellValue).toLowerCase().includes(term)
+    })
+  })
+}
+
 export function DataTable({ columns, data }) {
   const [sorting, setSorting] = useState([])
   const [globalFilter, setGlobalFilter] = useState("")
@@ -22,6 +54,10 @@ export function DataTable({ columns, data }) {
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    filterFns: {
+      crossColumnAnd: crossColumnAndFilter,
+    },
+    globalFilterFn: "crossColumnAnd",
     state: {
       sorting,
       globalFilter,
@@ -33,7 +69,7 @@ export function DataTable({ columns, data }) {
     <div className="flex flex-col h-full">
       <div className="flex py-4 items-center">
         <Input
-          placeholder="Search"
+          placeholder="Search with terms separated by commas!"
           value={globalFilter ?? ""}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="max-w-sm"
@@ -76,4 +112,3 @@ export function DataTable({ columns, data }) {
     </div>
   )
 }
-
