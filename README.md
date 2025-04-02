@@ -1,6 +1,6 @@
-# SysRev: Herramienta para Revisiones Sistemáticas
+# pudu: Herramienta para Revisiones Sistemáticas
 
-SysRev es una herramienta de apoyo para investigadores que permite crear repositorios de estudios científicos para revisiones sistemáticas. En este se pueden almacenar sus metadatos, categorizar usando tags, por ejemplo: según los temas que abordan, metodologías que utilizan, etc. También permite extraer información relevante de la revisión sistemática.
+pudu es una herramienta de apoyo para investigadores que permite crear repositorios de estudios científicos para revisiones sistemáticas. En este se pueden almacenar sus metadatos, categorizar usando tags, por ejemplo: según los temas que abordan, metodologías que utilizan, etc. También permite extraer información relevante de la revisión sistemática.
 
 ## Requisitos:
 Es necesario instalar:  
