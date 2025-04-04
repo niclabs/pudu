@@ -16,6 +16,7 @@ python -m venv venv
 .\venv\Scripts\activate
 pip install -r requirements.txt  # Actualizar con: pip freeze > requirements.txt
 
+\SysRev\backend py manage.py makemigrations
 \SysRev\backend py manage.py migrate
 \SysRev\backend py manage.py runserver #Correr Backend
 ```
