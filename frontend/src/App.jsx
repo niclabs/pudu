@@ -10,9 +10,10 @@ import {
   CardTitle,
 } from "./components/ui/card";
 import { AiOutlineEdit } from "react-icons/ai";
-import { DataTable } from "./dataTableDemo/data-table";
-import { columns } from "./dataTableDemo/columns";
-import { studies } from "./dataTableDemo/dummy-data";
+import { DataTable } from "./dataTable/data-table";
+import { columns } from "./dataTable/columns";
+import { studies } from "./dataTable/dummy-data";
+import { Input } from "./components/custom/input";
 
 function App() {
   const [tags, setTags] = useState([]);
@@ -155,7 +156,7 @@ function App() {
               <CardTitle>
                 {selectedNode ? (
                   isNameEditing ? (
-                    <input
+                    <Input
                       type="text"
                       value={editNameValue}
                       onChange={(e) => setEditNameValue(e.target.value)}

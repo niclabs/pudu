@@ -28,3 +28,4 @@ table th {
 ::-webkit-scrollbar-thumb {
   @apply rounded-full bg-violet-300 border-[1px] border-transparent border-solid bg-clip-padding;
 }
+

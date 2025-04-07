@@ -5,11 +5,11 @@ import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  getFilteredRowModel,
+  getFilteredRowModel,  
   useReactTable,
 } from "@tanstack/react-table"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table.jsx"
-import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/custom/table.jsx"
+import { Input } from "@/components/custom/input"
 
 // Filter function using AND logic, returns true when all search terms are present in a row
 // dont delete columnId or addMeta, required by tanstacktable
