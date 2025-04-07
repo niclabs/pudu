@@ -16,12 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from sysrev.views import TagTreeView
+from sysrev.views import TagTreeView, StudiesView, AuthorsView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/tags/', TagTreeView.as_view(), name='tag-tree'),
     path('api/tags/<int:tag_id>/', TagTreeView.as_view(), name='tag-detail'),
-    # path('api/studies/'),
-
+    path('api/studies/', StudiesView.as_view(), name='study-list'),
+    path('api/studies/<int:study_id>/', StudiesView.as_view(), name='study-detail'),
+    path('api/authors/', AuthorsView.as_view(), name='author-list'),
+    path('api/authors/<int:author_id>/', AuthorsView.as_view(), name='author-detail'),
 ]

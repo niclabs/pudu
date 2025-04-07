@@ -16,6 +16,8 @@ import { studies } from "./dataTable/dummy-data";
 import { Input } from "./components/custom/input";
 
 function App() {
+  const [studies, setStudies] = useState([]);
+  const [tableData, setTableData] = useState([]);
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -28,6 +30,12 @@ function App() {
     const response = await fetch("http://localhost:8000/api/tags/");
     const data = await response.json();
     setTags(data);
+  };
+
+  const fetchStudyData = async () => {
+    const response = await fetch("http://localhost:8000/api/studies/");
+    const data = await response.json();
+    setStudies(data);
   };
 
   const onCreate = async () => {
@@ -114,7 +122,17 @@ function App() {
 
   useEffect(() => {
     fetchTreeData();
+    fetchStudyData();
     setLoading(false);
+    const refineTable = studies.map((study) => ({
+          id: study.id,
+          title: study.title,
+          year: study.year,
+          authors: study.authors_display.join(", "),
+          categorized: study.categorized ? "Yes" : "No",
+          tags: study.tags_display.map((tag) => tag.name).join(", "),
+        }));
+    setTableData(refineTable);
   }, []);
 
   if (loading) return <div>Loading tree...</div>;
@@ -225,7 +243,7 @@ function App() {
           </Card>
         </div>
           <div className="m-4"> 
-            <DataTable columns={columns} data={studies} />
+            <DataTable columns={columns} data={tableData} />
           </div>
       </div>
   </div>

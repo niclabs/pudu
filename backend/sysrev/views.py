@@ -1,13 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Tag
-from .serializers import TagSerializer
+from .models import Tag, Study, Author
+from .serializers import TagSerializer, StudySerializer, AuthorSerializer
 
 
 #CRUD operations on the tag tree
 class TagTreeView(APIView):
-
+    '''
+    API view for managing the tag tree.
+    '''
     '''
         GET retrieves the tag tree or a specific tag by ID.
     '''
@@ -24,7 +26,6 @@ class TagTreeView(APIView):
             return Response(tree, status=status.HTTP_200_OK)
         
         
-
     '''
     POST creates a new tag.
 
@@ -143,5 +144,74 @@ class TagTreeView(APIView):
         tag.save()
 
         return Response({'message': 'Tag renamed successfully'}, status=status.HTTP_200_OK)
+
+class StudiesView(APIView):
+    '''
+    API view for managing studies.
+    '''
+    def get(self, request, study_id=None):
+        if study_id:
+            try:
+                study = Study.objects.get(id=study_id)
+                serializer = StudySerializer(study)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Study.DoesNotExist:
+                return Response({'error': 'Study not found.'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            studies = Study.objects.all()
+            serializer = StudySerializer(studies, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+    '''
+    Example POST request body:
+    {
+    "title": "A Study on AI",
+    "year": 2023,
+    "summary": "This is a summary of the study.",
+    "abstract": "This is an abstract of the study.",
+    "categorized": true,
+    "tags": [1, 2],
+    "authors": [1, 2],
+    "doi": "10.1234/abcd",
+    "url": "http://example.com",
+    "pages": "1-10",
+    "pathto_pdf": "/path/to/pdf"
+    }
+    '''
+    def post(self, request):
+        serializer = StudySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class AuthorsView(APIView):
+    '''
+    API view for managing authors.
+    '''
+    def get(self, request, author_id=None):
+        if author_id:
+            try:
+                author = Author.objects.get(id=author_id)
+                serializer = AuthorSerializer(author)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except Author.DoesNotExist:
+                return Response({'error': 'Author not found.'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            authors = Author.objects.all()
+            serializer = AuthorSerializer(authors, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
     
-    #TODO que patch pueda cambiar una descripción
+    '''
+    Example POST request body:
+        {
+        "name": "Alice Smith"
+        }
+    '''
+
+    def post(self, request):
+        serializer = AuthorSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
