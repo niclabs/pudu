@@ -163,6 +163,16 @@ class StudiesView(APIView):
             serializer = StudySerializer(studies, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
+    def delete(self, request, study_id=None):
+        if not study_id:
+            return Response({'error': 'Study ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            study = Study.objects.get(id=study_id)
+            study.delete()
+            return Response({'message': 'Study deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except Study.DoesNotExist:
+            return Response({'error': 'Study not found.'}, status=status.HTTP_404_NOT_FOUND)
     '''
     Example POST request body:
     {

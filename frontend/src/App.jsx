@@ -18,7 +18,6 @@ function App() {
   const [tableData, setTableData] = useState([]);
   const [tags, setTags] = useState([]);
   const [tagCount, setTagCount] = useState([]);
-  const [selectedTagCount, setSelectedTagCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedNode, setSelectedNode] = useState(null);
   const [isNameEditing, setIsNameEditing] = useState(false);
@@ -45,6 +44,7 @@ function App() {
       tags: study.tags_display.map((tag) => tag.name).join(", "),
     }));
     setTableData(refineTable);
+    console.log('fetched table data')
   };
 
  
@@ -246,14 +246,14 @@ function App() {
             
             <CardFooter>
               {selectedNode && <p className="text-base md:text-xl">Articles currently using this tag: {
-                tagCount.find(x => x.id === parseInt(selectedNode.data.id)).study_count || 0
+                tagCount.find(x => x.id === parseInt(selectedNode.data.id))?.study_count || 0
               } </p>}
             </CardFooter>
             
           </Card>
         </div>
           <div className="m-4"> 
-            <DataTable columns={columns} data={tableData} />
+            <DataTable columns={columns(fetchStudyData)} data={tableData} />
           </div>
       </div>
   </div>
