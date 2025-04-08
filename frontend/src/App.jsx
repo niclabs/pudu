@@ -12,7 +12,6 @@ import {
 import { AiOutlineEdit } from "react-icons/ai";
 import { DataTable } from "./dataTable/data-table";
 import { columns } from "./dataTable/columns";
-import { studies } from "./dataTable/dummy-data";
 import { Input } from "./components/custom/input";
 
 function App() {
@@ -35,7 +34,8 @@ function App() {
   const fetchStudyData = async () => {
     const response = await fetch("http://localhost:8000/api/studies/");
     const data = await response.json();
-    setStudies(data);
+    setStudies(data); //this doesnt work
+    console.log('table data: ',data); //this works
   };
 
   const onCreate = async () => {
@@ -132,6 +132,7 @@ function App() {
           categorized: study.categorized ? "Yes" : "No",
           tags: study.tags_display.map((tag) => tag.name).join(", "),
         }));
+        console.log(refineTable);
     setTableData(refineTable);
   }, []);
 
