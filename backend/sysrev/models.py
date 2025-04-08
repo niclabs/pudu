@@ -3,7 +3,27 @@ from django.db import models
 class Study(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255)
-    authors = models.CharField(max_length=255)
+    year = models.IntegerField(blank=True, null=True)
+    summary = models.TextField(blank=True)
+    abstract = models.TextField(blank=True)
+    categorized = models.BooleanField(default=False)
+    tags = models.ManyToManyField('Tag', blank=True, related_name='studies')
+    authors = models.ManyToManyField('Author', blank=True, related_name='studies')
+    doi = models.CharField(max_length=255, blank=True)
+    url = models.URLField(blank=True)
+    pages = models.CharField(max_length=255, blank=True)
+    pathto_pdf = models.CharField(max_length=255, blank=True)
+    # timescited = models.IntegerField(default=0) # May not be too useful to consider
+
+    def __str__(self):
+        return self.name
+
+class Author(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
 
 class Tag(models.Model):
     id = models.AutoField(primary_key=True)

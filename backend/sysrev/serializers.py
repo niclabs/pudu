@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tag
+from .models import Tag, Study, Author
 
 class TagSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
@@ -15,3 +15,22 @@ class TagSerializer(serializers.ModelSerializer):
         return []
     
     
+class StudySerializer(serializers.ModelSerializer):
+    #write only fields for tags and authors using id arrays
+    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, write_only=True)
+    authors = serializers.PrimaryKeyRelatedField(queryset=Author.objects.all(), many=True, write_only=True)
+
+    #read only fields for tags and authors using string representations 
+    tags_display = TagSerializer(source='tags', many=True, read_only=True)
+    authors_display = serializers.StringRelatedField(source='authors', many=True, read_only=True)
+
+    class Meta:
+        model = Study
+        fields = ['id', 'title', 'year', 'summary', 'abstract', 'categorized', 'tags', 'tags_display', 'authors', 'authors_display', 'doi', 'url', 'pages', 'pathto_pdf']
+
+class AuthorSerializer(serializers.ModelSerializer):
+    studies = StudySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Author
+        fields = ['id', 'name', 'studies']
