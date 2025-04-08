@@ -15,9 +15,10 @@ import { columns } from "./dataTable/columns";
 import { Input } from "./components/custom/input";
 
 function App() {
-  const [studies, setStudies] = useState([]);
   const [tableData, setTableData] = useState([]);
   const [tags, setTags] = useState([]);
+  const [tagCount, setTagCount] = useState([]);
+  const [selectedTagCount, setSelectedTagCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedNode, setSelectedNode] = useState(null);
   const [isNameEditing, setIsNameEditing] = useState(false);
@@ -34,8 +35,23 @@ function App() {
   const fetchStudyData = async () => {
     const response = await fetch("http://localhost:8000/api/studies/");
     const data = await response.json();
-    setStudies(data); //this doesnt work
-    console.log('table data: ',data); //this works
+  
+    const refineTable = data.map((study) => ({
+      id: study.id,
+      title: study.title,
+      year: study.year,
+      authors: study.authors_display.join(", "),
+      categorized: study.categorized ? "Yes" : "No",
+      tags: study.tags_display.map((tag) => tag.name).join(", "),
+    }));
+    setTableData(refineTable);
+  };
+
+ 
+  const fetchTagCount = async () => {
+    const response = await fetch("http://localhost:8000/api/tags/count/"); 
+    const data = await response.json();
+    setTagCount(data);
   };
 
   const onCreate = async () => {
@@ -123,17 +139,8 @@ function App() {
   useEffect(() => {
     fetchTreeData();
     fetchStudyData();
+    fetchTagCount();
     setLoading(false);
-    const refineTable = studies.map((study) => ({
-          id: study.id,
-          title: study.title,
-          year: study.year,
-          authors: study.authors_display.join(", "),
-          categorized: study.categorized ? "Yes" : "No",
-          tags: study.tags_display.map((tag) => tag.name).join(", "),
-        }));
-        console.log(refineTable);
-    setTableData(refineTable);
   }, []);
 
   if (loading) return <div>Loading tree...</div>;
@@ -237,8 +244,10 @@ function App() {
               )}
             </CardContent>
             
-             <CardFooter>
-             {selectedNode && <p className="text-base md:text-xl">There are currently X articles using this tag!</p>}
+            <CardFooter>
+              {selectedNode && <p className="text-base md:text-xl">Articles currently using this tag: {
+                tagCount.find(x => x.id === parseInt(selectedNode.data.id)).study_count || 0
+              } </p>}
             </CardFooter>
             
           </Card>

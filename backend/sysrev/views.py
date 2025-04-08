@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view
 from .models import Tag, Study, Author
 from .serializers import TagSerializer, StudySerializer, AuthorSerializer
-
+from django.db.models import Count
 
 #CRUD operations on the tag tree
 class TagTreeView(APIView):
@@ -215,3 +216,11 @@ class AuthorsView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['GET'])
+def tag_study_counts(request):
+    tags_with_counts = Tag.objects.annotate(
+        study_count=Count('studies')
+    ).values('id', 'name', 'study_count')
+    return Response(tags_with_counts)
