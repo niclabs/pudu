@@ -1,28 +1,30 @@
-# pudu: Herramienta para Revisiones Sistemáticas
+<img src="frontend\src\components\custom\pudupurple.png" width="100">
 
-pudu es una herramienta de apoyo para investigadores que permite crear repositorios de estudios científicos para revisiones sistemáticas. En este se pueden almacenar sus metadatos, categorizar usando tags, por ejemplo: según los temas que abordan, metodologías que utilizan, etc. También permite extraer información relevante de la revisión sistemática.
+# pudu: A Systematic Review Tool 
 
-## Requisitos:
-Es necesario instalar:  
+pudu is a tool to support researchers in creating and reviewing repositories of scientific literature for systematic reviews. 
+Store study metadata, categorize using a heriarchical tag system, and retrieve relevant information about the systematic review.
+
+## Requirements :  
 - **Python 3**  
 - **Node.js**  
 - **npm**  
 
-## Instalación y uso: 
+## Instalation and usage: 
 
 ### Backend (Django)  
 ```sh
 python -m venv venv
 .\venv\Scripts\activate
-pip install -r requirements.txt  # Actualizar con: pip freeze > requirements.txt
+pip install -r requirements.txt  # Update using: pip freeze > requirements.txt
 
 \SysRev\backend py manage.py makemigrations
 \SysRev\backend py manage.py migrate
-\SysRev\backend py manage.py runserver #Correr Backend
+\SysRev\backend py manage.py runserver #Run backend
 ```
 
 ### Frontend (React-Vite)  
 ```sh
-\SysRev\frontend npm install #Instalar dependencias
-\SysRev\frontend npm run dev #Correr Frontend
+\SysRev\frontend npm install #Install dependencies
+\SysRev\frontend npm run dev #Run Frontend
 ```
