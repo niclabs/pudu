@@ -10,7 +10,7 @@ export default function App() {
         <Navbar />
         <main className="flex-grow overflow-hidden">
           <Routes>
-            <Route path="/tagmanagement" element={<TagView />} />
+            <Route path="/tags" element={<TagView />} />
           </Routes>
         </main>
       </div>

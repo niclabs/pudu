@@ -11,27 +11,29 @@ import {
 
   export default function Navbar() {
     return (
-      <nav className="w-full bg-violet-500 shadow-sm text-violet-50">
+      <nav className="w-full bg-violet-900 shadow-sm text-violet-50">
         <NavigationMenu className="w-full h-16 px-4 flex items-center">
           <NavigationMenuList className="flex gap-4">
             <NavigationMenuItem>
+            <Link to="/" >
               <img 
                       src={pudu} 
                       alt="Logo" 
-                      className="custom-cursor h-16 w-auto left hover:bg-purple-900  rounded-md"
+                      className="custom-cursor h-16 w-auto left hover:bg-violet-950  rounded-md"
                     />
+            </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink>
-                <Link to="/tagmanagement" 
-                className=" p-2 text-base font-medium hover:bg-purple-900 rounded-md">
+                <Link to="/tags" 
+                className=" p-2 text-base font-medium hover:bg-violet-950 rounded-md">
                   Tag Management
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink>
-                <Link to="/studies" className=" p-2 text-base font-medium hover:bg-purple-900 rounded-md">
+                <Link to="/studies" className=" p-2 text-base font-medium hover:bg-violet-950 rounded-md">
                   Study Search
                 </Link>
               </NavigationMenuLink>
