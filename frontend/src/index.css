@@ -3,13 +3,13 @@
 @plugin "tailwindcss-animate";
 
 
-
-
-
+.custom-cursor {
+  cursor: url('./components/custom/smallmaqui.png'), auto;
+}
 
 table tr {
   border-bottom: 2px solid var(--color-indigo-100);
-  background: #f8f8f8;
+  background: var(--color-slate-50)
 }
 
 table th {
