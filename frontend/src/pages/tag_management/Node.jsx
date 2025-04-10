@@ -1,4 +1,5 @@
 import { AiOutlineMinusSquare, AiOutlinePlusSquare } from "react-icons/ai";
+import { AiFillCaretRight , AiFillCaretDown } from "react-icons/ai";
 
 const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
   const handleClick = (e) => {
@@ -26,9 +27,9 @@ const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
     >
       <div className="flex items-center ml-2 w-full">
         {node.isOpen ? (
-          <AiOutlineMinusSquare className="toggle-icon mr-2 text-violet-900 shrink-0" />
+          <AiFillCaretDown className="toggle-icon mr-2 text-violet-950 shrink-0" />
         ) : (
-          <AiOutlinePlusSquare className="toggle-icon mr-2 text-violet-900 shrink-0" />
+          <AiFillCaretRight className="toggle-icon mr-2 text-violet-950 shrink-0" />
         )}
 
         {/* Ensures text truncation and correct flex behavior */}
