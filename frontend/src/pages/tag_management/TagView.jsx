@@ -47,7 +47,6 @@ function TagView() {
     console.log('fetched table data')
   };
 
- 
   const fetchTagCount = async () => {
     const response = await fetch("http://localhost:8000/api/tags/count/"); 
     const data = await response.json();
@@ -146,15 +145,14 @@ function TagView() {
   if (loading) return <div>Loading tree...</div>;
 
   return (
-    
     <div className="flex flex-row w-full h-full bg-violet-50">
       {/* Tree */}
-      <div className = " m-4 p-4 tree-component  flex-1 bg-indigo-100 rounded-xl shadow-lg">
+      <div className=" m-4 p-4 tree-component  flex-1 bg-indigo-100 rounded-xl shadow-lg">
         <div className="demo-instructions">
           <h1 className="text-2xl font-bold">Tag Manager</h1>
-            <p>Press a to add a tag</p>
-            <p>Press backspace to delete a tag and its children</p>
-          </div>
+          <p>Press a to add a tag</p>
+          <p>Press backspace to delete a tag and its children</p>
+        </div>
 
         <div className="tree-container flex grow-1 mt-4">
           <Tree
@@ -189,7 +187,7 @@ function TagView() {
                       onBlur={handleNameSave}
                       onKeyDown={(e) => e.key === "Enter" && e.target.blur()}
                       autoFocus
-                      maxLength={30}
+                      maxLength={45}
                       className="w-full p-2 border rounded-md"
                     />
                   ) : (
@@ -252,11 +250,11 @@ function TagView() {
             
           </Card>
         </div>
-          <div className="m-4"> 
-            <DataTable columns={columns(fetchStudyData)} data={tableData} />
-          </div>
+        <div> 
+          <DataTable columns={columns(fetchStudyData)} data={tableData} selectedTag={selectedNode?.data?.name} />
+        </div>
       </div>
-  </div>
+    </div>
   );
 }
 

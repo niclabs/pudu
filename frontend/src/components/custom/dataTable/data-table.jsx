@@ -43,9 +43,12 @@ function crossColumnAndFilter(row, columnId, filterValue, addMeta) {
   })
 }
 
-export function DataTable({ columns, data }) {
+export function DataTable({ columns, data, selectedTag = "" }) {
   const [sorting, setSorting] = useState([])
   const [globalFilter, setGlobalFilter] = useState("")
+
+  // If selectedTag is not empty, append it to the global filter
+  const combinedFilter = selectedTag ? `${globalFilter}, ${selectedTag}` : globalFilter
 
   const table = useReactTable({
     data,
@@ -60,7 +63,7 @@ export function DataTable({ columns, data }) {
     globalFilterFn: "crossColumnAnd",
     state: {
       sorting,
-      globalFilter,
+      globalFilter: combinedFilter, 
     },
     onGlobalFilterChange: setGlobalFilter,
   })
@@ -93,9 +96,9 @@ export function DataTable({ columns, data }) {
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="flex-grow">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id} className="whitespace-normal">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>
               ))

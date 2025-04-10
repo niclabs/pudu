@@ -7,7 +7,7 @@ import {
     // NavigationMenuTrigger,
   } from "@/components/ui/navigation-menu";
   import { Link } from "react-router-dom";
-  import pudu from "@/components/custom/pudulogo.png";
+  import pudu from "@/assets/pudulogo.png";
 
   export default function Navbar() {
     return (

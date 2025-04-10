@@ -16,7 +16,7 @@ class Study(models.Model):
     # timescited = models.IntegerField(default=0) # May not be too useful to consider
 
     def __str__(self):
-        return self.name
+        return self.title
 
 class Author(models.Model):
     id = models.AutoField(primary_key=True)

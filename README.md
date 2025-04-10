@@ -1,4 +1,4 @@
-<img src="frontend\src\components\custom\pudupurple.png" width="100">
+<img src="frontend\src\assets\pudupurple.png" width="100">
 
 # pudu: A Systematic Review Tool 
 

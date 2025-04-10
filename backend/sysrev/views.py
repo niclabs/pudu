@@ -190,7 +190,12 @@ class StudiesView(APIView):
     }
     '''
     def post(self, request):
-        serializer = StudySerializer(data=request.data)
+        data = request.data
+        if isinstance(data, list):
+            serializer = StudySerializer(data=data, many=True)
+        else:
+            serializer = StudySerializer(data=data)
+        
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -221,7 +226,13 @@ class AuthorsView(APIView):
     '''
 
     def post(self, request):
-        serializer = AuthorSerializer(data=request.data)
+
+        data = request.data
+        if isinstance(data, list):
+            serializer = AuthorSerializer(data=data, many=True)
+        else:
+            serializer = AuthorSerializer(data=data)
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
