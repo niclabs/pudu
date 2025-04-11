@@ -154,12 +154,12 @@ function TagView() {
           <p>Press backspace to delete a tag and its children</p>
         </div>
 
-        <div className="tree-container flex grow-1 mt-4">
+        <div className="tree-container flex-grow overflow-auto mt-4">
           <Tree
             data={tags}
             openByDefault={false}
             width={400}
-            height={screen.height - 350}
+            height={screen.height - 400}
             indent={24}
             rowHeight={40}
             onCreate={onCreate}
