@@ -78,8 +78,8 @@ export function DataTable({ columns, data, selectedTag = "" }) {
           className="max-w-sm"
         />
       </div>
-      <div className="rounded-md overflow-auto max-h-[calc(100vh-450px)]">
-        <Table className="min-w-full">
+    <div className="h-full max-h-full min-h-0 overflow-auto rounded-md">
+      <Table className="min-w-full">
           <TableHeader className="text-violet-900 sticky top-0">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>

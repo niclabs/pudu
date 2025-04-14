@@ -250,7 +250,7 @@ function TagView() {
             
           </Card>
         </div>
-        <div> 
+        <div className="h-[calc(100vh-400px)]">
           <DataTable columns={columns(fetchStudyData)} data={tableData} selectedTag={selectedNode?.data?.name} />
         </div>
       </div>
