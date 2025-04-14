@@ -26,14 +26,14 @@ import {
             <NavigationMenuItem>
               <NavigationMenuLink>
                 <Link to="/tags" 
-                className=" p-2 text-base font-medium hover:bg-violet-950 rounded-md">
+                className=" p-2 text-xl  hover:bg-violet-950 rounded-md">
                   Tag Management
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink>
-                <Link to="/studies" className=" p-2 text-base font-medium hover:bg-violet-950 rounded-md">
+                <Link to="/studies" className=" p-2 text-xl  hover:bg-violet-950 rounded-md">
                   Study Search
                 </Link>
               </NavigationMenuLink>

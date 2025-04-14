@@ -80,12 +80,12 @@ export function DataTable({ columns, data, selectedTag = "" }) {
       </div>
     <div className="h-full max-h-full min-h-0 overflow-auto rounded-md">
       <Table className="min-w-full">
-          <TableHeader className="text-violet-900 sticky top-0">
+          <TableHeader className="text-purple-950 sticky top-0">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead className="bg-violet-100 hover:bg-violet-200 sticky top-0" key={header.id}>
+                    <TableHead className="bg-violet-100 hover:bg-violet-200 sticky top-0 text-center" key={header.id}>
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   )

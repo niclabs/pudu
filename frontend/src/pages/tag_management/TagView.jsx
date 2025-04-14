@@ -173,7 +173,7 @@ function TagView() {
         </div>
       </div>
       {/*  Card and Table */}
-      <div className="m-4 flex-1/2">
+      <div className="p-4 flex-1/2">
         <div>
           <Card className="mx-auto shadow-lg rounded-xl w-full max-w-3xl h-75 border-slate-300 bg-slate-50">
             <CardHeader className="p-4 md:p-4">
