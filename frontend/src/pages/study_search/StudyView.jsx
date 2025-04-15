@@ -15,6 +15,14 @@ function StudyView() {
         console.log('exportable tag tree',data)
       };
 
+    const exportAuthors = async () => {
+        const response = await fetch("http://localhost:8000/api/authors/");
+        const data = await response.json();
+        const names = data.map(author => ({ name: author.name }));
+        console.log(names);
+};
+
+
     const fetchStudyData = async () => {
         const response = await fetch("http://localhost:8000/api/studies/");
         const data = await response.json();
@@ -33,7 +41,7 @@ function StudyView() {
     
       useEffect(() => {
         fetchStudyData();
-        exportTree();
+        exportAuthors();
     }, []);
 
     return (
