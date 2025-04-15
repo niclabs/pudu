@@ -41,17 +41,18 @@ class TagTreeView(APIView):
     def post(self, request):
         data = request.data
 
-        # Check if the request contains multiple tags (list of dicts)
-        if isinstance(data, list):
-            serializer = TagSerializer(data=data, many=True)
-        else:
-            serializer = TagSerializer(data=data)
+        # Normalize input to a list
+        if isinstance(data, dict):
+            data = [data]
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            for tag_tree in data:
+                TagTreeView.create_tag_from_tree(tag_tree)
+        except KeyError:
+            return Response({"error": "Each tag must include at least a 'name' field."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Tags created successfully."}, status=status.HTTP_201_CREATED)
 
     '''
     PUT moves a tag to a new parent tag.
@@ -145,6 +146,18 @@ class TagTreeView(APIView):
         tag.save()
 
         return Response({'message': 'Tag renamed successfully'}, status=status.HTTP_200_OK)
+    
+    #Aux function for bulk loading trees keeping parent-child relationships
+    def create_tag_from_tree(data, parent=None):
+        tag = Tag.objects.create(
+            name=data['name'],
+            description=data.get('description', ''),
+            parent_tag=parent
+        )
+
+        for child_data in data.get('children', []):
+            TagTreeView.create_tag_from_tree(child_data, parent=tag)
+
 
 class StudiesView(APIView):
     '''
