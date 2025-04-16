@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/custom/dataTable/data-table";
 import { columns } from "@/components/custom/dataTable/columns";
 import { Button } from "@/components/ui/button";
-import { AiOutlineDownload , AiOutlineUpload } from "react-icons/ai";
 import { Download, Upload, BookText } from "lucide-react"
 
 
