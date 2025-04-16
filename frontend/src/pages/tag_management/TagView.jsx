@@ -29,7 +29,6 @@ function TagView() {
     const response = await fetch("http://localhost:8000/api/tags/");
     const data = await response.json();
     setTags(data);
-    console.log(data)
   };
 
   const fetchStudyData = async () => {
@@ -141,7 +140,6 @@ function TagView() {
     fetchStudyData();
     fetchTagCount();
     setLoading(false);
-    console.log()
   }, []);
 
   if (loading) return <div>Loading tree...</div>;

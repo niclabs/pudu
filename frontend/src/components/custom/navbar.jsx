@@ -24,7 +24,7 @@ import {
             </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink asChild>
+              <NavigationMenuLink>
                 <Link to="/tags" 
                 className=" p-2 text-xl  hover:bg-violet-950 rounded-md">
                   Tag Management
@@ -32,7 +32,7 @@ import {
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink asChild>
+              <NavigationMenuLink>
                 <Link to="/studies" className=" p-2 text-xl  hover:bg-violet-950 rounded-md">
                   Study Search
                 </Link>

@@ -2,19 +2,13 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/custom/dataTable/data-table";
 import { columns } from "@/components/custom/dataTable/columns";
 import { Button } from "@/components/ui/button";
+import { AiOutlineDownload , AiOutlineUpload } from "react-icons/ai";
 import { Download, Upload, BookText } from "lucide-react"
 
 
 
 function StudyView() {
     const [tableData, setTableData] = useState([]);
-
-    const exportTree = async () => {
-        const response = await fetch("http://localhost:8000/api/tags/");
-        const data = await response.json();
-        delete data.id
-        console.log('a',data)
-      };
 
     const fetchStudyData = async () => {
         const response = await fetch("http://localhost:8000/api/studies/");
@@ -34,7 +28,6 @@ function StudyView() {
     
       useEffect(() => {
         fetchStudyData();
-        exportTree();
     }, []);
 
     return (
