@@ -13,7 +13,6 @@ import {
     DialogTrigger,
   } from "@/components/ui/dialog"
   import { Input } from "@/components/ui/input"
-  import { Label } from "@/components/ui/label"
 
 
 
@@ -45,17 +44,31 @@ function StudyView() {
 
     const handleImportSubmit = async () => {
         if (!importFile) {
-          return    
+            setImportFile(null)
+            return    
         }
     
-        // Simulate successful import
-        console.log('importini!')
-        setImportOpen(false)
+        try {
+            const fileText = await importFile.text(); // Read the file as text
+            const jsonData = JSON.parse(fileText);    // Parse JSON content
+            console.log("Imported JSON Data:", jsonData);
+        
+            // Todo: Send jsonData to your backend API
+            
+          } catch (error) {
+            console.error("Failed to read or parse the file:", error);
+
+          }
+            setImportFile(null)
+            setImportOpen(false)
       }
 
       const handleExportSubmit = async () => {
         // Simulate successful export
         console.log('exportini')
+        const response = await fetch("http://localhost:8000/api/export/");
+        const data = await response.json();
+        console.log('exported', data)
         setExportOpen(false)
       }
 
