@@ -5,3 +5,5 @@
 /venv
 /backend/backend/__pycache__
 /backend/sysrev/__pycache__
+*.pyc
+*.pyc
