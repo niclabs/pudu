@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Button } from "../../components/ui/button";
+import { Tag, Trash2 }  from "lucide-react"
 import { Tree } from "react-arborist";
 import Node from "./Node";
 import { createTag, deleteTag, editTagName, editTagDescription, moveTag } from "./tagApi";
@@ -147,11 +149,19 @@ function TagView() {
   return (
     <div className="flex flex-row w-full h-full bg-violet-50">
       {/* Tree */}
-      <div className=" m-4 p-4 tree-component  flex-1 bg-indigo-100 rounded-xl shadow-lg">
-        <div className="demo-instructions">
-          <h1 className="text-2xl font-bold">Tag Manager</h1>
-          <p>Press a to add a tag</p>
-          <p>Press backspace to delete a tag and its children</p>
+      <div className="m-4 p-4 tree-component flex-1 bg-indigo-100 rounded-xl shadow-lg relative">
+        <div className="flex justify-between items-start">
+          <div className="demo-instructions">
+            <h1 className="text-2xl font-bold">Tag Manager</h1>
+          </div>
+          <div className="flex space-x-2">
+            <Button onClick={onCreate} className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950 flex">
+              <Tag className="" /> Add Tag
+            </Button>
+            <Button onClick={onDelete} className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950 flex">
+              <Trash2 className="" /> Delete Tag
+            </Button>
+          </div>
         </div>
 
         <div className="tree-container flex-grow overflow-auto mt-4">
