@@ -2,12 +2,26 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/custom/dataTable/data-table";
 import { columns } from "@/components/custom/dataTable/columns";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, BookText } from "lucide-react"
+import { Download, Upload, BookText, FileUp } from "lucide-react"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+  } from "@/components/ui/dialog"
+  import { Input } from "@/components/ui/input"
+  import { Label } from "@/components/ui/label"
 
 
 
 function StudyView() {
     const [tableData, setTableData] = useState([]);
+    const [importOpen, setImportOpen] = useState(false)
+    const [exportOpen, setExportOpen] = useState(false)
+    const [importFile, setImportFile] = useState(null)
 
     const fetchStudyData = async () => {
         const response = await fetch("http://localhost:8000/api/studies/");
@@ -29,22 +43,106 @@ function StudyView() {
         fetchStudyData();
     }, []);
 
-    return (
-        <div className="flex flex-col w-full h-full p-4 bg-violet-50">
-            <div>
-                <Button className="bg-violet-900 text-violet-50 font-bold text-xl m-4 p-6 hover:bg-violet-950">
-                   <BookText className="mr-2"/> Create Study
+    const handleImportSubmit = async () => {
+        if (!importFile) {
+          return    
+        }
+    
+        // Simulate successful import
+        console.log('importini!')
+        setImportOpen(false)
+      }
+
+      const handleExportSubmit = async () => {
+        // Simulate successful export
+        console.log('exportini')
+        setExportOpen(false)
+      }
+
+      return (
+        <div className="flex flex-col w-full h-full p-4 bg-violet-50 min-h-screen">
+          <h1 className="text-2xl font-bold text-violet-900 mb-6">Study Management</h1>
+    
+          <div className="flex flex-wrap gap-4">
+            <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
+              <BookText className="mr-2" /> Create Study
+            </Button>
+    
+            <Dialog open={importOpen} onOpenChange={setImportOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
+                  <Upload className="mr-2" /> Import Studies
                 </Button>
-                <Button className="bg-violet-900 text-violet-50 font-bold text-xl m-4 p-6 hover:bg-violet-950">
-                    <Upload className="mr-2" /> Import Studies
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] bg-violet-50">
+                <DialogHeader>
+                  <DialogTitle>Import Studies</DialogTitle>
+                  <DialogDescription>Upload a JSON file to import studies, tags and authors.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <div className="col-span-4 bg-white">
+                      <Input
+                        id="file-upload"
+                        type="file"
+                        accept=".json"
+                        onChange={(e) => setImportFile(e.target.files[0])}
+                        className="cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                  {importFile && (
+                    <div className="flex items-center gap-2 text-sm text-violet-700">
+                      <FileUp size={16} />
+                      <span>{importFile.name}</span>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setImportOpen(false)}
+                    className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleImportSubmit} className="bg-violet-900 text-violet-50 hover:bg-violet-950">
+                    Import
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+    
+            <Dialog open={exportOpen} onOpenChange={setExportOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-violet-900 text-violet-50 text-xl font-bold p-6 hover:bg-violet-950">
+                  <Download className="mr-2" /> Export Studies
                 </Button>
-                <Button className="bg-violet-900 text-violet-50 text-xl font-bold m-4 p-6 hover:bg-violet-950">
-                    <Download className="mr-2" /> Export Studies
-                </Button>
-            </div>
-            <div className="h-[calc(100vh-100px)] m-4">
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] bg-violet-50">
+                <DialogHeader>
+                  <DialogTitle>Export Studies</DialogTitle>
+                  <DialogDescription>Download a JSON file with data on authors, tags and studies for this review.</DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setExportOpen(false)}
+                    className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleExportSubmit} className="bg-violet-900 text-violet-50 hover:bg-violet-950">
+                    Export
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+            <div className="h-[calc(100vh-200px)] m-4">
                 <DataTable columns={columns(fetchStudyData)} data={tableData} />
             </div>
+            
         </div>
     )
 }
