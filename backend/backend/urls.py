@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from sysrev.views import TagTreeView, StudiesView, AuthorsView, tag_study_counts
+from sysrev.views import TagTreeView, StudiesView, AuthorsView, tag_study_counts, ReviewExportView, ReviewImportView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,4 +27,6 @@ urlpatterns = [
     path('api/tags/count/', tag_study_counts, name='tag-study-counts'),
     path('api/authors/', AuthorsView.as_view(), name='author-list'),
     path('api/authors/<int:author_id>/', AuthorsView.as_view(), name='author-detail'),
+    path('export-review/', ReviewExportView.as_view(), name='export-review'),
+    path('import-review/', ReviewImportView.as_view(), name='import-review'),
 ]
