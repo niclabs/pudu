@@ -15,26 +15,16 @@ class TagTreeView(APIView):
         GET retrieves the tag tree or a specific tag by ID.
     '''
     def get(self, request, tag_id=None):
-        exporting = request.query_params.get('export', False)
-        # remove IDs for exporting
-        def strip_ids(node):
-            node.pop('id', None)
-            for child in node.get('children', []):
-                strip_ids(child)
-            return node
-
         if tag_id:
             try:
                 tag = Tag.objects.get(id=tag_id)
                 return Response(tag.get_tree(), status=status.HTTP_200_OK)
             except Tag.DoesNotExist:
                 return Response({'error': 'Tag not found.'}, status=status.HTTP_404_NOT_FOUND)
-            
-        root_tags = Tag.objects.filter(parent_tag__isnull=True)
-        tree = [tag.get_tree() for tag in root_tags]
-        if exporting:
-            tree = [strip_ids(tag_tree) for tag_tree in tree]
-        return Response(tree, status=status.HTTP_200_OK)
+        else:
+            root_tags = Tag.objects.filter(parent_tag__isnull=True)
+            tree = [tag.get_tree() for tag in root_tags]
+            return Response(tree, status=status.HTTP_200_OK)
         
         
     '''

@@ -10,9 +10,10 @@ function StudyView() {
     const [tableData, setTableData] = useState([]);
 
     const exportTree = async () => {
-        const response = await fetch("http://localhost:8000/api/tags/?export=true");
+        const response = await fetch("http://localhost:8000/api/tags/");
         const data = await response.json();
-        console.log('exportable tag tree',data)
+        delete data.id
+        console.log('a',data)
       };
 
     const fetchStudyData = async () => {
