@@ -180,7 +180,7 @@ class StudiesView(APIView):
     "year": 2023,
     "summary": "This is a summary of the study.",
     "abstract": "This is an abstract of the study.",
-    "categorized": true,
+    "flags": ["Pending Review"]
     "tags": [1, 2],
     "authors": [1, 2],
     "doi": "10.1234/abcd",
@@ -271,7 +271,7 @@ class ReviewExportView(APIView):
                 "year": study.year,
                 "summary": study.summary,
                 "abstract": study.abstract,
-                "categorized": study.categorized,
+                "flags": study.flags,
                 "tags": [tag.name for tag in study.tags.all()],
                 "authors": [author.name for author in study.authors.all()],
                 "doi": study.doi,
@@ -514,208 +514,208 @@ class ReviewImportView(APIView):
         }
     ],
     "studies": [
-        {
-            "title": "Exploring Machine Learning in Healthcare",
-            "year": 2023,
-            "summary": "This study explores the application of machine learning in healthcare, focusing on supervised learning.",
-            "abstract": "The paper delves into the role of supervised learning in healthcare, particularly in disease prediction and diagnosis.",
-            "categorized": true,
-            "tags": [
-                "Machine Learning in Healthcare",
-                "Supervised Learning"
-            ],
-            "authors": [
-                "Gordon Freeman",
-                "Tony Mamamia"
-            ],
-            "doi": "10.1234/ai.healthcare.2023",
-            "url": "http://example.com/study1",
-            "pages": "1-10"
-        },
-        {
-            "title": "Unsupervised Learning Techniques in Medical Imaging",
-            "year": 2022,
-            "summary": "Unsupervised learning methods for image classification in medical diagnostics.",
-            "abstract": "This study highlights how unsupervised learning algorithms can be utilized for improving medical imaging diagnostics.",
-            "categorized": true,
-            "tags": [
-                "Machine Learning in Healthcare",
-                "Unsupervised Learning"
-            ],
-            "authors": [
-                "Alice Smith",
-                "Baby Yoda"
-            ],
-            "doi": "10.1234/ai.medical.2022",
-            "url": "http://example.com/study2",
-            "pages": "11-20"
-        },
-        {
-            "title": "Reinforcement Learning for Optimizing Healthcare Decisions",
-            "year": 2023,
-            "summary": "The potential of reinforcement learning to improve decision-making processes in healthcare systems.",
-            "abstract": "This paper investigates the integration of reinforcement learning techniques in healthcare decision support systems.",
-            "categorized": true,
-            "tags": [
-                "Machine Learning in Healthcare",
-                "Reinforcement Learning"
-            ],
-            "authors": [
-                "Don Cheadle",
-                "Morton Devries"
-            ],
-            "doi": "10.1234/rl.healthcare.2023",
-            "url": "http://example.com/study3",
-            "pages": "21-30"
-        },
-        {
-            "title": "Explainability in Healthcare Machine Learning Models",
-            "year": 2024,
-            "summary": "A deep dive into the importance of explainability and interpretability in healthcare AI models.",
-            "abstract": "The study examines methods for enhancing the transparency of AI-based systems used in healthcare.",
-            "categorized": true,
-            "tags": [
-                "Explainability & Interpretability"
-            ],
-            "authors": [
-                "Brukan Silverhorn",
-                "Bird Johnson"
-            ],
-            "doi": "10.1234/explainability.ai.2024",
-            "url": "http://example.com/study4",
-            "pages": "31-40"
-        },
-        {
-            "title": "Bias & Fairness in Healthcare AI Algorithms",
-            "year": 2024,
-            "summary": "Investigating the presence of biases in healthcare AI systems and their impact on patient outcomes.",
-            "abstract": "This paper explores the issues of fairness and bias in machine learning algorithms used in healthcare.",
-            "categorized": true,
-            "tags": [
-                "Bias & Fairness"
-            ],
-            "authors": [
-                "Gabriel Borinc",
-                "Johan Cleric"
-            ],
-            "doi": "10.1234/bias.fairness.2024",
-            "url": "http://example.com/study5",
-            "pages": "41-50"
-        },
-        {
-            "title": "Peer-Reviewed Papers in Healthcare AI",
-            "year": 2021,
-            "summary": "An analysis of peer-reviewed studies in healthcare AI and their impact on the field.",
-            "abstract": "This paper reviews the most influential peer-reviewed studies in healthcare AI, with a focus on diagnostic applications.",
-            "categorized": true,
-            "tags": [
-                "Study Characteristics",
-                "Peer-Reviewed"
-            ],
-            "authors": [
-                "Dr Magnuson",
-                "Alyx Vance"
-            ],
-            "doi": "10.1234/peerreviewed.healthcare.2021",
-            "url": "http://example.com/study6",
-            "pages": "51-60"
-        },
-        {
-            "title": "Preprint Papers on Healthcare AI",
-            "year": 2022,
-            "summary": "This paper analyzes the growing role of preprint papers in healthcare AI research.",
-            "abstract": "Focusing on the significance of preprints, this paper discusses their importance in rapid healthcare AI advancements.",
-            "categorized": true,
-            "tags": [
-                "Study Characteristics",
-                "Preprint"
-            ],
-            "authors": [
-                "Cherished Mathew",
-                "Panini Cat"
-            ],
-            "doi": "10.1234/preprint.healthcare.2022",
-            "url": "http://example.com/study7",
-            "pages": "61-70"
-        },
-        {
-            "title": "Journal Publications on Healthcare AI",
-            "year": 2023,
-            "summary": "The role of journal publications in shaping the future of AI in healthcare.",
-            "abstract": "This study examines journal publications in the field of healthcare AI and their influence on medical research and practice.",
-            "categorized": true,
-            "tags": [
-                "Study Characteristics",
-                "Published in Journal"
-            ],
-            "authors": [
-                "Gordon Freeman",
-                "Menjunje Cat"
-            ],
-            "doi": "10.1234/journal.healthcare.2023",
-            "url": "http://example.com/study8",
-            "pages": "71-80"
-        },
-        {
-            "title": "Conference Publications on Healthcare AI",
-            "year": 2021,
-            "summary": "A review of key conference publications in healthcare AI, focusing on real-world applications.",
-            "abstract": "This paper provides an overview of conference papers related to healthcare AI and their practical implementations.",
-            "categorized": true,
-            "tags": [
-                "Study Characteristics",
-                "Published in Conference"
-            ],
-            "authors": [
-                "Tony Mamamia",
-                "Baby Yoda"
-            ],
-            "doi": "10.1234/conference.healthcare.2021",
-            "url": "http://example.com/study9",
-            "pages": "81-90"
-        },
-        {
-            "title": "Real-World Testing of Healthcare AI Models",
-            "year": 2024,
-            "summary": "Exploring the role of real-world testing in healthcare AI and its impact on model performance.",
-            "abstract": "The paper discusses the importance of testing AI models in real-world healthcare environments.",
-            "categorized": true,
-            "tags": [
-                "Evaluation",
-                "Real-World Testing"
-            ],
-            "authors": [
-                "Don Cheadle",
-                "Morton Devries"
-            ],
-            "doi": "10.1234/realworld.healthcare.2024",
-            "url": "http://example.com/study10",
-            "pages": "91-100"
-        },
-        {
-            "title": "Advanced Techniques in Healthcare AI",
-            "year": 2024,
-            "summary": "This study explores various advanced machine learning techniques for healthcare applications, covering supervised, unsupervised, and reinforcement learning, as well as considerations of fairness and bias.",
-            "abstract": "The paper investigates the impact of advanced AI techniques such as supervised, unsupervised, and reinforcement learning in healthcare. It also addresses the challenges of fairness and bias in AI-driven healthcare solutions.",
-            "categorized": true,
-            "tags": [
-                "Machine Learning in Healthcare",
-                "Supervised Learning",
-                "Unsupervised Learning",
-                "Bias & Fairness",
-                "Real-World Testing"
-            ],
-            "authors": [
-                "Gordon Freeman",
-                "Tony Mamamia",
-                "Alice Smith",
-                "Baby Yoda",
-                "Don Cheadle"
-            ],
-            "doi": "10.1234/advanced.ai.healthcare.2024",
-            "url": "http://example.com/advanced-healthcare-ai",
-            "pages": "1-20"
-        }
-    ]
+    {
+        "title": "Exploring Machine Learning in Healthcare",
+        "year": 2023,
+        "summary": "This study explores the application of machine learning in healthcare, focusing on supervised learning.",
+        "abstract": "The paper delves into the role of supervised learning in healthcare, particularly in disease prediction and diagnosis.",
+        "flags": ["Reviewed"],
+        "tags": [
+            "Machine Learning in Healthcare",
+            "Supervised Learning"
+        ],
+        "authors": [
+            "Gordon Freeman",
+            "Tony Mamamia"
+        ],
+        "doi": "10.1234/ai.healthcare.2023",
+        "url": "http://example.com/study1",
+        "pages": "1-10"
+    },
+    {
+        "title": "Unsupervised Learning Techniques in Medical Imaging",
+        "year": 2022,
+        "summary": "Unsupervised learning methods for image classification in medical diagnostics.",
+        "abstract": "This study highlights how unsupervised learning algorithms can be utilized for improving medical imaging diagnostics.",
+        "flags": ["Pending Review"],
+        "tags": [
+            "Machine Learning in Healthcare",
+            "Unsupervised Learning"
+        ],
+        "authors": [
+            "Alice Smith",
+            "Baby Yoda"
+        ],
+        "doi": "10.1234/ai.medical.2022",
+        "url": "http://example.com/study2",
+        "pages": "11-20"
+    },
+    {
+        "title": "Reinforcement Learning for Optimizing Healthcare Decisions",
+        "year": 2023,
+        "summary": "The potential of reinforcement learning to improve decision-making processes in healthcare systems.",
+        "abstract": "This paper investigates the integration of reinforcement learning techniques in healthcare decision support systems.",
+        "flags": ["Missing Data", "Flagged"],
+        "tags": [
+            "Machine Learning in Healthcare",
+            "Reinforcement Learning"
+        ],
+        "authors": [
+            "Don Cheadle",
+            "Morton Devries"
+        ],
+        "doi": "10.1234/rl.healthcare.2023",
+        "url": "http://example.com/study3",
+        "pages": "21-30"
+    },
+    {
+        "title": "Explainability in Healthcare Machine Learning Models",
+        "year": 2024,
+        "summary": "A deep dive into the importance of explainability and interpretability in healthcare AI models.",
+        "abstract": "The study examines methods for enhancing the transparency of AI-based systems used in healthcare.",
+        "flags": ["Reviewed"],
+        "tags": [
+            "Explainability & Interpretability"
+        ],
+        "authors": [
+            "Brukan Silverhorn",
+            "Bird Johnson"
+        ],
+        "doi": "10.1234/explainability.ai.2024",
+        "url": "http://example.com/study4",
+        "pages": "31-40"
+    },
+    {
+        "title": "Bias & Fairness in Healthcare AI Algorithms",
+        "year": 2024,
+        "summary": "Investigating the presence of biases in healthcare AI systems and their impact on patient outcomes.",
+        "abstract": "This paper explores the issues of fairness and bias in machine learning algorithms used in healthcare.",
+        "flags": ["Reviewed"],
+        "tags": [
+            "Bias & Fairness"
+        ],
+        "authors": [
+            "Gabriel Borinc",
+            "Johan Cleric"
+        ],
+        "doi": "10.1234/bias.fairness.2024",
+        "url": "http://example.com/study5",
+        "pages": "41-50"
+    },
+    {
+        "title": "Peer-Reviewed Papers in Healthcare AI",
+        "year": 2021,
+        "summary": "An analysis of peer-reviewed studies in healthcare AI and their impact on the field.",
+        "abstract": "This paper reviews the most influential peer-reviewed studies in healthcare AI, with a focus on diagnostic applications.",
+        "flags": ["Pending Review"],
+        "tags": [
+            "Study Characteristics",
+            "Peer-Reviewed"
+        ],
+        "authors": [
+            "Dr Magnuson",
+            "Alyx Vance"
+        ],
+        "doi": "10.1234/peerreviewed.healthcare.2021",
+        "url": "http://example.com/study6",
+        "pages": "51-60"
+    },
+    {
+        "title": "Preprint Papers on Healthcare AI",
+        "year": 2022,
+        "summary": "This paper analyzes the growing role of preprint papers in healthcare AI research.",
+        "abstract": "Focusing on the significance of preprints, this paper discusses their importance in rapid healthcare AI advancements.",
+        "flags": ["Missing Data"],
+        "tags": [
+            "Study Characteristics",
+            "Preprint"
+        ],
+        "authors": [
+            "Cherished Mathew",
+            "Panini Cat"
+        ],
+        "doi": "10.1234/preprint.healthcare.2022",
+        "url": "http://example.com/study7",
+        "pages": "61-70"
+    },
+    {
+        "title": "Journal Publications on Healthcare AI",
+        "year": 2023,
+        "summary": "The role of journal publications in shaping the future of AI in healthcare.",
+        "abstract": "This study examines journal publications in the field of healthcare AI and their influence on medical research and practice.",
+        "flags": ["Reviewed"],
+        "tags": [
+            "Study Characteristics",
+            "Published in Journal"
+        ],
+        "authors": [
+            "Gordon Freeman",
+            "Menjunje Cat"
+        ],
+        "doi": "10.1234/journal.healthcare.2023",
+        "url": "http://example.com/study8",
+        "pages": "71-80"
+    },
+    {
+        "title": "Conference Publications on Healthcare AI",
+        "year": 2021,
+        "summary": "A review of key conference publications in healthcare AI, focusing on real-world applications.",
+        "abstract": "This paper provides an overview of conference papers related to healthcare AI and their practical implementations.",
+        "flags": ["Pending Review"],
+        "tags": [
+            "Study Characteristics",
+            "Published in Conference"
+        ],
+        "authors": [
+            "Tony Mamamia",
+            "Baby Yoda"
+        ],
+        "doi": "10.1234/conference.healthcare.2021",
+        "url": "http://example.com/study9",
+        "pages": "81-90"
+    },
+    {
+        "title": "Real-World Testing of Healthcare AI Models",
+        "year": 2024,
+        "summary": "Exploring the role of real-world testing in healthcare AI and its impact on model performance.",
+        "abstract": "The paper discusses the importance of testing AI models in real-world healthcare environments.",
+        "flags": ["Reviewed", "Flagged"],
+        "tags": [
+            "Evaluation",
+            "Real-World Testing"
+        ],
+        "authors": [
+            "Don Cheadle",
+            "Morton Devries"
+        ],
+        "doi": "10.1234/realworld.healthcare.2024",
+        "url": "http://example.com/study10",
+        "pages": "91-100"
+    },
+    {
+        "title": "Advanced Techniques in Healthcare AI",
+        "year": 2024,
+        "summary": "This study explores various advanced machine learning techniques for healthcare applications, covering supervised, unsupervised, and reinforcement learning, as well as considerations of fairness and bias.",
+        "abstract": "The paper investigates the impact of advanced AI techniques such as supervised, unsupervised, and reinforcement learning in healthcare. It also addresses the challenges of fairness and bias in AI-driven healthcare solutions.",
+        "flags": ["Reviewed"],
+        "tags": [
+            "Machine Learning in Healthcare",
+            "Supervised Learning",
+            "Unsupervised Learning",
+            "Bias & Fairness",
+            "Real-World Testing"
+        ],
+        "authors": [
+            "Gordon Freeman",
+            "Tony Mamamia",
+            "Alice Smith",
+            "Baby Yoda",
+            "Don Cheadle"
+        ],
+        "doi": "10.1234/advanced.ai.healthcare.2024",
+        "url": "http://example.com/advanced-healthcare-ai",
+        "pages": "1-20"
+    }
+]
 }
     '''

@@ -42,7 +42,7 @@ function TagView() {
       title: study.title,
       year: study.year,
       authors: study.authors_display.join(", "),
-      categorized: study.categorized ? "Yes" : "No",
+      flags: study.flags,
       tags: study.tags_display.map((tag) => tag.name).join(", "),
     }));
     setTableData(refineTable);

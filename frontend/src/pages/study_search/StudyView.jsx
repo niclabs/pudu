@@ -31,7 +31,7 @@ function StudyView() {
           title: study.title,
           year: study.year,
           authors: study.authors_display.join(", "),
-          categorized: study.categorized ? "Yes" : "No",
+          flags: study.flags,
           tags: study.tags_display.map((tag) => tag.name).join(", "),
         }));
         setTableData(refineTable);
@@ -75,89 +75,108 @@ function StudyView() {
       return (
         <div className="flex flex-col w-full h-full p-4 bg-violet-50 min-h-screen">
           <h1 className="text-2xl font-bold mb-6">Study Manager</h1>
-    
-          <div className="flex flex-wrap gap-4">
-            <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
-              <BookText className="mr-2" /> Create Study
-            </Button>
-    
-            <Dialog open={importOpen} onOpenChange={setImportOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
-                  <Upload className="mr-2" /> Import Studies
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] bg-violet-50">
-                <DialogHeader>
-                  <DialogTitle>Import Studies</DialogTitle>
-                  <DialogDescription>Upload a JSON file to import studies, tags and authors.</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <div className="col-span-4 bg-white">
-                      <Input
-                        id="file-upload"
-                        type="file"
-                        accept=".json"
-                        onChange={(e) => setImportFile(e.target.files[0])}
-                        className="cursor-pointer"
-                      />
-                    </div>
-                  </div>
-                  {importFile && (
-                    <div className="flex items-center gap-2 text-sm text-violet-700">
-                      <FileUp size={16} />
-                      <span>{importFile.name}</span>
-                    </div>
-                  )}
-                </div>
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setImportOpen(false)}
-                    className="border-violet-700 text-violet-700 hover:bg-violet-100"
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleImportSubmit} className="bg-violet-900 text-violet-50 hover:bg-violet-950">
-                    Import
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-    
-            <Dialog open={exportOpen} onOpenChange={setExportOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-violet-900 text-violet-50 text-xl font-bold p-6 hover:bg-violet-950">
-                  <Download className="mr-2" /> Export Studies
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] bg-violet-50">
-                <DialogHeader>
-                  <DialogTitle>Export Studies</DialogTitle>
-                  <DialogDescription>Download a JSON file with data on authors, tags and studies for this review.</DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => setExportOpen(false)}
-                    className="border-violet-700 text-violet-700 hover:bg-violet-100"
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleExportSubmit} className="bg-violet-900 text-violet-50 hover:bg-violet-950">
-                    Export
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-            <div className="h-[calc(100vh-200px)] m-4">
-                <DataTable columns={columns(fetchStudyData)} data={tableData} />
+          <div className="flex justify-between items-start mb-6">
+            {/* Colored status buttons on the left */}
+            <div className="flex flex-wrap gap-4">
+              <Button className="bg-emerald-400 text-violet-50 font-bold text-xl p-6 hover:bg-emerald-500">
+                <BookText className="mr-2" /> Reviewed
+              </Button>
+              <Button className="bg-amber-400 text-violet-50 font-bold text-xl p-6 hover:bg-amber-500">
+                <BookText className="mr-2" /> Pending Review
+              </Button>
+              <Button className="bg-red-400 text-violet-50 font-bold text-xl p-6 hover:bg-red-500">
+                <BookText className="mr-2" /> Missing Data
+              </Button>
+              <Button className="bg-orange-400 text-violet-50 font-bold text-xl p-6 hover:bg-orange-500">
+                <BookText className="mr-2" /> Flagged
+              </Button>
             </div>
-            
+    
+            {/* Violet action buttons on the right */}
+            <div className="flex flex-wrap gap-4">
+              <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
+                <BookText className="mr-2" /> Create Study
+              </Button>
+    
+              <Dialog open={importOpen} onOpenChange={setImportOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
+                    <Upload className="mr-2" /> Import Studies
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] bg-violet-50">
+                  <DialogHeader>
+                    <DialogTitle>Import Studies</DialogTitle>
+                    <DialogDescription>Upload a JSON file to import studies, tags and authors.</DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <div className="col-span-4 bg-white">
+                        <Input
+                          id="file-upload"
+                          type="file"
+                          accept=".json"
+                          onChange={(e) => setImportFile(e.target.files[0])}
+                          className="cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                    {importFile && (
+                      <div className="flex items-center gap-2 text-sm text-violet-700">
+                        <FileUp size={16} />
+                        <span>{importFile.name}</span>
+                      </div>
+                    )}
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setImportOpen(false)}
+                      className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleImportSubmit} className="bg-violet-900 text-violet-50 hover:bg-violet-950">
+                      Import
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+    
+              <Dialog open={exportOpen} onOpenChange={setExportOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-violet-900 text-violet-50 text-xl font-bold p-6 hover:bg-violet-950">
+                    <Download className="mr-2" /> Export Studies
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] bg-violet-50">
+                  <DialogHeader>
+                    <DialogTitle>Export Studies</DialogTitle>
+                    <DialogDescription>
+                      Download a JSON file with data on authors, tags and studies for this review.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setExportOpen(false)}
+                      className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleExportSubmit} className="bg-violet-900 text-violet-50 hover:bg-violet-950">
+                      Export
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+          <div className="h-[calc(100vh-200px)] m-4">
+            <DataTable columns={columns(fetchStudyData)} data={tableData} />
+          </div>
         </div>
-    )
-}
-
-export default StudyView;
+      )
+    }
+    
+    export default StudyView

@@ -6,7 +6,7 @@ class Study(models.Model):
     year = models.IntegerField(blank=True, null=True)
     summary = models.TextField(blank=True)
     abstract = models.TextField(blank=True)
-    categorized = models.BooleanField(default=False)
+    flags = models.JSONField(default=list, blank=True)
     tags = models.ManyToManyField('Tag', blank=True, related_name='studies')
     authors = models.ManyToManyField('Author', blank=True, related_name='studies')
     doi = models.CharField(max_length=255, blank=True)

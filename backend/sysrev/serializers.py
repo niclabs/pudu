@@ -26,7 +26,17 @@ class StudySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Study
-        fields = ['id', 'title', 'year', 'summary', 'abstract', 'categorized', 'tags', 'tags_display', 'authors', 'authors_display', 'doi', 'url', 'pages', 'pathto_pdf']
+        fields = ['id', 'title', 'year', 'summary', 'abstract', 'flags', 'tags', 'tags_display', 'authors', 'authors_display', 'doi', 'url', 'pages', 'pathto_pdf']
+
+    VALID_FLAGS = {"Reviewed", "Pending Review", "Missing Data", "Flagged"}
+
+    def validate_flags(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Flags must be a list.")
+        invalid = [flag for flag in value if flag not in self.VALID_FLAGS]
+        if invalid:
+            raise serializers.ValidationError(f"Invalid flag(s): {', '.join(invalid)}")
+        return value
 
 class AuthorSerializer(serializers.ModelSerializer):
     studies = StudySerializer(many=True, read_only=True)

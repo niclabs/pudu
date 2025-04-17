@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 import {
     DropdownMenu,
@@ -56,18 +57,53 @@ export const columns = (fetchStudyData) => [
         header: "Authors",      
     },
     {
-        accessorKey: "categorized", 
-        header: ({ column }) => {
-            return (
-            <Button
-                variant="ghost"
-                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            >
-              Categorized
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          );
-        },     
+      accessorKey: "flags",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Status
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        )
+      },
+      filterFn: (row, columnId, filterValue) => {
+        const cellValue = row.getValue(columnId);
+        if (!Array.isArray(cellValue)) return false;
+    
+        const filters = Array.isArray(filterValue) ? filterValue : [filterValue];
+        return filters.some((f) => cellValue.includes(f));
+      },
+      cell: ({ row }) => {
+        const categorizedFlags = row.original.flags;
+    
+        return (
+          <div className="flex gap-2 text-violet-50">
+            {Array.isArray(categorizedFlags) && categorizedFlags.length > 0
+              ? categorizedFlags.map((flag, index) => (
+                  <Badge 
+                    key={index} 
+                    className={`px-2 py-1 text-sm font-semibold rounded-b-md ${
+                      flag === "Reviewed"
+                        ? "bg-emerald-400"
+                        : flag === "Pending Review"
+                          ? "bg-amber-400"
+                          : flag === "Flagged"
+                            ? "bg-orange-400"
+                            : flag === "Missing Data"
+                              ? "bg-red-400"
+                              : "bg-gray-400 hover:bg-gray-500"
+                    }`}
+                  >
+                    {flag}
+                  </Badge>
+                ))
+              : "No Status"}
+          </div>
+        );
+      },
     },
     {
         accessorKey: "tags", 
