@@ -21,6 +21,7 @@ function StudyView() {
     const [importOpen, setImportOpen] = useState(false)
     const [exportOpen, setExportOpen] = useState(false)
     const [importFile, setImportFile] = useState(null)
+    const [filterBy, setFilterBy] = useState(null)
 
     const fetchStudyData = async () => {
         const response = await fetch("http://localhost:8000/api/studies/");
@@ -76,23 +77,34 @@ function StudyView() {
         <div className="flex flex-col w-full h-full p-4 bg-violet-50 min-h-screen">
           <h1 className="text-2xl font-bold mb-6">Study Manager</h1>
           <div className="flex justify-between items-start mb-6">
-            {/* Colored status buttons on the left */}
-            <div className="flex flex-wrap gap-4">
-              <Button className="bg-emerald-400 text-violet-50 font-bold text-xl p-6 hover:bg-emerald-500">
-                <BookText className="mr-2" /> Reviewed
-              </Button>
-              <Button className="bg-amber-400 text-violet-50 font-bold text-xl p-6 hover:bg-amber-500">
-                <BookText className="mr-2" /> Pending Review
-              </Button>
-              <Button className="bg-red-400 text-violet-50 font-bold text-xl p-6 hover:bg-red-500">
-                <BookText className="mr-2" /> Missing Data
-              </Button>
-              <Button className="bg-orange-400 text-violet-50 font-bold text-xl p-6 hover:bg-orange-500">
-                <BookText className="mr-2" /> Flagged
-              </Button>
-            </div>
-    
-            {/* Violet action buttons on the right */}
+                  <div className="flex flex-wrap gap-4">
+                    <Button
+                    className="bg-emerald-400 text-violet-50 font-bold text-xl p-6 hover:bg-emerald-500"
+                    onClick={() => setFilterBy("Reviewed")}
+                    >
+                    <BookText className="mr-2" /> Reviewed
+                    </Button>
+                    <Button
+                    className="bg-amber-400 text-violet-50 font-bold text-xl p-6 hover:bg-amber-500"
+                    onClick={() => setFilterBy("Pending Review")}
+                    >
+                    <BookText className="mr-2" /> Pending Review
+                    </Button>
+                    <Button
+                    className="bg-red-400 text-violet-50 font-bold text-xl p-6 hover:bg-red-500"
+                    onClick={() => setFilterBy("Missing Data")}
+                    >
+                    <BookText className="mr-2" /> Missing Data
+                    </Button>
+                    <Button
+                    className="bg-orange-400 text-violet-50 font-bold text-xl p-6 hover:bg-orange-500"
+                    onClick={() => setFilterBy("Flagged")}
+                    >
+                    <BookText className="mr-2" /> Flagged
+                    </Button>
+                  </div>
+              
+                  {/* Violet action buttons on the right */}
             <div className="flex flex-wrap gap-4">
               <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
                 <BookText className="mr-2" /> Create Study
@@ -173,7 +185,7 @@ function StudyView() {
             </div>
           </div>
           <div className="h-[calc(100vh-200px)] m-4">
-            <DataTable columns={columns(fetchStudyData)} data={tableData} />
+            <DataTable columns={columns(fetchStudyData)} data={tableData} filterBy={filterBy} />
           </div>
         </div>
       )

@@ -603,7 +603,7 @@ class ReviewImportView(APIView):
         "pages": "41-50"
     },
     {
-        "title": "Peer-Reviewed Papers in Healthcare AI",
+        "title": "Papers in Healthcare AI",
         "year": 2021,
         "summary": "An analysis of peer-reviewed studies in healthcare AI and their impact on the field.",
         "abstract": "This paper reviews the most influential peer-reviewed studies in healthcare AI, with a focus on diagnostic applications.",

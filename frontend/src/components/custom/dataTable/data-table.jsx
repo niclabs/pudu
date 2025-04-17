@@ -43,16 +43,17 @@ function crossColumnAndFilter(row, columnId, filterValue, addMeta) {
   })
 }
 
-export function DataTable({ columns, data, selectedTag = "" }) {
+export function DataTable({ columns, data, selectedTag = "",filterBy =""}) {
   const [sorting, setSorting] = useState([{
     id: "year",
     desc: false,
   }])
   const [globalFilter, setGlobalFilter] = useState("")
 
-  // If selectedTag is not empty, append it to the global filter
-  const combinedFilter = selectedTag ? `${globalFilter}, ${selectedTag}` : globalFilter
-  
+  // If selectedTag and filterBy are not empty, append it to the global filter
+  const combinedFilter = [globalFilter, selectedTag, filterBy]
+  .filter(Boolean)
+  .join(", ")
 
   const table = useReactTable({
     data,
