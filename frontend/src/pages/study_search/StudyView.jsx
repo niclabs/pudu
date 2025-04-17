@@ -74,7 +74,7 @@ function StudyView() {
 
       return (
         <div className="flex flex-col w-full h-full p-4 bg-violet-50 min-h-screen">
-          <h1 className="text-2xl font-bold text-violet-900 mb-6">Study Management</h1>
+          <h1 className="text-2xl font-bold mb-6">Study Manager</h1>
     
           <div className="flex flex-wrap gap-4">
             <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">

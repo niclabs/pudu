@@ -311,9 +311,10 @@ class ReviewImportView(APIView):
         for tag_data in tag_tree_data:
             create_tag_from_tree(tag_data)
 
-        # Storing tags and authors
+        # Build a tag lookup (by name + parent) for fast access
         tag_map = {(tag.name, tag.parent_tag_id): tag for tag in Tag.objects.all()}
 
+        # Importing authors
         author_map = {}
         for author in authors_data:
             name = author["name"].strip()
@@ -328,19 +329,20 @@ class ReviewImportView(APIView):
             title = study_data.get("title", "").strip()
             year = study_data.get("year")
 
+            # remaining fields go into defaults
             study_defaults = {
                 key: study_data[key]
                 for key in study_data
                 if key not in ["tags", "authors"]
             }
-
+            # Creates or updates the study
             study, _ = Study.objects.get_or_create(
                 title=title,
                 year=year,
                 defaults=study_defaults
             )
 
-            # Assign tags
+            # Assigns study tags
             tag_instances = []
             for tag_name in tag_names:
                 tag_name = tag_name.strip()
@@ -349,7 +351,7 @@ class ReviewImportView(APIView):
                     tag_instances.append(matching_tags[0])
             study.tags.set(tag_instances)
 
-            # Assign authors
+            # Assigns study authors
             study.authors.set([
                 author_map[name.strip()]
                 for name in author_names
