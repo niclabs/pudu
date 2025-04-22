@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/custom/dataTable/data-table";
 import { columns } from "@/components/custom/dataTable/columns";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, BookText, FileUp } from "lucide-react"
+import { Download, Upload, BookText, FileUp, Flag, BookOpenCheck, BookOpenText, BookOpen, Eye  } from "lucide-react"
 import {
     Dialog,
     DialogContent,
@@ -102,27 +102,27 @@ function StudyView() {
                   <div className="flex flex-wrap gap-4">
                     <Button
                     className="bg-emerald-400 text-violet-50 font-bold text-xl p-6 hover:bg-emerald-500"
-                    onClick={() => setFilterBy("Reviewed")}
+                    onClick={() => setFilterBy(filterBy === "Reviewed" ? null : "Reviewed")}
                     >
-                    <BookText className="mr-2" /> Reviewed
+                    <BookOpenCheck className="mr-2" /> Reviewed
                     </Button>
                     <Button
                     className="bg-amber-400 text-violet-50 font-bold text-xl p-6 hover:bg-amber-500"
-                    onClick={() => setFilterBy("Pending Review")}
+                    onClick={() => setFilterBy(filterBy === "Pending Review" ? null : "Pending Review")}
                     >
-                    <BookText className="mr-2" /> Pending Review
+                    <BookOpenText className="mr-2" /> Pending Review
                     </Button>
                     <Button
                     className="bg-red-400 text-violet-50 font-bold text-xl p-6 hover:bg-red-500"
-                    onClick={() => setFilterBy("Missing Data")}
+                    onClick={() => setFilterBy(filterBy === "Missing Data" ? null : "Missing Data")}
                     >
-                    <BookText className="mr-2" /> Missing Data
+                    <BookOpen className="mr-2" /> Missing Data
                     </Button>
                     <Button
                     className="bg-orange-400 text-violet-50 font-bold text-xl p-6 hover:bg-orange-500"
-                    onClick={() => setFilterBy("Flagged")}
+                    onClick={() => setFilterBy(filterBy === "Flagged" ? null : "Flagged")}
                     >
-                    <BookText className="mr-2" /> Flagged
+                    <Flag className="mr-2" /> Flagged
                     </Button>
                   </div>
               
