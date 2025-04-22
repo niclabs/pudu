@@ -44,34 +44,56 @@ function StudyView() {
     }, []);
 
     const handleImportSubmit = async () => {
-        if (!importFile) {
-            setImportFile(null)
-            return    
-        }
-    
-        try {
-            const fileText = await importFile.text(); // Read the file as text
-            const jsonData = JSON.parse(fileText);    // Parse JSON content
-            console.log("Imported JSON Data:", jsonData);
-        
-            // Todo: Send jsonData to your backend API
-            
-          } catch (error) {
-            console.error("Failed to read or parse the file:", error);
-
-          }
-            setImportFile(null)
-            setImportOpen(false)
+      if (!importFile) {
+          setImportFile(null);
+          return;
       }
+  
+      try {
+          const fileText = await importFile.text(); // Read the file as text
+          const jsonData = JSON.parse(fileText);    // Parse JSON content
+          console.log("Imported JSON Data:", jsonData);
+  
+          const response = await fetch("http://localhost:8000/api/import/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(jsonData),
+          });
+  
+          if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+  
+          const result = await response.json();
+          console.log("Import result:", result);
+  
+      } catch (error) {
+          console.error("Failed to read, parse, or submit the file:", error);
+      }
+  
+      setImportFile(null);
+      setImportOpen(false);
+  };
+  
 
-      const handleExportSubmit = async () => {
-        // Simulate successful export
-        console.log('exportini')
+      const handleExport = async () => {
         const response = await fetch("http://localhost:8000/api/export/");
         const data = await response.json();
-        console.log('exported', data)
-        setExportOpen(false)
+        const json = JSON.stringify(data);
+        const blob = new Blob([json],{type:'application/json'})
+        const href = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = href;
+        link.download = "review_export" + ".json"; //remember to add review name when it exists!
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(href);
+        setExportOpen(false);
       }
+
+  
 
       return (
         <div className="flex flex-col w-full h-full p-4 bg-violet-50 min-h-screen">
@@ -157,7 +179,9 @@ function StudyView() {
     
               <Dialog open={exportOpen} onOpenChange={setExportOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-violet-900 text-violet-50 text-xl font-bold p-6 hover:bg-violet-950">
+                  <Button 
+                    className="bg-violet-900 text-violet-50 text-xl font-bold p-6 hover:bg-violet-950"
+                  >
                     <Download className="mr-2" /> Export Studies
                   </Button>
                 </DialogTrigger>
@@ -176,7 +200,8 @@ function StudyView() {
                     >
                       Cancel
                     </Button>
-                    <Button onClick={handleExportSubmit} className="bg-violet-900 text-violet-50 hover:bg-violet-950">
+                    <Button onClick={handleExport} className="bg-violet-900 text-violet-50 hover:bg-violet-950"
+                    >
                       Export
                     </Button>
                   </DialogFooter>
