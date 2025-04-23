@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { DataTable } from "@/components/custom/dataTable/data-table";
 import { columns } from "@/components/custom/dataTable/columns";
 import { Button } from "@/components/ui/button";
-import { Download, Upload, BookText, FileUp, Flag, BookOpenCheck, BookOpenText, BookOpen, Eye  } from "lucide-react"
+import { Download, Upload, BookText, FileUp, Flag, BookOpenCheck, BookOpenText, BookOpen } from "lucide-react"
 import {
     Dialog,
     DialogContent,
@@ -22,26 +22,35 @@ function StudyView() {
     const [exportOpen, setExportOpen] = useState(false)
     const [importFile, setImportFile] = useState(null)
     const [filterBy, setFilterBy] = useState(null)
+    const [flagCount, setFlagCount] = useState([]);
 
     const fetchStudyData = async () => {
-        const response = await fetch("http://localhost:8000/api/studies/");
-        const data = await response.json();
-      
-        const refineTable = data.map((study) => ({
-          id: study.id,
-          title: study.title,
-          year: study.year,
-          authors: study.authors_display.join(", "),
-          flags: study.flags,
-          tags: study.tags_display.map((tag) => tag.name).join(", "),
-        }));
-        setTableData(refineTable);
-        console.log('fetched table data')
-      };
+    const response = await fetch("http://localhost:8000/api/studies/");
+    const data = await response.json();
+  
+    const refineTable = data.map((study) => ({
+      id: study.id,
+      title: study.title,
+      year: study.year,
+      authors: study.authors_display.join(", "),
+      flags: study.flags,
+      tags: study.tags_display.map((tag) => tag.name).join(", "),
+      }));
+      setTableData(refineTable);
+      console.log('fetched table data')
+    };
     
-      useEffect(() => {
-        fetchStudyData();
+    useEffect(() => {
+      fetchStudyData();
+      fetchFlagCount();
     }, []);
+
+    const fetchFlagCount = async () => {
+      const response = await fetch("http://localhost:8000/api/flags/count/"); 
+      const data = await response.json();
+      setFlagCount(data);
+      console.log(data)
+    };
 
     const handleImportSubmit = async () => {
       if (!importFile) {
@@ -70,7 +79,10 @@ function StudyView() {
       } catch (error) {
           console.error("Failed to read, parse, or submit the file:", error);
       }
-  
+      
+      fetchStudyData();
+      fetchFlagCount();
+      
       setImportFile(null);
       setImportOpen(false);
   };
@@ -104,25 +116,25 @@ function StudyView() {
                     className="bg-emerald-400 text-violet-50 font-bold text-xl p-6 hover:bg-emerald-500"
                     onClick={() => setFilterBy(filterBy === "Reviewed" ? null : "Reviewed")}
                     >
-                    <BookOpenCheck className="mr-2" /> Reviewed
+                    <BookOpenCheck className="mr-2" /> Reviewed: {flagCount["Reviewed"] || 0}
                     </Button>
                     <Button
                     className="bg-amber-400 text-violet-50 font-bold text-xl p-6 hover:bg-amber-500"
                     onClick={() => setFilterBy(filterBy === "Pending Review" ? null : "Pending Review")}
                     >
-                    <BookOpenText className="mr-2" /> Pending Review
+                    <BookOpenText className="mr-2" /> Pending Review: {flagCount["Pending Review"] || 0}
                     </Button>
                     <Button
                     className="bg-red-400 text-violet-50 font-bold text-xl p-6 hover:bg-red-500"
                     onClick={() => setFilterBy(filterBy === "Missing Data" ? null : "Missing Data")}
                     >
-                    <BookOpen className="mr-2" /> Missing Data
+                    <BookOpen className="mr-2" /> Missing Data: {flagCount["Missing Data"] || 0}
                     </Button>
                     <Button
                     className="bg-orange-400 text-violet-50 font-bold text-xl p-6 hover:bg-orange-500"
                     onClick={() => setFilterBy(filterBy === "Flagged" ? null : "Flagged")}
                     >
-                    <Flag className="mr-2" /> Flagged
+                    <Flag className="mr-2" /> Flagged: {flagCount["Flagged"] || 0}
                     </Button>
                   </div>
               

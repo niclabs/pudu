@@ -5,6 +5,8 @@ from rest_framework.decorators import api_view
 from .models import Tag, Study, Author
 from .serializers import TagSerializer, StudySerializer, AuthorSerializer
 from django.db.models import Count
+from collections import Counter
+
 
 #CRUD operations on the tag tree
 class TagTreeView(APIView):
@@ -246,6 +248,14 @@ def tag_study_counts(request):
     ).values('id', 'name', 'study_count')
     return Response(tags_with_counts)
 
+@api_view(['GET'])
+def flag_study_counts(request):
+    counter = Counter()
+    for study in Study.objects.all():
+        for flag in study.flags:
+            counter[flag] += 1
+
+    return Response(counter)
 
 
 class ReviewExportView(APIView):
