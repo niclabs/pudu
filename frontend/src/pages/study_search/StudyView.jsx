@@ -102,25 +102,25 @@ function StudyView() {
                   <div className="flex flex-wrap gap-4">
                     <Button
                     className="bg-emerald-400 text-violet-50 font-bold text-xl p-6 hover:bg-emerald-500"
-                    onClick={() => setFilterBy(filterBy === 0 ? null : 0)}
+                    onClick={() => setFilterBy(filterBy === "Reviewed" ? null : "Reviewed")}
                     >
                     <BookOpenCheck className="mr-2" /> Reviewed
                     </Button>
                     <Button
                     className="bg-amber-400 text-violet-50 font-bold text-xl p-6 hover:bg-amber-500"
-                    onClick={() => setFilterBy(filterBy === 1 ? null : 1)}
+                    onClick={() => setFilterBy(filterBy === "Pending Review" ? null : "Pending Review")}
                     >
                     <BookOpenText className="mr-2" /> Pending Review
                     </Button>
                     <Button
                     className="bg-red-400 text-violet-50 font-bold text-xl p-6 hover:bg-red-500"
-                    onClick={() => setFilterBy(filterBy === 2 ? null : 2)}
+                    onClick={() => setFilterBy(filterBy === "Missing Data" ? null : "Missing Data")}
                     >
                     <BookOpen className="mr-2" /> Missing Data
                     </Button>
                     <Button
                     className="bg-orange-400 text-violet-50 font-bold text-xl p-6 hover:bg-orange-500"
-                    onClick={() => setFilterBy(filterBy === 3 ? null : 3)}
+                    onClick={() => setFilterBy(filterBy === "Flagged" ? null : "Flagged")}
                     >
                     <Flag className="mr-2" /> Flagged
                     </Button>
