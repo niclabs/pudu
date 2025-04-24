@@ -125,9 +125,9 @@ export const columns = (fetchStudyData) => [
             <DropdownMenuContent align="end" className={"bg-white"}>
               <DropdownMenuLabel className="font-bold">Actions</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-violet-100"/>
-              <DropdownMenuItem className="hover:bg-violet-100">Modify metadata</DropdownMenuItem>
+              <DropdownMenuItem className="hover:bg-violet-100">View Study</DropdownMenuItem>
               <DropdownMenuSeparator className="bg-violet-100"/>
-              <DropdownMenuItem className="hover:bg-violet-100">Attach PDF file</DropdownMenuItem>
+              <DropdownMenuItem className="hover:bg-violet-100">Modify Metadata</DropdownMenuItem>
               <DropdownMenuSeparator className="bg-violet-100"/>
               <DropdownMenuItem className="hover:bg-violet-100"
                 onClick={() => deleteStudyData(study.id, fetchStudyData)}
