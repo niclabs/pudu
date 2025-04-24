@@ -34,7 +34,7 @@ import {
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
                 <Link to="/studies" className=" p-2 text-xl  hover:bg-violet-950 rounded-md">
-                  Study Search
+                  Studies
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>

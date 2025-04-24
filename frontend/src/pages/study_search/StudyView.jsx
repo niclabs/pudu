@@ -82,7 +82,7 @@ function StudyView() {
       
       fetchStudyData();
       fetchFlagCount();
-      
+
       setImportFile(null);
       setImportOpen(false);
   };
@@ -109,7 +109,7 @@ function StudyView() {
 
       return (
         <div className="flex flex-col w-full h-full p-4 bg-violet-50 min-h-screen">
-          <h1 className="text-2xl font-bold mb-6">Study Manager</h1>
+          <h1 className="text-2xl font-bold mb-6">Studies</h1>
           <div className="flex justify-between items-start mb-6">
                   <div className="flex flex-wrap gap-4">
                     <Button

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   flexRender,
   getCoreRowModel,
@@ -49,11 +49,14 @@ export function DataTable({ columns, data, selectedTag = "",filterBy =""}) {
     desc: false,
   }])
   const [globalFilter, setGlobalFilter] = useState("")
+  const [columnFilters, setColumnFilters] = useState(
+    filterBy ? [{ id: "flags", value: filterBy }] : []
+  )
 
-  // If selectedTag and filterBy are not empty, append it to the global filter
-  const combinedFilter = [globalFilter, selectedTag, filterBy]
-  .filter(Boolean)
-  .join(", ")
+  // // If selectedTag and filterBy are not empty, append it to the global filter
+  // const combinedFilter = [globalFilter, selectedTag]
+  // .filter(Boolean)
+  // .join(", ")
 
   const table = useReactTable({
     data,
@@ -63,15 +66,29 @@ export function DataTable({ columns, data, selectedTag = "",filterBy =""}) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     filterFns: {
-      crossColumnAnd: crossColumnAndFilter,
+      crossColumnAnd: crossColumnAndFilter, 
     },
     globalFilterFn: "crossColumnAnd",
     state: {
       sorting,
-      globalFilter: combinedFilter, 
+      globalFilter,
+      columnFilters,
     },
     onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
   })
+
+  useEffect(() => {
+    const filters = []
+    if (filterBy) {
+      filters.push({ id: "flags", value: filterBy })
+    }
+    if (selectedTag) {
+      filters.push({ id: "tags", value: selectedTag })
+    }
+    setColumnFilters(filters)
+  }, [filterBy, selectedTag])
+
 
   return (
     <div className="flex flex-col h-full">
