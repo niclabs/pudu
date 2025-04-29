@@ -20,30 +20,73 @@ function StudyView() {
     const [tableData, setTableData] = useState([]);
     const [importOpen, setImportOpen] = useState(false)
     const [exportOpen, setExportOpen] = useState(false)
+    const [studyOpen, setStudyOpen] = useState(false)
+    const [selectedStudy, setSelectedStudy] = useState(null)
     const [importFile, setImportFile] = useState(null)
     const [filterBy, setFilterBy] = useState(null)
-    const [flagCount, setFlagCount] = useState([]);
+    const [flagCount, setFlagCount] = useState([])
+    const [selectedStudyDetail, setSelectedStudyDetail] = useState(null)
 
     const fetchStudyData = async () => {
-    const response = await fetch("http://localhost:8000/api/studies/");
-    const data = await response.json();
-  
-    const refineTable = data.map((study) => ({
-      id: study.id,
+      const response = await fetch("http://localhost:8000/api/studies/");
+      const data = await response.json();
+      const refineTable = data.map((study) => ({
+        id: study.id,
+        title: study.title,
+        year: study.year,
+        authors: study.authors_display.join(", "),
+        flags: study.flags,
+        tags: study.tags_display.map((tag) => tag.name).join(", "),
+        }));
+        setTableData(refineTable);
+        console.log('fetched table data')
+    };
+
+    const refineStudy = (study) => (
+      {
       title: study.title,
       year: study.year,
       authors: study.authors_display.join(", "),
+      doi: study.doi,
+      url: study.url,
+      pages: study.pages,
       flags: study.flags,
       tags: study.tags_display.map((tag) => tag.name).join(", "),
-      }));
-      setTableData(refineTable);
-      console.log('fetched table data')
+      abstract: study.abstract,
+      summary: study.summary
+      }
+    )
+
+    const labelMap = {
+
+      title: "Title",
+      year: "Year",
+      authors: "Authors",
+      abstract: "Abstract",
+      summary: "Notes",
+      doi: "DOI",
+      url: "URL",
+      pages: "Pages",
+      flags: "Flags",
+      tags: "Tags",
     };
-    
+
+      
+    const fetchStudyDetailed = async (id) => {
+      const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
+      const data = await response.json();
+      setSelectedStudyDetail(data);
+      console.log('fetched study detail data', data)
+    }
+
+
     useEffect(() => {
       fetchStudyData();
       fetchFlagCount();
-    }, []);
+      if (studyOpen && selectedStudy) {
+        fetchStudyDetailed(selectedStudy);
+      }
+    }, [studyOpen, selectedStudy]);
 
     const fetchFlagCount = async () => {
       const response = await fetch("http://localhost:8000/api/flags/count/"); 
@@ -219,10 +262,47 @@ function StudyView() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+              <Dialog open={studyOpen} onOpenChange={setStudyOpen}>
+              <DialogContent className="!w-[40vw] !max-w-none !p-8 bg-violet-50 text-lg h-[80vh]">
+                  <DialogHeader>
+                    <DialogTitle>Study Metadata</DialogTitle>
+                  </DialogHeader>
+                  <div className="p-4 h-[calc(80vh-160px)] overflow-auto">
+                    {selectedStudyDetail &&
+                      Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
+                        <div key={key} className="mb-2">
+                          <strong>{labelMap[key] || key}:</strong>{" "}
+                          {key === "url" ? (
+                            <a
+                              href={value}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 underline"
+                            >
+                              {value}
+                            </a>
+                          ) : (
+                            String(value)
+                          )}
+                        </div>
+                      ))}
+                  </div>
+
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setStudyOpen(false)}
+                      className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                    >
+                      Close
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           <div className="h-[calc(100vh-200px)] m-4">
-            <DataTable columns={columns(fetchStudyData)} data={tableData} filterBy={filterBy} />
+            <DataTable columns={columns(fetchStudyData, setStudyOpen, setSelectedStudy)} data={tableData} filterBy={filterBy} />
           </div>
         </div>
       )

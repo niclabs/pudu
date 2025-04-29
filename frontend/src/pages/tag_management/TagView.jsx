@@ -26,6 +26,8 @@ function TagView() {
   const [editNameValue, setEditNameValue] = useState("");
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
   const [editDescriptionValue, setEditDescriptionValue] = useState("");
+  const [studyOpen, setStudyOpen] = useState(false)
+  const [selectedStudy, setSelectedStudy] = useState(null)
 
   const fetchTreeData = async () => {
     const response = await fetch("http://localhost:8000/api/tags/");
@@ -261,7 +263,7 @@ function TagView() {
           </Card>
         </div>
         <div className="h-[calc(100vh-400px)]">
-          <DataTable columns={columns(fetchStudyData)} data={tableData} selectedTag={selectedNode?.data?.name} />
+          <DataTable columns={columns(fetchStudyData, setStudyOpen, setSelectedStudy)} data={tableData} selectedTag={selectedNode?.data?.name} />
         </div>
       </div>
     </div>

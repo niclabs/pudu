@@ -23,7 +23,7 @@ const deleteStudyData = async (id, fetchStudyData) => {
   }
 };
 
-export const columns = (fetchStudyData) => [
+export const columns = (fetchStudyData, setStudyOpen, setSelectedStudy ) => [
     {
       accessorKey: "title", // Property from the data object displayed
       header: ({ column }) => {
@@ -125,7 +125,9 @@ export const columns = (fetchStudyData) => [
             <DropdownMenuContent align="end" className={"bg-white"}>
               <DropdownMenuLabel className="font-bold">Actions</DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-violet-100"/>
-              <DropdownMenuItem className="hover:bg-violet-100">View Study</DropdownMenuItem>
+              <DropdownMenuItem className="hover:bg-violet-100"
+                onClick={() => {setSelectedStudy(study.id); setStudyOpen(true)}}
+              >View Study</DropdownMenuItem>
               <DropdownMenuSeparator className="bg-violet-100"/>
               <DropdownMenuItem className="hover:bg-violet-100">Modify Metadata</DropdownMenuItem>
               <DropdownMenuSeparator className="bg-violet-100"/>
