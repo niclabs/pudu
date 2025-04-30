@@ -15,6 +15,13 @@ import { AiOutlineEdit } from "react-icons/ai";
 import { DataTable } from "../../components/custom/dataTable/data-table";
 import { columns } from "../../components/custom/dataTable/columns";
 import { Input } from "../../components/custom/input";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+  } from "@/components/ui/dialog"
 
 function TagView() {
   const [tableData, setTableData] = useState([]);
@@ -28,6 +35,8 @@ function TagView() {
   const [editDescriptionValue, setEditDescriptionValue] = useState("");
   const [studyOpen, setStudyOpen] = useState(false)
   const [selectedStudy, setSelectedStudy] = useState(null)
+  const [selectedStudyDetail, setSelectedStudyDetail] = useState(null)
+
 
   const fetchTreeData = async () => {
     const response = await fetch("http://localhost:8000/api/tags/");
@@ -56,6 +65,42 @@ function TagView() {
     const data = await response.json();
     setTagCount(data);
   };
+
+  const refineStudy = (study) => (
+    {
+    title: study.title,
+    year: study.year,
+    authors: study.authors_display.join(", "),
+    doi: study.doi,
+    url: study.url,
+    pages: study.pages,
+    flags: study.flags.join(", "),
+    tags: study.tags_display.map((tag) => tag.name).join(", "),
+    abstract: study.abstract,
+    summary: study.summary
+    }
+  )
+
+  const labelMap = {
+
+    title: "Title",
+    year: "Year",
+    authors: "Authors",
+    abstract: "Abstract",
+    summary: "Notes",
+    doi: "DOI",
+    url: "URL",
+    pages: "Pages",
+    flags: "Flags",
+    tags: "Tags",
+  };
+
+  const fetchStudyDetailed = async (id) => {
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
+    const data = await response.json();
+    setSelectedStudyDetail(data);
+    console.log('fetched study detail data', data)
+  }
 
   const onCreate = async () => {
     try {
@@ -144,7 +189,10 @@ function TagView() {
     fetchStudyData();
     fetchTagCount();
     setLoading(false);
-  }, []);
+    if (studyOpen && selectedStudy) {
+      fetchStudyDetailed(selectedStudy);
+    }
+  }, [studyOpen, selectedStudy]);
 
   if (loading) return <div>Loading tree...</div>;
 
@@ -262,6 +310,43 @@ function TagView() {
             
           </Card>
         </div>
+        <Dialog open={studyOpen} onOpenChange={setStudyOpen}>
+              <DialogContent className="!w-[40vw] !max-w-none !p-8 bg-violet-50 text-lg h-[80vh]">
+                  <DialogHeader>
+                    <DialogTitle>Study Metadata</DialogTitle>
+                  </DialogHeader>
+                  <div className="p-4 h-[calc(80vh-160px)] overflow-auto">
+                    {selectedStudyDetail &&
+                      Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
+                        <div key={key} className="mb-4">
+                          <strong>{labelMap[key] || key}:</strong>{" "}
+                          {key === "url" ? (
+                            <a
+                              href={value}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 underline"
+                            >
+                              {value}
+                            </a>
+                          ) : (
+                            String(value)
+                          )}
+                        </div>
+                      ))}
+                  </div>
+
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setStudyOpen(false)}
+                      className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                    >
+                      Close
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
         <div className="h-[calc(100vh-400px)]">
           <DataTable columns={columns(fetchStudyData, setStudyOpen, setSelectedStudy)} data={tableData} selectedTag={selectedNode?.data?.name} />
         </div>

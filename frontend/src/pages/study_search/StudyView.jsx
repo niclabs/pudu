@@ -42,92 +42,92 @@ function StudyView() {
         console.log('fetched table data')
     };
 
-    const refineStudy = (study) => (
-      {
-      title: study.title,
-      year: study.year,
-      authors: study.authors_display.join(", "),
-      doi: study.doi,
-      url: study.url,
-      pages: study.pages,
-      flags: study.flags,
-      tags: study.tags_display.map((tag) => tag.name).join(", "),
-      abstract: study.abstract,
-      summary: study.summary
-      }
-    )
+  const refineStudy = (study) => (
+    {
+    title: study.title,
+    year: study.year,
+    authors: study.authors_display.join(", "),
+    doi: study.doi,
+    url: study.url,
+    pages: study.pages,
+    flags: study.flags.join(", "),
+    tags: study.tags_display.map((tag) => tag.name).join(", "),
+    abstract: study.abstract,
+    summary: study.summary
+    }
+  )
 
-    const labelMap = {
+  const labelMap = {
 
-      title: "Title",
-      year: "Year",
-      authors: "Authors",
-      abstract: "Abstract",
-      summary: "Notes",
-      doi: "DOI",
-      url: "URL",
-      pages: "Pages",
-      flags: "Flags",
-      tags: "Tags",
-    };
+    title: "Title",
+    year: "Year",
+    authors: "Authors",
+    abstract: "Abstract",
+    summary: "Notes",
+    doi: "DOI",
+    url: "URL",
+    pages: "Pages",
+    flags: "Flags",
+    tags: "Tags",
+  };
 
       
-    const fetchStudyDetailed = async (id) => {
-      const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
-      const data = await response.json();
-      setSelectedStudyDetail(data);
-      console.log('fetched study detail data', data)
+  const fetchStudyDetailed = async (id) => {
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
+    const data = await response.json();
+    setSelectedStudyDetail(data);
+    console.log('fetched study detail data', data)
+  }
+
+
+  useEffect(() => {
+    fetchStudyData();
+    fetchFlagCount();
+    if (studyOpen && selectedStudy) {
+      fetchStudyDetailed(selectedStudy);
+    }
+  }, [studyOpen, selectedStudy]);
+
+  const fetchFlagCount = async () => {
+    const response = await fetch("http://localhost:8000/api/flags/count/"); 
+    const data = await response.json();
+    setFlagCount(data);
+    console.log(data)
+  };
+
+  const handleImportSubmit = async () => {
+    if (!importFile) {
+        setImportFile(null);
+        return;
     }
 
+    try {
+        const fileText = await importFile.text(); // Read the file as text
+        const jsonData = JSON.parse(fileText);    // Parse JSON content
+        console.log("Imported JSON Data:", jsonData);
 
-    useEffect(() => {
-      fetchStudyData();
-      fetchFlagCount();
-      if (studyOpen && selectedStudy) {
-        fetchStudyDetailed(selectedStudy);
-      }
-    }, [studyOpen, selectedStudy]);
+        const response = await fetch("http://localhost:8000/api/import/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(jsonData),
+        });
 
-    const fetchFlagCount = async () => {
-      const response = await fetch("http://localhost:8000/api/flags/count/"); 
-      const data = await response.json();
-      setFlagCount(data);
-      console.log(data)
-    };
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-    const handleImportSubmit = async () => {
-      if (!importFile) {
-          setImportFile(null);
-          return;
-      }
-  
-      try {
-          const fileText = await importFile.text(); // Read the file as text
-          const jsonData = JSON.parse(fileText);    // Parse JSON content
-          console.log("Imported JSON Data:", jsonData);
-  
-          const response = await fetch("http://localhost:8000/api/import/", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(jsonData),
-          });
-  
-          if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-  
-          const result = await response.json();
-          console.log("Import result:", result);
-  
-      } catch (error) {
-          console.error("Failed to read, parse, or submit the file:", error);
-      }
-      
-      fetchStudyData();
-      fetchFlagCount();
+        const result = await response.json();
+        console.log("Import result:", result);
 
-      setImportFile(null);
-      setImportOpen(false);
+    } catch (error) {
+        console.error("Failed to read, parse, or submit the file:", error);
+    }
+    
+    fetchStudyData();
+    fetchFlagCount();
+
+    setImportFile(null);
+    setImportOpen(false);
   };
   
 
@@ -200,7 +200,7 @@ function StudyView() {
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
-                      <div className="col-span-4 bg-white">
+                      <div className="col-span-4 bg-violet">
                         <Input
                           id="file-upload"
                           type="file"
@@ -270,7 +270,7 @@ function StudyView() {
                   <div className="p-4 h-[calc(80vh-160px)] overflow-auto">
                     {selectedStudyDetail &&
                       Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
-                        <div key={key} className="mb-2">
+                        <div key={key} className="mb-4">
                           <strong>{labelMap[key] || key}:</strong>{" "}
                           {key === "url" ? (
                             <a
