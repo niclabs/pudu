@@ -13,6 +13,8 @@ import {
     DialogTrigger,
   } from "@/components/ui/dialog"
   import { Input } from "@/components/ui/input"
+  import { Link } from "react-router-dom";
+
 
 
 
@@ -296,6 +298,12 @@ function StudyView() {
                     >
                       Close
                     </Button>
+                    <Link to={`/editstudy/${selectedStudyDetail?.id}/`} >
+                      <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950">
+                        Edit Study
+                      </Button>
+                    </Link>
+                    
                   </DialogFooter>
                 </DialogContent>
               </Dialog>

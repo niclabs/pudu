@@ -129,8 +129,6 @@ export const columns = (fetchStudyData, setStudyOpen, setSelectedStudy ) => [
                 onClick={() => {setSelectedStudy(study.id); setStudyOpen(true)}}
               >View Study</DropdownMenuItem>
               <DropdownMenuSeparator className="bg-violet-100"/>
-              <DropdownMenuItem className="hover:bg-violet-100">Modify Metadata</DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-violet-100"/>
               <DropdownMenuItem className="hover:bg-violet-100"
                 onClick={() => deleteStudyData(study.id, fetchStudyData)}
               >Remove from review</DropdownMenuItem>
