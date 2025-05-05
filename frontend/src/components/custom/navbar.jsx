@@ -22,7 +22,7 @@ import {
                       className="custom-cursor h-16 w-auto left hover:bg-violet-950  rounded-md"
                     />
             </Link>
-            </NavigationMenuItem>
+            </NavigationMenuItem> 
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
                 <Link to="/tags" 
