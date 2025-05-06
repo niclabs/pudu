@@ -16,6 +16,16 @@ table th {
   padding: 5px;
 }
 
+input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-violet-950);
+}
+
+textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-violet-950);
+}
+
 ::-webkit-scrollbar {
   @apply w-2.5 h-2.5;
  
