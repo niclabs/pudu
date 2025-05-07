@@ -22,6 +22,7 @@ import {
     DialogHeader,
     DialogTitle,
   } from "@/components/ui/dialog"
+import { Link } from "react-router-dom";
 
 function TagView() {
   const [tableData, setTableData] = useState([]);
@@ -344,6 +345,12 @@ function TagView() {
                     >
                       Close
                     </Button>
+                    <Link to={`/editstudy/${selectedStudyDetail?.id}/`} >
+                      <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950">
+                        Edit Study
+                      </Button>
+                    </Link>
+                    
                   </DialogFooter>
                 </DialogContent>
               </Dialog>

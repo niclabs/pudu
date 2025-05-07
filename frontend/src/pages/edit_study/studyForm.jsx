@@ -1,4 +1,5 @@
 "use client"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import { useForm } from "react-hook-form"
@@ -30,39 +31,57 @@ import {
 const formSchema = z.object({
   title: z.string().min(1),
   year: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().int().min(1000).max(9999).optional()),
-  doi: z.string().min(1).optional(),
-  URL: z.string().min(1).optional(),
-  pages: z.string().min(1).optional(),
+  doi: z.string().optional(),
+  url: z.string().optional(),
+  pages: z.string().optional(),
   abstract: z.string().optional(),
   notes: z.string().optional(),
   authors: z.array(z.string()).optional()
 });
 
-export default function MyForm() {
+
+
+export default function StudyForm({ studyid = "" }) {
+
+  const [studyDetail, setSelectedStudyDetail] = useState(null);
+  const [authorsList, setAuthorsList] = useState(null);
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       year: undefined,
       doi: "",
-      URL: "",
+      url: "",
       pages: "",
       abstract: "",
       notes: "",
-      authors: []
+      authors: [],
     },
   });
 
-  const authorsList = [
-    { value: "John Smith", label: "John Smith" },
-    { value: "Jane Doe", label: "Jane Doe" },
-    { value: "Albert Einstein", label: "Albert Einstein" },
-    { value: "Marie Curie", label: "Marie Curie" },
-    { value: "Isaac Newton", label: "Isaac Newton" },
-  ];
+
+  const fetchStudyDetailed = async (id) => {
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
+    const data = await response.json();
+    setSelectedStudyDetail(data);
+    console.log('fetched study detail data', data)
+  }
+
+  const fetchAuthors = async () => {
+    const response = await fetch(`http://localhost:8000/api/authors/`);
+    const data = await response.json();
+    const authorsList = data.map((author) => ({
+      value: author.name,
+      label: author.name,
+    }));
+    setAuthorsList(authorsList);
+    console.log('fetched study detail data', authorsList)
+  }
 
   function onSubmit(values) {
     try {
+      console.log(studyid.studyid)
       console.log(values);
       toast(
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
@@ -75,8 +94,30 @@ export default function MyForm() {
     }
   }
 
+  useEffect(() => {
+    if (studyid) {
+      fetchStudyDetailed(studyid);
+    }
+    fetchAuthors();
+  }, [studyid]);
+
+  useEffect(() => {
+    if (studyDetail) {
+      form.reset({
+        title: studyDetail.title || "",
+        year: studyDetail.year || undefined,
+        doi: studyDetail.doi || "",
+        url: studyDetail.url || "",
+        pages: studyDetail.pages || "",
+        abstract: studyDetail.abstract || "",
+        notes: studyDetail.notes || "",
+        authors: studyDetail.authors_display || [],
+      });
+    }
+  }, [studyDetail, form]);
+
   return (
-    <Card className="max-w-3xl mx-auto bg-violet-50 ">
+    <Card className="max-w-3xl mx-auto bg-indigo-100 ">
       <CardHeader className="pb-4">
         <CardTitle className="text-2xl font-bold">Article Metadata</CardTitle>
         <CardDescription>Enter the details of the academic publication</CardDescription>
@@ -114,7 +155,7 @@ export default function MyForm() {
                         Year
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="The year it was published" {...field} />
+                        <Input placeholder="The year it was published." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -130,7 +171,7 @@ export default function MyForm() {
                       Pages
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="Page numbers (e.g., 123-145)" {...field} />
+                      <Input placeholder="Relevant page numbers (e.g., 123-145)" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -159,7 +200,7 @@ export default function MyForm() {
 
                 <FormField
                   control={form.control}
-                  name="URL"
+                  name="url"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex items-center gap-2 font-bold">
@@ -186,14 +227,13 @@ export default function MyForm() {
                       Authors
                     </FormLabel>
                     <FormControl>
-                        <MultiSelect
-                          options={authorsList}
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          placeholder="Select authors"
-                          variant="inverted"
-                          maxCount={5}
-                        />
+                    <MultiSelect
+  options={authorsList ?? []}
+  value={field.value}
+  onValueChange={field.onChange}
+  placeholder="Select authors"
+  maxCount={5}
+/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
