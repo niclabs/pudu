@@ -27,6 +27,7 @@ import {
   StickyNote,
   GraduationCap
 } from "lucide-react"
+import { TreeSelect } from "antd"
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -45,6 +46,157 @@ export default function StudyForm({ studyid = "" }) {
 
   const [studyDetail, setSelectedStudyDetail] = useState(null);
   const [authorsList, setAuthorsList] = useState(null);
+  const [selectTreeData, setSelectTreeData] = useState(null);
+  const [value, setValue] = useState([]);
+  const { SHOW_CHILD } = TreeSelect;
+
+  const formatTreeData = (data) => {
+    return data.map((item) => ({
+      title: item.name,
+      value: item.id,
+      key: item.id,
+      children: formatTreeData(item.children),
+    }));
+  }
+
+  const treeData =[
+    {
+        "id": "1288",
+        "name": "Machine Learning in Healthcare",
+        "description": "Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia",
+        "children": [
+            {
+                "id": "1289",
+                "name": "Supervised Learning",
+                "description": "",
+                "children": []
+            },
+            {
+                "id": "1290",
+                "name": "Unsupervised Learning",
+                "description": "",
+                "children": []
+            },
+            {
+                "id": "1291",
+                "name": "Reinforcement Learning",
+                "description": "",
+                "children": []
+            }
+        ]
+    },
+    {
+        "id": "1292",
+        "name": "Explainability & Interpretability",
+        "description": "",
+        "children": []
+    },
+    {
+        "id": "1293",
+        "name": "Bias & Fairness",
+        "description": "",
+        "children": []
+    },
+    {
+        "id": "1294",
+        "name": "Study Characteristics",
+        "description": "",
+        "children": [
+            {
+                "id": "1295",
+                "name": "Peer-Reviewed",
+                "description": "",
+                "children": []
+            },
+            {
+                "id": "1296",
+                "name": "Preprint",
+                "description": "",
+                "children": []
+            },
+            {
+                "id": "1297",
+                "name": "Published in Journal",
+                "description": "",
+                "children": []
+            },
+            {
+                "id": "1298",
+                "name": "Published in Conference",
+                "description": "",
+                "children": []
+            }
+        ]
+    },
+    {
+        "id": "1299",
+        "name": "Evaluation",
+        "description": "",
+        "children": [
+            {
+                "id": "1300",
+                "name": "Real-World Testing",
+                "description": "",
+                "children": []
+            },
+            {
+                "id": "1301",
+                "name": "Benchmark Dataset",
+                "description": "",
+                "children": []
+            },
+            {
+                "id": "1302",
+                "name": "No Empirical Evaluation",
+                "description": "",
+                "children": []
+            }
+        ]
+    },
+    {
+        "id": "1303",
+        "name": "Dataset Type",
+        "description": "Si te he fallado te pido perdon de la unica forma que se",
+        "children": [
+            {
+                "id": "1304",
+                "name": "Public Dataset",
+                "description": "",
+                "children": []
+            },
+            {
+                "id": "1305",
+                "name": "Private Dataset",
+                "description": "",
+                "children": []
+            },
+            {
+                "id": "1306",
+                "name": "Synthetic Data",
+                "description": "",
+                "children": []
+            }
+        ]
+    }
+]
+
+
+  const onChange = (newValue) => {
+    console.log('onChange ', newValue);
+    setValue(newValue);
+  };
+
+  const tProps = {
+    treeData: selectTreeData,
+    value,
+    onChange,
+    treeCheckable: true,
+    showCheckedStrategy: SHOW_CHILD,
+    placeholder: 'Select tags for this article',
+    style: {
+      width: '100%',
+    },
+  };
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -100,6 +252,13 @@ export default function StudyForm({ studyid = "" }) {
     }
     fetchAuthors();
   }, [studyid]);
+
+  useEffect(() => {
+    if (treeData) {
+      const formattedData = formatTreeData(treeData);
+      setSelectTreeData(formattedData);
+      console.log('formatted tree data', formattedData)
+    }}, []);
 
   useEffect(() => {
     if (studyDetail) {
@@ -228,12 +387,12 @@ export default function StudyForm({ studyid = "" }) {
                     </FormLabel>
                     <FormControl>
                     <MultiSelect
-  options={authorsList ?? []}
-  value={field.value}
-  onValueChange={field.onChange}
-  placeholder="Select authors"
-  maxCount={5}
-/>
+                      options={authorsList ?? []}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Select authors"
+                      maxCount={5}
+                    />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -282,9 +441,8 @@ export default function StudyForm({ studyid = "" }) {
                 )}
               />
 
+            <TreeSelect {...tProps} />
 
-
-              
             </div>
 
             <div className="pt-4  flex justify-end">

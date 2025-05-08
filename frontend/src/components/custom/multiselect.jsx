@@ -132,7 +132,7 @@ const MultiSelect = React.forwardRef(
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto p-0 bg-violet-100 border border-violet-900 shadow-lg"
+          className="w-auto p-0 bg-violet-50 border border-violet-900 shadow-lg"
           align="start"
           side="bottom"
           sideOffset={5}

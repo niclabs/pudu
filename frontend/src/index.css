@@ -34,21 +34,145 @@ textarea{
 
 textarea:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 1px var(--color-violet-950);
+  box-shadow: 0 0 0 0px var(--color-violet-950);
+}
+
+/* Main TreeSelect container styling */
+.ant-tree-select.ant-select-outlined {
+  background-color: #f5f3ffe3 !important; /* violet-50 */
+  border-radius: 0.375rem !important;
+  border: 1px solid #e2e8f0 !important;
+  min-height: 2.5rem !important;
+}
+
+/* Selector styling */
+.ant-tree-select .ant-select-selector {
+  background-color: transparent !important;
+  border: 1px solid !important;
+  box-shadow: none !important;
+  padding: 0.25rem !important;
+}
+
+/* Placeholder text */
+.ant-tree-select .ant-select-selection-placeholder {
+  color: #94a3b8 !important; /* slate-400 */
+  padding-left: 0.75rem !important;
+}
+
+/* Arrow icon */
+.ant-tree-select .ant-select-arrow {
+  color: #64748b !important; /* slate-500 */
+  margin-right: 0.5rem !important;
+}
+
+/* Dropdown styling - UPDATED */
+.ant-select-dropdown.ant-tree-select-dropdown {
+  background-color: #f5f3ff !important; /* violet-50 */
+  border-radius: 0.375rem !important;
+  border: 1px solid var(--color-violet-950) !important; /* violet-600 */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Make sure all inner elements of the dropdown have the same background */
+.ant-select-dropdown.ant-tree-select-dropdown * {
+  background-color: #f5f3ff !important; /* violet-50 */
+}
+
+/* Tree list container */
+.ant-select-tree {
+  background-color: #f5f3ff !important; /* violet-50 */
+  padding: 0.5rem !important;
+}
+
+/* Search input in dropdown */
+.ant-select-tree-list-search-input {
+  background-color: white !important;
+  border: 1px solid #ddd6fe !important; /* violet-200 */
+  border-radius: 0.25rem !important;
+  margin-bottom: 0.5rem !important;
 }
 
 
 
-::-webkit-scrollbar {
-  @apply w-2.5 h-2.5;
- 
+/* Checkboxes */
+.ant-select-tree-checkbox-checked .ant-select-tree-checkbox-inner {
+  background-color: #8b5cf6 !important; /* violet-500 */
+  border-color: #8b5cf6 !important;
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-gray-100 rounded-full;
+.ant-select-tree-checkbox-indeterminate .ant-select-tree-checkbox-inner::after {
+  background-color: #8b5cf6 !important;
 }
 
-::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-violet-300 border-[1px] border-transparent border-solid bg-clip-padding;
+/* Selected tags/badges styling to match MultiSelect */
+.ant-select-selection-item {
+  background-color: var(--color-violet-200) !important; /* violet-200 */
+  color: var(--color-violet-950) !important; /* violet-900 */
+  border: 1px solid var(--color-violet-950)!important; /* violet-300 */
+  border-radius: 0.375rem !important;
+  padding: 0.25rem 0.5rem !important;
+  margin: 0.25rem !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+  line-height: 1.25rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+
+  /* Animation effects from MultiSelect */
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-delay: 150ms !important;
 }
 
+.ant-select-selection-item:hover {
+  transform: translateY(-0.25rem) scale(1.1) !important;
+}
+
+/* Remove button in tags */
+.ant-select-selection-item-remove {
+  color: #7c3aed !important; /* violet-600 */
+  margin-left: 0.25rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.ant-select-selection-item-remove:hover {
+  color: #6d28d9 !important; /* violet-700 */
+}
+
+/* Clear all button */
+.ant-select-clear {
+  background-color: transparent !important;
+  color: #64748b !important; /* slate-500 */
+}
+
+.ant-select-clear:hover {
+  color: #475569 !important; /* slate-600 */
+}
+
+/* Empty content */
+.ant-empty {
+  background-color: #f5f3ff !important; /* violet-50 */
+}
+
+/* Scrollbar styling */
+.ant-select-tree-list-holder::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.ant-select-tree-list-holder::-webkit-scrollbar-track {
+  background: #ede9fe !important; /* violet-100 */
+  border-radius: 3px !important;
+}
+
+.ant-select-tree-list-holder::-webkit-scrollbar-thumb {
+  background-color: #c4b5fd !important; /* violet-300 */
+  border-radius: 3px !important;
+}
+
+.ant-select-tree-list-holder::-webkit-scrollbar-thumb:hover {
+  background-color: #a78bfa !important; /* violet-400 */
+}
