@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -25,7 +25,8 @@ import {
   FileDigit,
   FileText,
   StickyNote,
-  GraduationCap
+  GraduationCap,
+  Tag
 } from "lucide-react"
 import { TreeSelect } from "antd"
 
@@ -37,18 +38,16 @@ const formSchema = z.object({
   pages: z.string().optional(),
   abstract: z.string().optional(),
   notes: z.string().optional(),
-  authors: z.array(z.string()).optional()
+  authors: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
 });
 
-
-
 export default function StudyForm({ studyid = "" }) {
-
   const [studyDetail, setSelectedStudyDetail] = useState(null);
   const [authorsList, setAuthorsList] = useState(null);
   const [selectTreeData, setSelectTreeData] = useState(null);
-  const [value, setValue] = useState([]);
   const { SHOW_CHILD } = TreeSelect;
+  const [tags, setTags] = useState(null);
 
   const formatTreeData = (data) => {
     return data.map((item) => ({
@@ -57,145 +56,12 @@ export default function StudyForm({ studyid = "" }) {
       key: item.id,
       children: formatTreeData(item.children),
     }));
-  }
-
-  const treeData =[
-    {
-        "id": "1288",
-        "name": "Machine Learning in Healthcare",
-        "description": "Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia",
-        "children": [
-            {
-                "id": "1289",
-                "name": "Supervised Learning",
-                "description": "",
-                "children": []
-            },
-            {
-                "id": "1290",
-                "name": "Unsupervised Learning",
-                "description": "",
-                "children": []
-            },
-            {
-                "id": "1291",
-                "name": "Reinforcement Learning",
-                "description": "",
-                "children": []
-            }
-        ]
-    },
-    {
-        "id": "1292",
-        "name": "Explainability & Interpretability",
-        "description": "",
-        "children": []
-    },
-    {
-        "id": "1293",
-        "name": "Bias & Fairness",
-        "description": "",
-        "children": []
-    },
-    {
-        "id": "1294",
-        "name": "Study Characteristics",
-        "description": "",
-        "children": [
-            {
-                "id": "1295",
-                "name": "Peer-Reviewed",
-                "description": "",
-                "children": []
-            },
-            {
-                "id": "1296",
-                "name": "Preprint",
-                "description": "",
-                "children": []
-            },
-            {
-                "id": "1297",
-                "name": "Published in Journal",
-                "description": "",
-                "children": []
-            },
-            {
-                "id": "1298",
-                "name": "Published in Conference",
-                "description": "",
-                "children": []
-            }
-        ]
-    },
-    {
-        "id": "1299",
-        "name": "Evaluation",
-        "description": "",
-        "children": [
-            {
-                "id": "1300",
-                "name": "Real-World Testing",
-                "description": "",
-                "children": []
-            },
-            {
-                "id": "1301",
-                "name": "Benchmark Dataset",
-                "description": "",
-                "children": []
-            },
-            {
-                "id": "1302",
-                "name": "No Empirical Evaluation",
-                "description": "",
-                "children": []
-            }
-        ]
-    },
-    {
-        "id": "1303",
-        "name": "Dataset Type",
-        "description": "Si te he fallado te pido perdon de la unica forma que se",
-        "children": [
-            {
-                "id": "1304",
-                "name": "Public Dataset",
-                "description": "",
-                "children": []
-            },
-            {
-                "id": "1305",
-                "name": "Private Dataset",
-                "description": "",
-                "children": []
-            },
-            {
-                "id": "1306",
-                "name": "Synthetic Data",
-                "description": "",
-                "children": []
-            }
-        ]
-    }
-]
-
-
-  const onChange = (newValue) => {
-    console.log('onChange ', newValue);
-    setValue(newValue);
   };
 
-  const tProps = {
-    treeData: selectTreeData,
-    value,
-    onChange,
-    treeCheckable: true,
-    showCheckedStrategy: SHOW_CHILD,
-    placeholder: 'Select tags for this article',
-    style: {
-      width: '100%',
-    },
+  const fetchTreeData = async () => {
+    const response = await fetch("http://localhost:8000/api/tags/");
+    const data = await response.json();
+    setTags(data);
   };
 
   const form = useForm({
@@ -209,16 +75,15 @@ export default function StudyForm({ studyid = "" }) {
       abstract: "",
       notes: "",
       authors: [],
+      tags: [],
     },
   });
-
 
   const fetchStudyDetailed = async (id) => {
     const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
     const data = await response.json();
     setSelectedStudyDetail(data);
-    console.log('fetched study detail data', data)
-  }
+  };
 
   const fetchAuthors = async () => {
     const response = await fetch(`http://localhost:8000/api/authors/`);
@@ -228,13 +93,11 @@ export default function StudyForm({ studyid = "" }) {
       label: author.name,
     }));
     setAuthorsList(authorsList);
-    console.log('fetched study detail data', authorsList)
-  }
+  };
 
   function onSubmit(values) {
     try {
-      console.log(studyid.studyid)
-      console.log(values);
+      console.log('submitting: ', values);
       toast(
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
           <code className="text-white">{JSON.stringify(values, null, 2)}</code>
@@ -247,6 +110,10 @@ export default function StudyForm({ studyid = "" }) {
   }
 
   useEffect(() => {
+    fetchTreeData();
+  }, []);
+
+  useEffect(() => {
     if (studyid) {
       fetchStudyDetailed(studyid);
     }
@@ -254,14 +121,16 @@ export default function StudyForm({ studyid = "" }) {
   }, [studyid]);
 
   useEffect(() => {
-    if (treeData) {
-      const formattedData = formatTreeData(treeData);
+    if (tags) {
+      const formattedData = formatTreeData(tags);
       setSelectTreeData(formattedData);
-      console.log('formatted tree data', formattedData)
-    }}, []);
+    }
+  }, [tags]);
 
   useEffect(() => {
     if (studyDetail) {
+      const tagIds = studyDetail.tags_display?.map(tag => String(tag.id)) || [];
+      console.log("tagIds", tagIds);
       form.reset({
         title: studyDetail.title || "",
         year: studyDetail.year || undefined,
@@ -271,15 +140,15 @@ export default function StudyForm({ studyid = "" }) {
         abstract: studyDetail.abstract || "",
         notes: studyDetail.notes || "",
         authors: studyDetail.authors_display || [],
+        tags: tagIds,
       });
     }
-  }, [studyDetail, form]);
+  }, [studyDetail]);
 
   return (
     <Card className="max-w-3xl mx-auto bg-indigo-100 ">
-      <CardHeader className="pb-4">
+      <CardHeader>
         <CardTitle className="text-2xl font-bold">Article Metadata</CardTitle>
-        <CardDescription>Enter the details of the academic publication</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -440,19 +309,44 @@ export default function StudyForm({ studyid = "" }) {
                   </FormItem>
                 )}
               />
+            
+            <FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2 font-bold">
+                    <Tag className="h-4 w-4 text-violet-950" />
+                    Tags
+                  </FormLabel>
+                  <FormControl>
+                    <TreeSelect
+                      treeData={selectTreeData}
+                      value={field.value}
+                      onChange={(newValue) => {
+                        form.setValue("tags", newValue.map(v => v.value));
+                      }}
+                      treeCheckable
+                      treeCheckStrictly
+                      showCheckedStrategy={SHOW_CHILD}
+                      placeholder="Select tags for this article"
+                      style={{ width: "100%" }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            <TreeSelect {...tProps} />
-
-            </div>
-
-            <div className="pt-4  flex justify-end">
-              <Button type="submit"  className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950 flex">
+            <div className="pt-4 flex justify-end">
+              <Button type="submit" className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950 flex">
                 Submit
               </Button>
+            </div>
             </div>
           </form>
         </Form>
       </CardContent>
     </Card>
-  )
+  );
 }
