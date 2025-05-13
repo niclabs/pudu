@@ -203,6 +203,22 @@ class StudiesView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+    def patch(self, request, study_id=None):
+        if not study_id:
+            return Response({'error': 'Study ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            study = Study.objects.get(id=study_id)
+        except Study.DoesNotExist:
+            return Response({'error': 'Study not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = StudySerializer(study, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class AuthorsView(APIView):
     '''
     API view for managing authors.

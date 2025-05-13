@@ -1,68 +1,53 @@
 "use client"
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { toast } from "sonner"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { MultiSelect } from "@/components/custom/multiselect";
+import { MultiSelect } from "@/components/custom/multiselect"
 import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  BookOpen,
-  Calendar,
-  Hash,
-  Link,
-  FileDigit,
-  FileText,
-  StickyNote,
-  GraduationCap,
-  Tag
-} from "lucide-react"
+import { BookOpen, Calendar, Hash, Link, FileDigit, FileText, StickyNote, GraduationCap, Tag, Flag
+ } from "lucide-react"
 import { TreeSelect } from "antd"
 
 const formSchema = z.object({
   title: z.string().min(1),
-  year: z.preprocess((val) => val === "" ? undefined : Number(val), z.number().int().min(1000).max(9999).optional()),
+  year: z.preprocess((val) => (val === "" ? undefined : Number(val)), z.number().int().min(1000).max(9999).optional()),
   doi: z.string().optional(),
   url: z.string().optional(),
   pages: z.string().optional(),
   abstract: z.string().optional(),
-  notes: z.string().optional(),
+  summary: z.string().optional(),
   authors: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
-});
+  flags: z.array(z.string()).optional(),
+})
 
 export default function StudyForm({ studyid = "" }) {
-  const [studyDetail, setSelectedStudyDetail] = useState(null);
-  const [authorsList, setAuthorsList] = useState(null);
-  const [selectTreeData, setSelectTreeData] = useState(null);
-  const { SHOW_CHILD } = TreeSelect;
-  const [tags, setTags] = useState(null);
+  const [studyDetail, setSelectedStudyDetail] = useState(null)
+  const [authorsList, setAuthorsList] = useState(null)
+  const [selectTreeData, setSelectTreeData] = useState(null)
+  const { SHOW_CHILD } = TreeSelect
+  const [tags, setTags] = useState(null)
+  const flagslist = ["Reviewed", "Pending Review", "Missing Data", "Flagged"]
 
   const formatTreeData = (data) => {
     return data.map((item) => ({
       title: item.name,
       value: item.id,
       key: item.id,
-      children: formatTreeData(item.children),
-    }));
-  };
+      children: item.children && item.children.length > 0 ? formatTreeData(item.children) : [],
+    }))
+  }
 
   const fetchTreeData = async () => {
-    const response = await fetch("http://localhost:8000/api/tags/");
-    const data = await response.json();
-    setTags(data);
-  };
+    const response = await fetch("http://localhost:8000/api/tags/")
+    const data = await response.json()
+    setTags(data)
+  }
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -73,64 +58,87 @@ export default function StudyForm({ studyid = "" }) {
       url: "",
       pages: "",
       abstract: "",
-      notes: "",
+      summary: "",
       authors: [],
       tags: [],
+      flags: ["Pending Review"],
     },
-  });
+  })
 
   const fetchStudyDetailed = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
-    const data = await response.json();
-    setSelectedStudyDetail(data);
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/`)
+    const data = await response.json()
+    setSelectedStudyDetail(data)
+  }
+
+  const saveStudy = async (studyid, form) => {
+    const method = studyid ? "PATCH" : "POST";
+    const url = studyid
+      ? `http://127.0.0.1:8000/api/studies/${studyid}/`
+      : "http://127.0.0.1:8000/api/studies/";
+  
+    const response = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+  
+    if (!response.ok) {
+      throw new Error(`Failed to ${method === "POST" ? "create" : "update"} study`);
+    }
+  
+    return response.json();
   };
 
   const fetchAuthors = async () => {
-    const response = await fetch(`http://localhost:8000/api/authors/`);
-    const data = await response.json();
+    const response = await fetch(`http://localhost:8000/api/authors/`)
+    const data = await response.json()
     const authorsList = data.map((author) => ({
-      value: author.name,
+      value: String(author.id),  
       label: author.name,
-    }));
-    setAuthorsList(authorsList);
-  };
+    }))
+    setAuthorsList(authorsList)
+  }
 
   function onSubmit(values) {
     try {
-      console.log('submitting: ', values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
+      console.log("submitting: ", values)
+      saveStudy(studyid, values)
+    
     } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
+      console.error("Form submission error", error)
+
     }
   }
 
   useEffect(() => {
-    fetchTreeData();
-  }, []);
+    fetchTreeData()
+  }, [])
 
   useEffect(() => {
     if (studyid) {
-      fetchStudyDetailed(studyid);
+      fetchStudyDetailed(studyid)
     }
-    fetchAuthors();
-  }, [studyid]);
+    fetchAuthors()
+  }, [studyid])
 
   useEffect(() => {
     if (tags) {
-      const formattedData = formatTreeData(tags);
-      setSelectTreeData(formattedData);
+      const formattedData = formatTreeData(tags)
+      setSelectTreeData(formattedData)
     }
-  }, [tags]);
+  }, [tags])
 
   useEffect(() => {
-    if (studyDetail) {
-      const tagIds = studyDetail.tags_display?.map(tag => String(tag.id)) || [];
-      console.log("tagIds", tagIds);
+    // Only reset form when both studyDetail and authorsList are ready
+    if (studyDetail && authorsList) {
+      const authorIds = studyDetail.authors_display?.map((name) => {
+        const match = authorsList.find((a) => a.label === name)
+        return match ? match.value : name // use ID, fallback to name if not found
+      }) || []
+  
+      const tagIds = studyDetail.tags_display?.map((tag) => String(tag.id)) || []
+  
       form.reset({
         title: studyDetail.title || "",
         year: studyDetail.year || undefined,
@@ -138,12 +146,13 @@ export default function StudyForm({ studyid = "" }) {
         url: studyDetail.url || "",
         pages: studyDetail.pages || "",
         abstract: studyDetail.abstract || "",
-        notes: studyDetail.notes || "",
-        authors: studyDetail.authors_display || [],
+        summary: studyDetail.summary || "",
+        authors: authorIds,
         tags: tagIds,
-      });
+        flags: Array.isArray(studyDetail.flags) ? studyDetail.flags : ["Pending Review"],
+      })
     }
-  }, [studyDetail]);
+  }, [studyDetail, authorsList, form]) // Trigger effect when studyDetail or authorsList change
 
   return (
     <Card className="max-w-3xl mx-auto bg-indigo-100 ">
@@ -154,23 +163,22 @@ export default function StudyForm({ studyid = "" }) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
-
-            <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2 font-bold">
-                        <BookOpen className="h-4 w-4 text-violet-950" />
-                        Title
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="The title of study" type="text" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2 font-bold">
+                      <BookOpen className="h-4 w-4 text-violet-950" />
+                      Title
+                    </FormLabel>
+                    <FormControl>
+                      <Input placeholder="The title of study" type="text" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid gap-6 md:grid-cols-2">
                 <FormField
@@ -190,22 +198,21 @@ export default function StudyForm({ studyid = "" }) {
                   )}
                 />
                 <FormField
-                control={form.control}
-                name="pages"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2 font-bold">
-                      <FileDigit className="h-4 w-4 text-violet-950" />
-                      Pages
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="Relevant page numbers (e.g., 123-145)" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+                  control={form.control}
+                  name="pages"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2 font-bold">
+                        <FileDigit className="h-4 w-4 text-violet-950" />
+                        Pages
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Relevant page numbers (e.g., 123-145)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div className="grid gap-6 md:grid-cols-2">
@@ -242,7 +249,6 @@ export default function StudyForm({ studyid = "" }) {
                     </FormItem>
                   )}
                 />
-
               </div>
 
               <FormField
@@ -255,13 +261,13 @@ export default function StudyForm({ studyid = "" }) {
                       Authors
                     </FormLabel>
                     <FormControl>
-                    <MultiSelect
-                      options={authorsList ?? []}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      placeholder="Select authors"
-                      maxCount={5}
-                    />
+                      <MultiSelect
+                        options={authorsList ?? []}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Select authors"
+                        maxCount={5}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -291,7 +297,7 @@ export default function StudyForm({ studyid = "" }) {
 
               <FormField
                 control={form.control}
-                name="notes"
+                name="summary"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2 font-bold">
@@ -309,44 +315,72 @@ export default function StudyForm({ studyid = "" }) {
                   </FormItem>
                 )}
               />
-            
-            <FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2 font-bold">
-                    <Tag className="h-4 w-4 text-violet-950" />
-                    Tags
-                  </FormLabel>
-                  <FormControl>
-                    <TreeSelect
-                      treeData={selectTreeData}
-                      value={field.value}
-                      onChange={(newValue) => {
-                        form.setValue("tags", newValue.map(v => v.value));
-                      }}
-                      treeCheckable
-                      treeCheckStrictly
-                      showCheckedStrategy={SHOW_CHILD}
-                      placeholder="Select tags for this article"
-                      style={{ width: "100%" }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <div className="pt-4 flex justify-end">
-              <Button type="submit" className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950 flex">
-                Submit
-              </Button>
-            </div>
+              <FormField
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2 font-bold">
+                      <Tag className="h-4 w-4 text-violet-950" />
+                      Tags
+                    </FormLabel>
+                    <FormControl>
+                      <TreeSelect
+                        treeData={selectTreeData}
+                        value={field.value}
+                        onChange={(newValue) => {
+                          form.setValue(
+                            "tags",
+                            newValue.map((v) => v.value),
+                          )
+                        }}
+                        treeCheckable
+                        treeCheckStrictly
+                        showCheckedStrategy={SHOW_CHILD}
+                        placeholder="Select tags for this article"
+                        style={{ width: "100%" }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="w-full pt-2 flex justify-between">
+                <div className="w-xl pr-2 flex flex-col">
+                  <FormField
+                    control={form.control}
+                    name="flags"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2 font-bold">
+                          <Flag className="h-4 w-4 text-violet-950" />
+                          Status
+                        </FormLabel>
+                        <FormControl>
+                          <MultiSelect
+                            options={flagslist.map((flag) => ({ value: flag, label: flag }))}
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder="Select flags"
+                            maxCount={5}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="pt-6">
+                  <Button type="submit" className= "bg-violet-900 text-violet-50 text-xs hover:bg-violet-950">
+                    Submit
+                  </Button>
+                </div>
+              </div>
             </div>
           </form>
         </Form>
       </CardContent>
     </Card>
-  );
+  )
 }

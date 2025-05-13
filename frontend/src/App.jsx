@@ -14,6 +14,7 @@ export default function App() {
           <Routes>
             <Route path="/tags" element={<TagView />} />
             <Route path="/studies" element={<StudyView />} />
+            <Route path="/editstudy/" element={<EditStudyView />} />
             <Route path="/editstudy/:studyid" element={<EditStudyView />} />
           </Routes>
         </main>
