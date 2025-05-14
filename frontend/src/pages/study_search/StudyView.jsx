@@ -161,33 +161,34 @@ function StudyView() {
                     className="bg-emerald-400 text-violet-50 font-bold text-xl p-6 hover:bg-emerald-500"
                     onClick={() => setFilterBy(filterBy === "Reviewed" ? null : "Reviewed")}
                     >
-                    <BookOpenCheck className="mr-2" /> Reviewed: {flagCount["Reviewed"] || 0}
+                     <BookOpenCheck className="mr-2" /> Reviewed: {flagCount["Reviewed"] || 0}
                     </Button>
                     <Button
-                    className="bg-amber-400 text-violet-50 font-bold text-xl p-6 hover:bg-amber-500"
-                    onClick={() => setFilterBy(filterBy === "Pending Review" ? null : "Pending Review")}
+                      className="bg-amber-400 text-violet-50 font-bold text-xl p-6 hover:bg-amber-500"
+                      onClick={() => setFilterBy(filterBy === "Pending Review" ? null : "Pending Review")}
                     >
-                    <BookOpenText className="mr-2" /> Pending Review: {flagCount["Pending Review"] || 0}
+                      <BookOpenText className="mr-2" /> Pending Review: {flagCount["Pending Review"] || 0}
                     </Button>
                     <Button
-                    className="bg-red-400 text-violet-50 font-bold text-xl p-6 hover:bg-red-500"
-                    onClick={() => setFilterBy(filterBy === "Missing Data" ? null : "Missing Data")}
+                      className="bg-red-400 text-violet-50 font-bold text-xl p-6 hover:bg-red-500"
+                      onClick={() => setFilterBy(filterBy === "Missing Data" ? null : "Missing Data")}
                     >
-                    <BookOpen className="mr-2" /> Missing Data: {flagCount["Missing Data"] || 0}
+                      <BookOpen className="mr-2" /> Missing Data: {flagCount["Missing Data"] || 0}
                     </Button>
                     <Button
-                    className="bg-orange-400 text-violet-50 font-bold text-xl p-6 hover:bg-orange-500"
-                    onClick={() => setFilterBy(filterBy === "Flagged" ? null : "Flagged")}
+                      className="bg-orange-400 text-violet-50 font-bold text-xl p-6 hover:bg-orange-500"
+                      onClick={() => setFilterBy(filterBy === "Flagged" ? null : "Flagged")}
                     >
-                    <Flag className="mr-2" /> Flagged: {flagCount["Flagged"] || 0}
+                     <Flag className="mr-2" /> Flagged: {flagCount["Flagged"] || 0}
                     </Button>
                   </div>
               
-                  {/* Violet action buttons on the right */}
             <div className="flex flex-wrap gap-4">
+            <Link to={`/editstudy/`} >
               <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
                 <BookText className="mr-2" /> Create Study
               </Button>
+            </Link>
     
               <Dialog open={importOpen} onOpenChange={setImportOpen}>
                 <DialogTrigger asChild>
