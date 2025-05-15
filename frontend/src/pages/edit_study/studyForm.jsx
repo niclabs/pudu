@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { BookOpen, Calendar, Hash, Link, FileDigit, FileText, StickyNote, GraduationCap, Tag, Flag
- } from "lucide-react"
+import { BookOpen, Calendar, Hash, Link, FileDigit, FileText, StickyNote, GraduationCap, Tag, Flag } from "lucide-react"
 import { TreeSelect } from "antd"
 
 const formSchema = z.object({
@@ -24,6 +23,7 @@ const formSchema = z.object({
   authors: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
   flags: z.array(z.string()).optional(),
+  pathto_pdf: z.string().optional(),
 })
 
 export default function StudyForm({ studyid = "" }) {
@@ -62,6 +62,7 @@ export default function StudyForm({ studyid = "" }) {
       authors: [],
       tags: [],
       flags: ["Pending Review"],
+      pathto_pdf: "",
     },
   })
 
@@ -69,32 +70,31 @@ export default function StudyForm({ studyid = "" }) {
     const response = await fetch(`http://localhost:8000/api/studies/${id}/`)
     const data = await response.json()
     setSelectedStudyDetail(data)
+    console.log(data)
   }
 
   const saveStudy = async (studyid, form) => {
-    const method = studyid ? "PATCH" : "POST";
-    const url = studyid
-      ? `http://127.0.0.1:8000/api/studies/${studyid}/`
-      : "http://127.0.0.1:8000/api/studies/";
-  
+    const method = studyid ? "PATCH" : "POST"
+    const url = studyid ? `http://127.0.0.1:8000/api/studies/${studyid}/` : "http://127.0.0.1:8000/api/studies/"
+
     const response = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
-    });
-  
+    })
+
     if (!response.ok) {
-      throw new Error(`Failed to ${method === "POST" ? "create" : "update"} study`);
+      throw new Error(`Failed to ${method === "POST" ? "create" : "update"} study`)
     }
-  
-    return response.json();
-  };
+
+    return response.json()
+  }
 
   const fetchAuthors = async () => {
     const response = await fetch(`http://localhost:8000/api/authors/`)
     const data = await response.json()
     const authorsList = data.map((author) => ({
-      value: String(author.id),  
+      value: String(author.id),
       label: author.name,
     }))
     setAuthorsList(authorsList)
@@ -104,10 +104,8 @@ export default function StudyForm({ studyid = "" }) {
     try {
       console.log("submitting: ", values)
       saveStudy(studyid, values)
-    
     } catch (error) {
       console.error("Form submission error", error)
-
     }
   }
 
@@ -132,13 +130,14 @@ export default function StudyForm({ studyid = "" }) {
   useEffect(() => {
     // Only reset form when both studyDetail and authorsList are ready
     if (studyDetail && authorsList) {
-      const authorIds = studyDetail.authors_display?.map((name) => {
-        const match = authorsList.find((a) => a.label === name)
-        return match ? match.value : name // use ID, fallback to name if not found
-      }) || []
-  
+      const authorIds =
+        studyDetail.authors_display?.map((name) => {
+          const match = authorsList.find((a) => a.label === name)
+          return match ? match.value : name // use ID, fallback to name if not found
+        }) || []
+
       const tagIds = studyDetail.tags_display?.map((tag) => String(tag.id)) || []
-  
+
       form.reset({
         title: studyDetail.title || "",
         year: studyDetail.year || undefined,
@@ -150,6 +149,7 @@ export default function StudyForm({ studyid = "" }) {
         authors: authorIds,
         tags: tagIds,
         flags: Array.isArray(studyDetail.flags) ? studyDetail.flags : ["Pending Review"],
+        pathto_pdf: studyDetail.pathto_pdf || "", // Make sure to load the existing filename
       })
     }
   }, [studyDetail, authorsList, form]) // Trigger effect when studyDetail or authorsList change
@@ -346,7 +346,7 @@ export default function StudyForm({ studyid = "" }) {
                   </FormItem>
                 )}
               />
-              <div className="w-full pt-2 flex justify-between">
+              <div className="w-xl pt-2 flex justify-between">
                 <div className="w-xl pr-2 flex flex-col">
                   <FormField
                     control={form.control}
@@ -371,8 +371,36 @@ export default function StudyForm({ studyid = "" }) {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="pathto_pdf"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex w-md items-center gap-2 font-bold">
+                        <FileText className="h-4 w-4 text-violet-950" />
+                        File Name {field.value && <span className="ml-2 font-normal text-sm text-gray-600">({field.value})</span>}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="space-y-2">
+                          <Input
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                form.setValue("pathto_pdf", file.name)
+                              }
+                              // If no file is selected, we keep the existing value
+                            }}
+                          />
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
                 <div className="pt-6">
-                  <Button type="submit" className= "bg-violet-900 text-violet-50 text-xs hover:bg-violet-950">
+                  <Button type="submit" className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950">
                     Submit
                   </Button>
                 </div>
