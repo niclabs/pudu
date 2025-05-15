@@ -16,9 +16,9 @@ function EditStudyView() {
         <div className="flex-grow overflow-auto h-full">
             <StudyForm studyid={params.studyid} />
         </div>
-        <div className=" w-3/4 h-full">
-            <PdfEmbed url={fileUrl} />
-        </div>
+      <div className=" w-2/4 h-full">
+          <PdfEmbed url={fileUrl} />
+      </div>
       
     </div>
   )

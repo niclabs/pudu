@@ -155,7 +155,7 @@ export default function StudyForm({ studyid = "" }) {
   }, [studyDetail, authorsList, form]) // Trigger effect when studyDetail or authorsList change
 
   return (
-    <Card className="max-w-3xl mx-auto rounded-none bg-indigo-100 ">
+    <Card className="max-w-3xl mx-auto border-radius 0 bg-indigo-100 ">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Article Metadata</CardTitle>
       </CardHeader>
