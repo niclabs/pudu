@@ -26,7 +26,7 @@ const formSchema = z.object({
   pathto_pdf: z.string().optional(),
 })
 
-export default function StudyForm({ studyid = "" }) {
+export default function StudyForm({ studyid = "", refreshPdf }) {
   const [studyDetail, setSelectedStudyDetail] = useState(null)
   const [authorsList, setAuthorsList] = useState(null)
   const [selectTreeData, setSelectTreeData] = useState(null)
@@ -100,10 +100,13 @@ export default function StudyForm({ studyid = "" }) {
     setAuthorsList(authorsList)
   }
 
-  function onSubmit(values) {
+  async function onSubmit(values) {
     try {
       console.log("submitting: ", values)
-      saveStudy(studyid, values)
+      await saveStudy(studyid, values)
+      if (refreshPdf) {
+        refreshPdf()
+      }
     } catch (error) {
       console.error("Form submission error", error)
     }
@@ -155,13 +158,16 @@ export default function StudyForm({ studyid = "" }) {
   }, [studyDetail, authorsList, form]) // Trigger effect when studyDetail or authorsList change
 
   return (
-    <Card className="max-w-3xl mx-auto border-radius 0 bg-indigo-100 ">
-      <CardHeader>
+    <Card className="max-w-4xl mx-auto border-0 bg-indigo-100 ">
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-2xl font-bold">Article Metadata</CardTitle>
+        <Button type="submit" form="study-form" className="bg-violet-900 text-violet-50 hover:bg-violet-950">
+          Submit
+        </Button>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form id="study-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
               <FormField
                 control={form.control}
@@ -346,64 +352,72 @@ export default function StudyForm({ studyid = "" }) {
                   </FormItem>
                 )}
               />
-              <div className="w-xl pt-2 flex justify-between">
-                <div className="w-xl pr-2 flex flex-col">
-                  <FormField
-                    control={form.control}
-                    name="flags"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2 font-bold">
-                          <Flag className="h-4 w-4 text-violet-950" />
-                          Status
-                        </FormLabel>
-                        <FormControl>
-                          <MultiSelect
-                            options={flagslist.map((flag) => ({ value: flag, label: flag }))}
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            placeholder="Select flags"
-                            maxCount={5}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
+              <div className="grid grid-cols-2 gap-4 pt-2">
                 <FormField
                   control={form.control}
-                  name="pathto_pdf"
+                  name="flags"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex w-md items-center gap-2 font-bold">
-                        <FileText className="h-4 w-4 text-violet-950" />
-                        File Name {field.value && <span className="ml-2 font-normal text-sm text-gray-600">({field.value})</span>}
+                      <FormLabel className="flex items-center gap-2 font-bold">
+                        <Flag className="h-4 w-4 text-violet-950" />
+                        Status
                       </FormLabel>
                       <FormControl>
-                        <div className="space-y-2">
-                          <Input
-                            type="file"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0]
-                              if (file) {
-                                form.setValue("pathto_pdf", file.name)
-                              }
-                              // If no file is selected, we keep the existing value
-                            }}
-                          />
-                        </div>
+                        <MultiSelect
+                          options={flagslist.map((flag) => ({ value: flag, label: flag }))}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="Select flags"
+                          maxCount={2}
+                        />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="pt-6">
-                  <Button type="submit" className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950">
-                    Submit
-                  </Button>
-                </div>
+<FormField
+  control={form.control}
+  name="pathto_pdf"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel className="flex items-center gap-2 font-bold">
+        <FileText className="h-4 w-4 text-violet-950" />
+        File Name{" "}
+        {field.value && (
+          <span className="ml-2 font-normal text-sm text-gray-600">({field.value})</span>
+        )}
+        {field.value && (
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            className="bg-red-600"
+            onClick={() => form.setValue("pathto_pdf", "")}
+          >
+            Clear
+          </Button>
+        )}
+      </FormLabel>
+      <div className="flex items-center gap-2">
+        <FormControl>
+          <Input
+            type="file"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) {
+                form.setValue("pathto_pdf", file.name)
+              }
+            }}
+          />
+        </FormControl>
+        
+      </div>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
               </div>
             </div>
           </form>

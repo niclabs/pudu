@@ -255,6 +255,17 @@ class AuthorsView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, author_id=None):
+        if not author_id:
+            return Response({'error': 'Author ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            author = Author.objects.get(id=author_id)
+            author.delete()
+            return Response({'message': 'Author deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except Author.DoesNotExist:
+            return Response({'error': 'Author not found.'}, status=status.HTTP_404_NOT_FOUND)
     
 
 @api_view(['GET'])
