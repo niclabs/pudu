@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -9,8 +9,14 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { BookOpen, Calendar, Hash, Link, FileDigit, FileText, StickyNote, GraduationCap, Tag, Flag } from "lucide-react"
+import { BookOpen, Calendar, Hash, Link, FileDigit, FileText, StickyNote, GraduationCap, Tag, Flag, X, FilePlus, Info } from "lucide-react"
 import { TreeSelect } from "antd"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/custom/tooltip"
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -158,7 +164,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   }, [studyDetail, authorsList, form]) // Trigger effect when studyDetail or authorsList change
 
   return (
-    <Card className="max-w-4xl mx-auto border-0 bg-indigo-100 ">
+    <Card className="max-w-4xl m-4 mb-4 mx-auto border-0 bg-indigo-100 ">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-2xl font-bold">Article Metadata</CardTitle>
         <Button type="submit" form="study-form" className="bg-violet-900 text-violet-50 hover:bg-violet-950">
@@ -382,20 +388,30 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   render={({ field }) => (
     <FormItem>
       <FormLabel className="flex items-center gap-2 font-bold">
-        <FileText className="h-4 w-4 text-violet-950" />
-        File Name{" "}
+        <FilePlus className="h-4 w-4 text-violet-950" />
+        PDF file 
+        <TooltipProvider>
+         <Tooltip>
+           <TooltipTrigger asChild>
+              <Info className="h-4 w-4 text-violet-950" />
+              </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={5} className="bg-violet-100 text-violet-950 border-violet-200"> 
+                  <p>Link the study to a PDF in the tool's public folder</p>
+                </TooltipContent>
+          </Tooltip>
+       </TooltipProvider>
         {field.value && (
-          <span className="ml-2 font-normal text-sm text-gray-600">({field.value})</span>
+          <span className="ml-2 font-normal text-sm text-gray-600">{field.value}</span>
         )}
         {field.value && (
           <Button
             type="button"
             variant="destructive"
-            size="sm"
+            size="xs"
             className="bg-red-600"
             onClick={() => form.setValue("pathto_pdf", "")}
           >
-            Clear
+            <X className="h-2 w-2" />
           </Button>
         )}
       </FormLabel>
