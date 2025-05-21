@@ -256,17 +256,20 @@ class AuthorsView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, author_id=None):
-        if not author_id:
-            return Response({'error': 'Author ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request):
+        authors = request.data.get('authors')
 
-        try:
-            author = Author.objects.get(id=author_id)
-            author.delete()
-            return Response({'message': 'Author deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-        except Author.DoesNotExist:
-            return Response({'error': 'Author not found.'}, status=status.HTTP_404_NOT_FOUND)
-    
+        if not isinstance(authors, list) or not authors:
+            return Response(
+                {'error': 'A non-empty list of authors must be provided.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        authors_qs = Author.objects.filter(id__in=authors)
+        found_ids = list(authors_qs.values_list('id', flat=True))
+        authors_qs.delete()
+
+        return Response({'deleted': found_ids}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def tag_study_counts(request):

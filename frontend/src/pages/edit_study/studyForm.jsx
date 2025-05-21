@@ -1,5 +1,6 @@
 "use client"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -36,9 +37,46 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   const [studyDetail, setSelectedStudyDetail] = useState(null)
   const [authorsList, setAuthorsList] = useState(null)
   const [selectTreeData, setSelectTreeData] = useState(null)
+  const [authorOpen, setAuthorOpen] = useState(false)
   const { SHOW_CHILD } = TreeSelect
   const [tags, setTags] = useState(null)
   const flagslist = ["Reviewed", "Pending Review", "Missing Data", "Flagged"]
+  const [addedAuthor, setAddedAuthor] = useState("")
+
+  const handleAuthorSubmit = async () => {
+    
+    const authorName = addedAuthor.trim();
+  
+    if (!authorName) {
+      console.error("Author name cannot be empty");
+      return;
+    }
+  
+    await addAuthor(authorName);
+  };
+
+  const addAuthor = async (authorName) => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/authors/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: authorName }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to add author");
+      }
+  
+      const newAuthor = await response.json();
+      console.log("Added author:", newAuthor);
+      setAddedAuthor("");
+      await fetchAuthors(); 
+      setAuthorOpen(false); 
+    } catch (error) {
+      console.error("Error adding author:", error.message);
+    }
+  };
 
   const formatTreeData = (data) => {
     return data.map((item) => ({
@@ -79,6 +117,38 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
     console.log(data)
   }
 
+  async function deleteAuthors() {
+    try {
+      const authorIds = form.getValues("authors");
+      const response = await fetch('http://127.0.0.1:8000/api/authors/', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ authors: authorIds }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to delete authors');
+      }
+  
+      const data = await response.json();
+      console.log('Deleted authors:', data.deleted);
+  
+      await fetchAuthors();
+      form.setValue("authors", []);
+  
+      setSelectedStudyDetail(prev => ({
+        ...prev,
+        authors_display: [],
+      }));
+  
+      return data.deleted;
+    } catch (error) {
+      console.error('Error deleting authors:', error.message);
+      throw error;
+    }
+  }
+
   const saveStudy = async (studyid, form) => {
     const method = studyid ? "PATCH" : "POST"
     const url = studyid ? `http://127.0.0.1:8000/api/studies/${studyid}/` : "http://127.0.0.1:8000/api/studies/"
@@ -96,6 +166,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
     return response.json()
   }
 
+  
   const fetchAuthors = async () => {
     const response = await fetch(`http://localhost:8000/api/authors/`)
     const data = await response.json()
@@ -103,6 +174,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       value: String(author.id),
       label: author.name,
     }))
+    authorsList.sort((a, b) => a.label.localeCompare(b.label))
     setAuthorsList(authorsList)
   }
 
@@ -203,7 +275,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                         Year
                       </FormLabel>
                       <FormControl>
-                        <Input placeholder="The year it was published." {...field} />
+                        <Input placeholder="The year it was published." type="number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -268,10 +340,56 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                 name="authors"
                 render={({ field }) => (
                   <FormItem>
+                    <div className="flex flex-row items-center justify-between">
                     <FormLabel className="flex items-center gap-2 font-bold">
                       <GraduationCap className="h-4 w-4 text-violet-950" />
                       Authors
                     </FormLabel>
+                    <div className="flex items-center gap-2">
+                    <Dialog open={authorOpen} onOpenChange={setAuthorOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-violet-900 text-violet-50 font-bold h-6 hover:bg-violet-950">
+                     Add Authors
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] bg-violet-50">
+                  <DialogHeader>
+                    <DialogTitle>Add Authors</DialogTitle>
+                    <DialogDescription>Makes a new entry to the authors list for this systematic review.</DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <div className="col-span-4 bg-violet">
+                      <Input
+                        type="text"
+                        placeholder="Author name" 
+                        className="cursor-pointer"
+                        value={addedAuthor}
+                        onChange={(e) => setAddedAuthor(e.target.value)}
+                      />
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setAuthorOpen(false)}
+                      className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleAuthorSubmit} className="bg-violet-900 text-violet-50 hover:bg-violet-950">
+                      Confirm
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+                    <Button className= "bg-red-600 text-violet-50 h-6 hover:bg-red-800"
+                      type="button"
+                      onClick={deleteAuthors}
+                    >Delete Selected Authors</Button>
+                    </div>
+                    </div>
                     <FormControl>
                       <MultiSelect
                         options={authorsList ?? []}
@@ -382,58 +500,57 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                   )}
                 />
 
-<FormField
-  control={form.control}
-  name="pathto_pdf"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel className="flex items-center gap-2 font-bold">
-        <FilePlus className="h-4 w-4 text-violet-950" />
-        PDF file 
-        <TooltipProvider>
-         <Tooltip>
-           <TooltipTrigger asChild>
-              <Info className="h-4 w-4 text-violet-950" />
-              </TooltipTrigger>
-                <TooltipContent side="top" sideOffset={5} className="bg-violet-100 text-violet-950 border-violet-200"> 
-                  <p>Link the study to a PDF in the tool's public folder</p>
-                </TooltipContent>
-          </Tooltip>
-       </TooltipProvider>
-        {field.value && (
-          <span className="ml-2 font-normal text-sm text-gray-600">{field.value}</span>
-        )}
-        {field.value && (
-          <Button
-            type="button"
-            variant="destructive"
-            size="xs"
-            className="bg-red-600"
-            onClick={() => form.setValue("pathto_pdf", "")}
-          >
-            <X className="h-2 w-2" />
-          </Button>
-        )}
-      </FormLabel>
-      <div className="flex items-center gap-2">
-        <FormControl>
-          <Input
-            type="file"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) {
-                form.setValue("pathto_pdf", file.name)
-              }
-            }}
-          />
-        </FormControl>
-        
-      </div>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
-
+                <FormField
+                  control={form.control}
+                  name="pathto_pdf"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2 font-bold">
+                        <FilePlus className="h-4 w-4 text-violet-950" />
+                        PDF file 
+                        <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                              <Info className="h-4 w-4 text-violet-950" />
+                              </TooltipTrigger>
+                                <TooltipContent side="top" sideOffset={5} className="bg-violet-100 text-violet-950 border-violet-200"> 
+                                  <p>Link the study to a PDF in the tool&apos;s public folder</p>
+                                </TooltipContent>
+                          </Tooltip>
+                      </TooltipProvider>
+                        {field.value && (
+                          <span className="ml-2 font-normal text-sm text-gray-600">{field.value}</span>
+                        )}
+                        {field.value && (
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="xs"
+                            className="bg-red-600 hover:bg-red-800"
+                            onClick={() => form.setValue("pathto_pdf", "")}
+                          >
+                            <X className="h-2 w-2" />
+                          </Button>
+                        )}
+                      </FormLabel>
+                      <div className="flex items-center gap-2">
+                        <FormControl>
+                          <Input
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                form.setValue("pathto_pdf", file.name)
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
           </form>
@@ -442,3 +559,5 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
     </Card>
   )
 }
+
+
