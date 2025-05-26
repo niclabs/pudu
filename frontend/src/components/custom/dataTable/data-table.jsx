@@ -1,57 +1,66 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
-  getFilteredRowModel,  
+  getFilteredRowModel,
   useReactTable,
-} from "@tanstack/react-table"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/custom/table"
-import { Input } from "@/components/custom/input"
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/custom/table";
+import { Input } from "@/components/custom/input";
 
 // Filter function using AND logic, returns true when all search terms are present in a row
 // dont delete columnId or addMeta, required by tanstacktable
 // eslint-disable-next-line no-unused-vars
 function crossColumnAndFilter(row, columnId, filterValue, addMeta) {
-  if (!filterValue){
-    return true
-  } 
+  if (!filterValue) {
+    return true;
+  }
 
   // Split and clean search terms
   const searchTerms = filterValue
     .toString()
     .split(",")
     .map((term) => term.trim().toLowerCase())
-    .filter(Boolean)
+    .filter(Boolean);
 
   // If no search terms, return true
   if (searchTerms.length === 0) {
-    return true
+    return true;
   }
   // For each search term, check if it exists in any column
   return searchTerms.every((term) => {
     // Check each column in the row
     return row.getAllCells().some((cell) => {
-      const cellValue = cell.getValue()
-      if (cellValue == null){
-        return false
-      } 
-      return String(cellValue).toLowerCase().includes(term)
-    })
-  })
+      const cellValue = cell.getValue();
+      if (cellValue == null) {
+        return false;
+      }
+      return String(cellValue).toLowerCase().includes(term);
+    });
+  });
 }
 
-export function DataTable({ columns, data, selectedTag = "",filterBy =""}) {
-  const [sorting, setSorting] = useState([{
-    id: "year",
-    desc: false,
-  }])
-  const [globalFilter, setGlobalFilter] = useState("")
+export function DataTable({ columns, data, selectedTag = "", filterBy = "" }) {
+  const [sorting, setSorting] = useState([
+    {
+      id: "year",
+      desc: false,
+    },
+  ]);
+  const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState(
-    filterBy ? [{ id: "flags", value: filterBy }] : []
-  )
+    filterBy ? [{ id: "flags", value: filterBy }] : [],
+  );
 
   // // If selectedTag and filterBy are not empty, append it to the global filter
   // const combinedFilter = [globalFilter, selectedTag]
@@ -66,7 +75,7 @@ export function DataTable({ columns, data, selectedTag = "",filterBy =""}) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     filterFns: {
-      crossColumnAnd: crossColumnAndFilter, 
+      crossColumnAnd: crossColumnAndFilter,
     },
     globalFilterFn: "crossColumnAnd",
     state: {
@@ -76,19 +85,18 @@ export function DataTable({ columns, data, selectedTag = "",filterBy =""}) {
     },
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
-  })
+  });
 
   useEffect(() => {
-    const filters = []
+    const filters = [];
     if (filterBy) {
-      filters.push({ id: "flags", value: filterBy })
+      filters.push({ id: "flags", value: filterBy });
     }
     if (selectedTag) {
-      filters.push({ id: "tags", value: selectedTag })
+      filters.push({ id: "tags", value: selectedTag });
     }
-    setColumnFilters(filters)
-  }, [filterBy, selectedTag])
-
+    setColumnFilters(filters);
+  }, [filterBy, selectedTag]);
 
   return (
     <div className="flex flex-col h-full">
@@ -100,17 +108,25 @@ export function DataTable({ columns, data, selectedTag = "",filterBy =""}) {
           className="max-w-sm"
         />
       </div>
-    <div className="h-full max-h-full min-h-0 overflow-auto rounded-md">
-      <Table className="min-w-full">
+      <div className="h-full max-h-full min-h-0 overflow-auto rounded-md">
+        <Table className="min-w-full">
           <TableHeader className="text-purple-950 sticky top-0">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead className="bg-violet-100 hover:bg-violet-200 sticky top-0 text-center" key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    <TableHead
+                      className="bg-violet-100 hover:bg-violet-200 sticky top-0 text-center"
+                      key={header.id}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -118,15 +134,27 @@ export function DataTable({ columns, data, selectedTag = "",filterBy =""}) {
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"} className="flex-grow">
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className="flex-grow"
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="whitespace-normal">{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell key={cell.id} className="whitespace-normal">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -135,5 +163,5 @@ export function DataTable({ columns, data, selectedTag = "",filterBy =""}) {
         </Table>
       </div>
     </div>
-  )
+  );
 }

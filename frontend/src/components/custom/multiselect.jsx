@@ -1,12 +1,16 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { CheckIcon, ChevronDown, XIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import * as React from "react";
+import { CheckIcon, ChevronDown, XIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -15,17 +19,20 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command"
-import { cva } from "class-variance-authority"
+} from "@/components/ui/command";
+import { cva } from "class-variance-authority";
 
 const multiSelectVariants = cva(
   "m-1 transition ease-in-out delay-150 hover:-translate-y-1 hover:scale-110 duration-300 shadow-sm",
   {
     variants: {
       variant: {
-        default: "border-foreground/10 text-foreground bg-card hover:bg-card/80",
-        secondary: "border-foreground/10 bg-violet-200 text-violet-950 hover:bg-violet-200",
-        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        default:
+          "border-foreground/10 text-foreground bg-card hover:bg-card/80",
+        secondary:
+          "border-foreground/10 bg-violet-200 text-violet-950 hover:bg-violet-200",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         inverted: "inverted",
       },
     },
@@ -33,7 +40,7 @@ const multiSelectVariants = cva(
       variant: "secondary",
     },
   },
-)
+);
 
 const MultiSelect = React.forwardRef(
   (
@@ -50,38 +57,42 @@ const MultiSelect = React.forwardRef(
     },
     ref,
   ) => {
-    const [isPopoverOpen, setIsPopoverOpen] = React.useState(false)
+    const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
 
-    const handleTogglePopover = () => setIsPopoverOpen((prev) => !prev)
+    const handleTogglePopover = () => setIsPopoverOpen((prev) => !prev);
 
-    const handleClear = () => onValueChange([])
+    const handleClear = () => onValueChange([]);
 
     const toggleOption = (option) => {
-      const isSelected = value.includes(option)
+      const isSelected = value.includes(option);
       const newValues = isSelected
         ? value.filter((v) => v !== option)
-        : [...value, option]
-      onValueChange(newValues)
-    }
+        : [...value, option];
+      onValueChange(newValues);
+    };
 
     const toggleAll = () => {
       if (value.length === options.length) {
-        onValueChange([])
+        onValueChange([]);
       } else {
-        onValueChange(options.map((o) => o.value))
+        onValueChange(options.map((o) => o.value));
       }
-    }
+    };
 
     const handleInputKeyDown = (event) => {
       if (event.key === "Enter") {
-        setIsPopoverOpen(true)
+        setIsPopoverOpen(true);
       } else if (event.key === "Backspace" && !event.currentTarget.value) {
-        onValueChange(value.slice(0, -1))
+        onValueChange(value.slice(0, -1));
       }
-    }
+    };
 
     return (
-      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen} modal={modalPopover}>
+      <Popover
+        open={isPopoverOpen}
+        onOpenChange={setIsPopoverOpen}
+        modal={modalPopover}
+      >
         <PopoverTrigger asChild>
           <Button
             ref={ref}
@@ -96,14 +107,19 @@ const MultiSelect = React.forwardRef(
               <div className="flex justify-between items-center w-full">
                 <div className="flex flex-wrap items-center">
                   {value.slice(0, maxCount).map((val) => {
-                    const option = options.find((o) => o.value === val)
-                    const IconComponent = option?.icon
+                    const option = options.find((o) => o.value === val);
+                    const IconComponent = option?.icon;
                     return (
-                      <Badge key={val} className={multiSelectVariants({ variant })}>
-                        {IconComponent && <IconComponent className="h-4 w-4 mr-2" />}
+                      <Badge
+                        key={val}
+                        className={multiSelectVariants({ variant })}
+                      >
+                        {IconComponent && (
+                          <IconComponent className="h-4 w-4 mr-2" />
+                        )}
                         {option?.label}
                       </Badge>
-                    )
+                    );
                   })}
                   {value.length > maxCount && (
                     <Badge className="bg-transparent text-foreground border-foreground/10">
@@ -115,17 +131,22 @@ const MultiSelect = React.forwardRef(
                   <XIcon
                     className="h-4 mx-2 cursor-pointer text-muted-foreground"
                     onClick={(event) => {
-                      event.stopPropagation()
-                      handleClear()
+                      event.stopPropagation();
+                      handleClear();
                     }}
                   />
-                  <Separator orientation="vertical" className="flex min-h-6 h-full" />
+                  <Separator
+                    orientation="vertical"
+                    className="flex min-h-6 h-full"
+                  />
                   <ChevronDown className="h-4 mx-2 cursor-pointer text-muted-foreground" />
                 </div>
               </div>
             ) : (
               <div className="flex items-center justify-between w-full mx-auto">
-                <span className="font-normal text-slate-500 mx-3">{placeholder}</span>
+                <span className="font-normal text-slate-500 mx-3">
+                  {placeholder}
+                </span>
                 <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />
               </div>
             )}
@@ -146,7 +167,11 @@ const MultiSelect = React.forwardRef(
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
-                <CommandItem key="all" onSelect={toggleAll} className="cursor-pointer hover:bg-violet-200">
+                <CommandItem
+                  key="all"
+                  onSelect={toggleAll}
+                  className="cursor-pointer hover:bg-violet-200"
+                >
                   <div
                     className={cn(
                       "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
@@ -160,7 +185,7 @@ const MultiSelect = React.forwardRef(
                   <span>(Select All)</span>
                 </CommandItem>
                 {options.map((option) => {
-                  const isSelected = value.includes(option.value)
+                  const isSelected = value.includes(option.value);
                   return (
                     <CommandItem
                       key={option.value}
@@ -170,15 +195,19 @@ const MultiSelect = React.forwardRef(
                       <div
                         className={cn(
                           "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                          isSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible",
+                          isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : "opacity-50 [&_svg]:invisible",
                         )}
                       >
                         <CheckIcon className="h-4 w-4" />
                       </div>
-                      {option.icon && <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />}
+                      {option.icon && (
+                        <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                      )}
                       <span>{option.label}</span>
                     </CommandItem>
-                  )
+                  );
                 })}
               </CommandGroup>
               <CommandSeparator />
@@ -192,7 +221,10 @@ const MultiSelect = React.forwardRef(
                       >
                         Clear
                       </CommandItem>
-                      <Separator orientation="vertical" className="flex min-h-6 h-full" />
+                      <Separator
+                        orientation="vertical"
+                        className="flex min-h-6 h-full"
+                      />
                     </>
                   )}
                   <CommandItem
@@ -207,10 +239,10 @@ const MultiSelect = React.forwardRef(
           </Command>
         </PopoverContent>
       </Popover>
-    )
+    );
   },
-)
+);
 
-MultiSelect.displayName = "MultiSelect"
+MultiSelect.displayName = "MultiSelect";
 
-export { MultiSelect }
+export { MultiSelect };
