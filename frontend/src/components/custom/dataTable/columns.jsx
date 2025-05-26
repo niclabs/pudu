@@ -12,18 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const deleteStudyData = async (id, fetchStudyData) => {
-  const response = await fetch(`http://localhost:8000/api/studies/${id}/`, {
-    method: "DELETE",
-  });
-  if (response.ok) {
-    fetchStudyData(); // Trigger data re-fetch after deletion
-  } else {
-    console.error("Error deleting study:", response.statusText);
-  }
-};
 
-export const columns = (fetchStudyData, setStudyOpen, setSelectedStudy) => [
+export const columns = (setStudyOpen, setSelectedStudy, setDeleteOpen) => [
   {
     accessorKey: "title", // Property from the data object displayed
     header: ({ column }) => {
@@ -136,8 +126,12 @@ export const columns = (fetchStudyData, setStudyOpen, setSelectedStudy) => [
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-violet-100" />
             <DropdownMenuItem
-              className="hover:bg-violet-100"
-              onClick={() => deleteStudyData(study.id, fetchStudyData)}
+              className="hover:bg-red-100"
+              //onClick={() => deleteStudyData(study.id, fetchStudyData)}
+              onClick={() => {
+                setSelectedStudy(study.id);
+                setDeleteOpen(true);
+              }}
             >
               Remove from review
             </DropdownMenuItem>

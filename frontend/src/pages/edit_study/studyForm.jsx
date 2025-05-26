@@ -70,6 +70,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   const [authorsList, setAuthorsList] = useState(null);
   const [selectTreeData, setSelectTreeData] = useState(null);
   const [authorOpen, setAuthorOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const { SHOW_CHILD } = TreeSelect;
   const [tags, setTags] = useState(null);
   const flagslist = ["Reviewed", "Pending Review", "Missing Data", "Flagged"];
@@ -170,7 +171,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
 
       await fetchAuthors();
       form.setValue("authors", []);
-
+      setDeleteOpen(false);
       setSelectedStudyDetail((prev) => ({
         ...prev,
         authors_display: [],
@@ -181,6 +182,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       console.error("Error deleting authors:", error.message);
       throw error;
     }
+    
   }
 
   const saveStudy = async (studyid, form) => {
@@ -457,7 +459,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                         <Button
                           className="bg-red-600 text-violet-50 h-6 hover:bg-red-800"
                           type="button"
-                          onClick={deleteAuthors}
+                          onClick={() => setDeleteOpen(true)}
                         >
                           Delete Selected Authors
                         </Button>
@@ -635,11 +637,37 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                     </FormItem>
                   )}
                 />
+                <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                  <DialogContent className="  bg-violet-50  ">
+                    <DialogHeader>
+                      <DialogTitle>Deleting Authors</DialogTitle>
+                    </DialogHeader>
+                        {form.getValues("authors").map((id) => {
+                          const author = authorsList.find((a) => a.value === id);
+                          return <li key={id}>{author?.label || `ID ${id}`}</li>;
+                        })}
+                        Are being deleted. This action cannot be undone.
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setDeleteOpen(false)}
+                        className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                      >
+                        Close
+                      </Button>
+                        <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                          onClick={() => deleteAuthors()}>
+                          Delete Authors
+                        </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </form>
         </Form>
       </CardContent>
     </Card>
+    
   );
 }

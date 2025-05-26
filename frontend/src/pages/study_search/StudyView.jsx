@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 
 function StudyView() {
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [importOpen, setImportOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -48,6 +49,19 @@ function StudyView() {
     }));
     setTableData(refineTable);
     console.log("fetched table data");
+  };
+
+  const deleteStudyData = async (id) => {
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      fetchStudyData(); // Trigger data re-fetch after deletion
+      fetchFlagCount();
+    } else {
+      console.error("Error deleting study:", response.statusText);
+    }
+    setDeleteOpen(false);
   };
 
   const refineStudy = (study) => ({
@@ -86,7 +100,7 @@ function StudyView() {
   useEffect(() => {
     fetchStudyData();
     fetchFlagCount();
-    if (studyOpen && selectedStudy) {
+    if ((studyOpen | deleteOpen ) && selectedStudy) {
       fetchStudyDetailed(selectedStudy);
     }
   }, [studyOpen, selectedStudy]);
@@ -308,7 +322,6 @@ function StudyView() {
                     ),
                   )}
               </div>
-
               <DialogFooter>
                 <Button
                   variant="outline"
@@ -325,11 +338,33 @@ function StudyView() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <DialogContent className="  bg-violet-50  ">
+            <DialogHeader>
+              <DialogTitle>Deleting Study</DialogTitle>
+            </DialogHeader>
+                <b>{selectedStudyDetail?.title}</b>
+                Is being deleted. This action cannot be undone.
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setDeleteOpen(false)}
+                className="border-violet-700 text-violet-700 hover:bg-violet-100"
+              >
+                Close
+              </Button>
+                <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                  onClick={() => deleteStudyData(selectedStudyDetail?.id)}>
+                  Delete Study
+                </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         </div>
       </div>
       <div className="h-[calc(100vh-200px)] m-4">
         <DataTable
-          columns={columns(fetchStudyData, setStudyOpen, setSelectedStudy)}
+          columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
           data={tableData}
           filterBy={filterBy}
         />

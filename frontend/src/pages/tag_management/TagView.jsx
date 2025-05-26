@@ -31,6 +31,8 @@ import {
 import { Link } from "react-router-dom";
 
 function TagView() {
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [tagDeleteOpen, setTagDeleteOpen] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [tags, setTags] = useState([]);
   const [tagCount, setTagCount] = useState([]);
@@ -105,6 +107,18 @@ function TagView() {
     console.log("fetched study detail data", data);
   };
 
+  const deleteStudyData = async (id) => {
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      fetchStudyData(); // Trigger data re-fetch after deletion
+    } else {
+      console.error("Error deleting study:", response.statusText);
+    }
+    fetchTagCount();
+    setDeleteOpen(false);
+  };
   const onCreate = async () => {
     try {
       const parentId = selectedNode ? selectedNode.data.id : null;
@@ -127,12 +141,16 @@ function TagView() {
       if (result.success) {
         fetchTreeData();
         setSelectedNode(null);
+        
+
       } else {
         console.error("Error deleting tag:", result.error);
       }
     } catch (error) {
       console.error("Error deleting tag:", error);
     }
+    
+    setTagDeleteOpen(false)
   };
 
   const onMove = async ({ dragIds, parentId }) => {
@@ -192,7 +210,7 @@ function TagView() {
     fetchStudyData();
     fetchTagCount();
     setLoading(false);
-    if (studyOpen && selectedStudy) {
+    if ((studyOpen | deleteOpen ) && selectedStudy) {
       fetchStudyDetailed(selectedStudy);
     }
   }, [studyOpen, selectedStudy]);
@@ -215,8 +233,8 @@ function TagView() {
               <Tag className="" /> Add Tag
             </Button>
             <Button
-              onClick={onDelete}
-              className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950 flex"
+              onClick={() => {setTagDeleteOpen(true)}}
+              className="bg-red-600 text-violet-50 text-xs hover:bg-red-800 flex"
             >
               <Trash2 className="" /> Delete Tag
             </Button>
@@ -358,7 +376,6 @@ function TagView() {
                   ),
                 )}
             </div>
-
             <DialogFooter>
               <Button
                 variant="outline"
@@ -375,9 +392,57 @@ function TagView() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <DialogContent className="  bg-violet-50  ">
+            <DialogHeader>
+              <DialogTitle>Deleting Study</DialogTitle>
+            </DialogHeader>
+                <b>{selectedStudyDetail?.title}</b>
+                <div>Is being deleted. This action cannot be undone.</div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setDeleteOpen(false)}
+                className="border-violet-700 text-violet-700 hover:bg-violet-100"
+              >
+                Close
+              </Button>
+                <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                  onClick={() => deleteStudyData(selectedStudyDetail?.id)}>
+                  Delete Study
+                </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={tagDeleteOpen} onOpenChange={setTagDeleteOpen}>
+          <DialogContent className="  bg-violet-50  ">
+            <DialogHeader>
+              <DialogTitle>Deleting Tag</DialogTitle>
+            </DialogHeader>
+                <b>{selectedNode?.data?.name}</b>
+                <div>This tag and any children it has are being deleted.</div>
+                <div>This action cannot be undone.</div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setTagDeleteOpen(false)}
+                className="border-violet-700 text-violet-700 hover:bg-violet-100"
+              >
+                Close
+              </Button>
+                <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                  onClick={() => onDelete()}>
+                  Delete Tag
+                </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <div className="h-[calc(100vh-400px)]">
           <DataTable
-            columns={columns(fetchStudyData, setStudyOpen, setSelectedStudy)}
+            columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
             data={tableData}
             selectedTag={selectedNode?.data?.name}
           />
