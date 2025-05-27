@@ -1,10 +1,12 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import TagView from './pages/tag_management/TagView';
-import Navbar from './components/custom/navbar';
-import StudyView from './pages/study_search/StudyView';
-import EditStudyView from './pages/edit_study/EditStudyView';
-import SysRevView from './pages/reviews/SysRevView';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import TagView from "./pages/tag_management/TagView";
+import Navbar from "./components/custom/navbar";
+import StudyView from "./pages/study_search/StudyView";
+import EditStudyView from "./pages/edit_study/EditStudyView";
+import SysRevView from "./pages/reviews/SysRevView";
+
+
 export default function App() {
   return (
     <Router>
@@ -24,4 +26,3 @@ export default function App() {
     </Router>
   );
 }
-

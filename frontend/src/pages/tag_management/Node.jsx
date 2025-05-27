@@ -1,4 +1,4 @@
-import { AiFillCaretRight , AiFillCaretDown } from "react-icons/ai";
+import { AiFillCaretRight, AiFillCaretDown } from "react-icons/ai";
 
 const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
   const handleClick = (e) => {
@@ -32,7 +32,9 @@ const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {
         )}
 
         {/* Ensures text truncation and correct flex behavior */}
-        <span className="ml-2 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{node.data.name}</span>
+        <span className="ml-2 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+          {node.data.name}
+        </span>
       </div>
     </div>
   );

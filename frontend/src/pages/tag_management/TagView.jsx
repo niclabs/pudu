@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
-import { Tag, Trash2 }  from "lucide-react"
+import { Tag, Trash2 } from "lucide-react";
 import { Tree } from "react-arborist";
 import Node from "./Node";
-import { createTag, deleteTag, editTagName, editTagDescription, moveTag } from "./tagApi";
+import {
+  createTag,
+  deleteTag,
+  editTagName,
+  editTagDescription,
+  moveTag,
+} from "./tagApi";
 import {
   Card,
   CardContent,
@@ -16,15 +22,17 @@ import { DataTable } from "../../components/custom/dataTable/data-table";
 import { columns } from "../../components/custom/dataTable/columns";
 import { Input } from "../../components/custom/input";
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-  } from "@/components/ui/dialog"
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
 
 function TagView() {
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [tagDeleteOpen, setTagDeleteOpen] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [tags, setTags] = useState([]);
   const [tagCount, setTagCount] = useState([]);
@@ -34,10 +42,9 @@ function TagView() {
   const [editNameValue, setEditNameValue] = useState("");
   const [isDescriptionEditing, setIsDescriptionEditing] = useState(false);
   const [editDescriptionValue, setEditDescriptionValue] = useState("");
-  const [studyOpen, setStudyOpen] = useState(false)
-  const [selectedStudy, setSelectedStudy] = useState(null)
-  const [selectedStudyDetail, setSelectedStudyDetail] = useState(null)
-
+  const [studyOpen, setStudyOpen] = useState(false);
+  const [selectedStudy, setSelectedStudy] = useState(null);
+  const [selectedStudyDetail, setSelectedStudyDetail] = useState(null);
 
   const fetchTreeData = async () => {
     const response = await fetch("http://localhost:8000/api/tags/");
@@ -48,7 +55,7 @@ function TagView() {
   const fetchStudyData = async () => {
     const response = await fetch("http://localhost:8000/api/studies/");
     const data = await response.json();
-  
+
     const refineTable = data.map((study) => ({
       id: study.id,
       title: study.title,
@@ -58,17 +65,16 @@ function TagView() {
       tags: study.tags_display.map((tag) => tag.name).join(", "),
     }));
     setTableData(refineTable);
-    console.log('fetched table data')
+    console.log("fetched table data");
   };
 
   const fetchTagCount = async () => {
-    const response = await fetch("http://localhost:8000/api/tags/count/"); 
+    const response = await fetch("http://localhost:8000/api/tags/count/");
     const data = await response.json();
     setTagCount(data);
   };
 
-  const refineStudy = (study) => (
-    {
+  const refineStudy = (study) => ({
     title: study.title,
     year: study.year,
     authors: study.authors_display.join(", "),
@@ -78,12 +84,10 @@ function TagView() {
     flags: study.flags.join(", "),
     tags: study.tags_display.map((tag) => tag.name).join(", "),
     abstract: study.abstract,
-    summary: study.summary
-    }
-  )
+    summary: study.summary,
+  });
 
   const labelMap = {
-
     title: "Title",
     year: "Year",
     authors: "Authors",
@@ -100,9 +104,21 @@ function TagView() {
     const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
     const data = await response.json();
     setSelectedStudyDetail(data);
-    console.log('fetched study detail data', data)
-  }
+    console.log("fetched study detail data", data);
+  };
 
+  const deleteStudyData = async (id) => {
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      fetchStudyData(); // Trigger data re-fetch after deletion
+    } else {
+      console.error("Error deleting study:", response.statusText);
+    }
+    fetchTagCount();
+    setDeleteOpen(false);
+  };
   const onCreate = async () => {
     try {
       const parentId = selectedNode ? selectedNode.data.id : null;
@@ -125,12 +141,16 @@ function TagView() {
       if (result.success) {
         fetchTreeData();
         setSelectedNode(null);
+        
+
       } else {
         console.error("Error deleting tag:", result.error);
       }
     } catch (error) {
       console.error("Error deleting tag:", error);
     }
+    
+    setTagDeleteOpen(false)
   };
 
   const onMove = async ({ dragIds, parentId }) => {
@@ -173,7 +193,7 @@ function TagView() {
       try {
         const result = await editTagDescription(
           selectedNode.data.id,
-          editDescriptionValue
+          editDescriptionValue,
         );
         if (result) {
           fetchTreeData();
@@ -190,7 +210,7 @@ function TagView() {
     fetchStudyData();
     fetchTagCount();
     setLoading(false);
-    if (studyOpen && selectedStudy) {
+    if ((studyOpen | deleteOpen ) && selectedStudy) {
       fetchStudyDetailed(selectedStudy);
     }
   }, [studyOpen, selectedStudy]);
@@ -206,10 +226,16 @@ function TagView() {
             <h1 className="text-2xl font-bold">Tag Manager</h1>
           </div>
           <div className="flex space-x-2">
-            <Button onClick={onCreate} className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950 flex">
+            <Button
+              onClick={onCreate}
+              className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950 flex"
+            >
               <Tag className="" /> Add Tag
             </Button>
-            <Button onClick={onDelete} className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950 flex">
+            <Button
+              onClick={() => {setTagDeleteOpen(true)}}
+              className="bg-red-600 text-violet-50 text-xs hover:bg-red-800 flex"
+            >
               <Trash2 className="" /> Delete Tag
             </Button>
           </div>
@@ -228,7 +254,11 @@ function TagView() {
             onMove={onMove}
           >
             {(node) => (
-              <Node {...node} selectedNode={selectedNode} setSelectedNode={setSelectedNode} />
+              <Node
+                {...node}
+                selectedNode={selectedNode}
+                setSelectedNode={setSelectedNode}
+              />
             )}
           </Tree>
         </div>
@@ -254,7 +284,8 @@ function TagView() {
                   ) : (
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <p className="text-xl md:text-2xl truncate">
-                        <span className="font-bold">Selected Tag: </span>{selectedNode.data.name}
+                        <span className="font-bold">Selected Tag: </span>
+                        {selectedNode.data.name}
                       </p>
                       <AiOutlineEdit
                         className="cursor-pointer text-gray-500 hover:text-gray-700 flex-shrink-0"
@@ -286,7 +317,9 @@ function TagView() {
                   <div className="flex flex-col sm:flex-row sm:items-start gap-1">
                     <div className="flex-1">
                       <p className="text-gray-500 text-base md:text-l max-h-20 overflow-y-auto pr-2 break-words">
-                      <span className="font-bold">Description: </span> {selectedNode.data.description || "Create a description for this tag"}
+                        <span className="font-bold">Description: </span>{" "}
+                        {selectedNode.data.description ||
+                          "Create a description for this tag"}
                       </p>
                     </div>
                     <AiOutlineEdit
@@ -299,63 +332,120 @@ function TagView() {
                   </div>
                 )
               ) : (
-                <p className="text-gray-500 text-base md:text-xl">Select a tag to view its description</p>
+                <p className="text-gray-500 text-base md:text-xl">
+                  Select a tag to view its description
+                </p>
               )}
             </CardContent>
-            
+
             <CardFooter>
-              {selectedNode && <p className="text-base md:text-xl">Articles currently using this tag: {
-                tagCount.find(x => x.id === parseInt(selectedNode.data.id))?.study_count || 0
-              } </p>}
+              {selectedNode && (
+                <p className="text-base md:text-xl">
+                  Articles currently using this tag:{" "}
+                  {tagCount.find((x) => x.id === parseInt(selectedNode.data.id))
+                    ?.study_count || 0}{" "}
+                </p>
+              )}
             </CardFooter>
-            
           </Card>
         </div>
         <Dialog open={studyOpen} onOpenChange={setStudyOpen}>
-              <DialogContent className="!w-[40vw] !max-w-none !p-8 bg-violet-50 text-lg h-[80vh]">
-                  <DialogHeader>
-                    <DialogTitle>Study Metadata</DialogTitle>
-                  </DialogHeader>
-                  <div className="p-4 h-[calc(80vh-160px)] overflow-auto">
-                    {selectedStudyDetail &&
-                      Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
-                        <div key={key} className="mb-4">
-                          <strong>{labelMap[key] || key}:</strong>{" "}
-                          {key === "url" ? (
-                            <a
-                              href={value}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 underline"
-                            >
-                              {value}
-                            </a>
-                          ) : (
-                            String(value)
-                          )}
-                        </div>
-                      ))}
-                  </div>
+          <DialogContent className="!w-[40vw] !max-w-none !p-8 bg-violet-50 text-lg h-[80vh]">
+            <DialogHeader>
+              <DialogTitle>Study Metadata</DialogTitle>
+            </DialogHeader>
+            <div className="p-4 h-[calc(80vh-160px)] overflow-auto">
+              {selectedStudyDetail &&
+                Object.entries(refineStudy(selectedStudyDetail)).map(
+                  ([key, value]) => (
+                    <div key={key} className="mb-4">
+                      <strong>{labelMap[key] || key}:</strong>{" "}
+                      {key === "url" ? (
+                        <a
+                          href={value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          {value}
+                        </a>
+                      ) : (
+                        String(value)
+                      )}
+                    </div>
+                  ),
+                )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setStudyOpen(false)}
+                className="border-violet-700 text-violet-700 hover:bg-violet-100"
+              >
+                Close
+              </Button>
+              <Link to={`/editstudy/${selectedStudyDetail?.id}/`}>
+                <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950">
+                  Edit Study
+                </Button>
+              </Link>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setStudyOpen(false)}
-                      className="border-violet-700 text-violet-700 hover:bg-violet-100"
-                    >
-                      Close
-                    </Button>
-                    <Link to={`/editstudy/${selectedStudyDetail?.id}/`} >
-                      <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950">
-                        Edit Study
-                      </Button>
-                    </Link>
-                    
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+        <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <DialogContent className="  bg-violet-50  ">
+            <DialogHeader>
+              <DialogTitle>Deleting Study</DialogTitle>
+            </DialogHeader>
+                <b>{selectedStudyDetail?.title}</b>
+                <div>Is being deleted. This action cannot be undone.</div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setDeleteOpen(false)}
+                className="border-violet-700 text-violet-700 hover:bg-violet-100"
+              >
+                Close
+              </Button>
+                <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                  onClick={() => deleteStudyData(selectedStudyDetail?.id)}>
+                  Delete Study
+                </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={tagDeleteOpen} onOpenChange={setTagDeleteOpen}>
+          <DialogContent className="  bg-violet-50  ">
+            <DialogHeader>
+              <DialogTitle>Deleting Tag</DialogTitle>
+            </DialogHeader>
+                <b>{selectedNode?.data?.name}</b>
+                <div>This tag and any children it has are being deleted.</div>
+                <div>This action cannot be undone.</div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setTagDeleteOpen(false)}
+                className="border-violet-700 text-violet-700 hover:bg-violet-100"
+              >
+                Close
+              </Button>
+                <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                  onClick={() => onDelete()}>
+                  Delete Tag
+                </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <div className="h-[calc(100vh-400px)]">
-          <DataTable columns={columns(fetchStudyData, setStudyOpen, setSelectedStudy)} data={tableData} selectedTag={selectedNode?.data?.name} />
+          <DataTable
+            columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
+            data={tableData}
+            selectedTag={selectedNode?.data?.name}
+          />
         </div>
       </div>
     </div>
