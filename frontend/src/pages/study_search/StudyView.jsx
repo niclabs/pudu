@@ -344,7 +344,7 @@ function StudyView() {
               <DialogTitle>Deleting Study</DialogTitle>
             </DialogHeader>
                 <b>{selectedStudyDetail?.title}</b>
-                Is being deleted. This action cannot be undone.
+                This study is being deleted. This action cannot be undone.
             <DialogFooter>
               <Button
                 variant="outline"

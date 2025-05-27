@@ -399,7 +399,7 @@ function TagView() {
               <DialogTitle>Deleting Study</DialogTitle>
             </DialogHeader>
                 <b>{selectedStudyDetail?.title}</b>
-                <div>Is being deleted. This action cannot be undone.</div>
+                <div>This study is being deleted. This action cannot be undone.</div>
             <DialogFooter>
               <Button
                 variant="outline"

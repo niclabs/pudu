@@ -638,7 +638,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                   )}
                 />
                 <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-                  <DialogContent className="  bg-violet-50  ">
+                  <DialogContent className="  bg-violet-50 p-8 ">
                     <DialogHeader>
                       <DialogTitle>Deleting Authors</DialogTitle>
                     </DialogHeader>
@@ -646,7 +646,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                           const author = authorsList.find((a) => a.value === id);
                           return <li key={id}>{author?.label || `ID ${id}`}</li>;
                         })}
-                        Are being deleted. This action cannot be undone.
+                        These authors are being deleted. This action cannot be undone.
                     <DialogFooter>
                       <Button
                         variant="outline"
