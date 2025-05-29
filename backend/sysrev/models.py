@@ -1,4 +1,14 @@
 from django.db import models
+from django.contrib.auth.models import User
+
+
+class Review(models.Model):
+    name = models.CharField(max_length=255)
+    #owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField(blank=True, null=True)
+    status = models.BooleanField(default=False)  # True for completed, False for ongoing
+
 
 class Study(models.Model):
     id = models.AutoField(primary_key=True)
@@ -13,6 +23,7 @@ class Study(models.Model):
     url = models.URLField(blank=True)
     pages = models.CharField(max_length=255, blank=True)
     pathto_pdf = models.CharField(max_length=255, blank=True)
+    review = models.ForeignKey('Review', on_delete=models.CASCADE, related_name='studies')
     # timescited = models.IntegerField(default=0) # May not be too useful to consider
 
     def __str__(self):
@@ -21,6 +32,7 @@ class Study(models.Model):
 class Author(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, unique=True)
+    review = models.ForeignKey('Review', on_delete=models.CASCADE, related_name='authors')
 
     def __str__(self):
         return self.name
@@ -29,6 +41,7 @@ class Tag(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    review = models.ForeignKey('Review', on_delete=models.CASCADE, related_name='tags')
     parent_tag = models.ForeignKey(
         'self', 
         on_delete=models.CASCADE, 

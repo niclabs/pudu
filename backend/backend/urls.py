@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from sysrev.views import TagTreeView, StudiesView, AuthorsView, tag_study_counts,flag_study_counts, ReviewExportView, ReviewImportView
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,4 +31,5 @@ urlpatterns = [
     path('api/authors/<int:author_id>/', AuthorsView.as_view(), name='author-detail'),
     path('api/export/', ReviewExportView.as_view(), name='review-export'),
     path('api/import/', ReviewImportView.as_view(), name='review-import'),
+    #path('api/token/', obtain_auth_token),
 ]

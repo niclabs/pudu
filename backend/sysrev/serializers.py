@@ -1,12 +1,17 @@
 from rest_framework import serializers
-from .models import Tag, Study, Author
+from .models import Tag, Study, Author, Review
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'name', 'start_date', 'end_date', 'status']
 
 class TagSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
 
     class Meta:
         model = Tag
-        fields = ['id', 'name', 'description', 'parent_tag', 'children']
+        fields = ['id', 'name', 'description', 'parent_tag', 'children', 'review']
 
 #recursively obtains children for each tag
     def get_children(self, obj):
@@ -26,7 +31,7 @@ class StudySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Study
-        fields = ['id', 'title', 'year', 'summary', 'abstract', 'flags', 'tags', 'tags_display', 'authors', 'authors_display', 'doi', 'url', 'pages', 'pathto_pdf']
+        fields = ['id', 'title', 'year', 'summary', 'abstract', 'flags', 'tags', 'tags_display', 'authors', 'authors_display', 'doi', 'url', 'pages', 'pathto_pdf', 'review']
 
     VALID_FLAGS = {"Reviewed", "Pending Review", "Missing Data", "Flagged"}
 
@@ -43,4 +48,4 @@ class AuthorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Author
-        fields = ['id', 'name', 'studies']
+        fields = ['id', 'name', 'studies', 'review']
