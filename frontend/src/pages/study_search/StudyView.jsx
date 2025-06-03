@@ -36,8 +36,10 @@ function StudyView() {
   const [flagCount, setFlagCount] = useState([]);
   const [selectedStudyDetail, setSelectedStudyDetail] = useState(null);
 
+  const reviewId = localStorage.getItem('review_id');
+
   const fetchStudyData = async () => {
-    const response = await fetch("http://localhost:8000/api/studies/");
+    const response = await fetch(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
     const data = await response.json();
     const refineTable = data.map((study) => ({
       id: study.id,
@@ -52,7 +54,7 @@ function StudyView() {
   };
 
   const deleteStudyData = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/`, {
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`, {
       method: "DELETE",
     });
     if (response.ok) {
@@ -91,22 +93,23 @@ function StudyView() {
   };
 
   const fetchStudyDetailed = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
     console.log("fetched study detail data", data);
   };
 
   useEffect(() => {
+    console.log("Currently on review ",reviewId);
     fetchStudyData();
     fetchFlagCount();
-    if ((studyOpen | deleteOpen ) && selectedStudy) {
+    if ((studyOpen || deleteOpen ) && selectedStudy) {
       fetchStudyDetailed(selectedStudy);
     }
   }, [studyOpen, selectedStudy]);
 
   const fetchFlagCount = async () => {
-    const response = await fetch("http://localhost:8000/api/flags/count/");
+    const response = await fetch(`http://localhost:8000/api/flags/count/?review_id=${reviewId}`);
     const data = await response.json();
     setFlagCount(data);
     console.log(data);
@@ -123,7 +126,7 @@ function StudyView() {
       const jsonData = JSON.parse(fileText); // Parse JSON content
       console.log("Imported JSON Data:", jsonData);
 
-      const response = await fetch("http://localhost:8000/api/import/", {
+      const response = await fetch(`http://localhost:8000/api/import/?review_id=${reviewId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(jsonData),
@@ -147,7 +150,7 @@ function StudyView() {
   };
 
   const handleExport = async () => {
-    const response = await fetch("http://localhost:8000/api/export/");
+    const response = await fetch(`http://localhost:8000/api/export/?review_id=${reviewId}`);
     const data = await response.json();
     const json = JSON.stringify(data);
     const blob = new Blob([json], { type: "application/json" });

@@ -31,8 +31,13 @@ class Study(models.Model):
 
 class Author(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
     review = models.ForeignKey('Review', on_delete=models.CASCADE, related_name='authors')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'review'], name='unique_author_per_review')
+        ]
 
     def __str__(self):
         return self.name

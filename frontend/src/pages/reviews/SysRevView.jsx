@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
     Card,
     CardContent,
@@ -11,92 +12,48 @@ import {
   import { Button } from "@/components/ui/button"
 
   function SysRevView() {
-    const dummyData = [
-      {
-        id: 1,
-        title: "Baby Yoda found dead in Miami: A Systematic Review",
-        startdate: "1993-08-15",
-        enddate: "2025-05-22",
-        status: "Finished",
-      },
-      {
-        id: 2,
-        title: "The Return of Baby Yoda: Yet another Systematic Review",
-        startdate: "2023-01-10",
-        enddate: "2024-12-15",
-        status: "Ongoing",
-      },
-      {
-        id: 3,
-        title: "Systematic Review of Force-Sensitive Objects",
-        startdate: "2015-04-01",
-        enddate: "2019-07-22",
-        status: "Finished",
-      },
-      {
-        id: 4,
-        title: "A Meta-Analysis on Mandalorian Parenting Styles",
-        startdate: "2019-03-14",
-        enddate: "2021-09-10",
-        status: "Finished",
-      },
-      {
-        id: 5,
-        title: "Space Travel and Health Outcomes: A Systematic Review",
-        startdate: "2020-11-11",
-        enddate: "2023-05-01",
-        status: "Ongoing",
-      },
-      {
-        id: 6,
-        title: "The Impact of Lightsaber Use on Public Safety",
-        startdate: "2018-06-30",
-        enddate: "2020-01-20",
-        status: "Finished",
-      },
-      {
-        id: 7,
-        title: "Data transmission protocols in Rebel Alliance Communications",
-        startdate: "2021-01-01",
-        enddate: "2022-12-31",
-        status: "Ongoing",
-      },
-      {
-        id: 8,
-        title: "The Dark Side of Peer Review: A Galactic Perspective",
-        startdate: "2017-08-19",
-        enddate: "2021-04-04",
-        status: "Finished",
-      },
-      {
-        id: 9,
-        title: "Systematic Review of Droid Workforce Efficiency",
-        startdate: "2016-02-15",
-        enddate: "2018-08-09",
-        status: "Finished",
-      },
-      {
-        id: 10,
-        title: "Evaluating the Effectiveness of imperial training programs",
-        startdate: "2014-10-01",
-        enddate: "2020-02-28",
-        status: "Finished",
-      },
-    ];
+    const [reviewData, setReviewData] = useState([]);
+
+    const fetchSysRevData = async () => {
+      const response = await fetch("http://localhost:8000/api/reviews/");
+      const data = await response.json();
+      console.log(data)
+
+      const formattedData = data.map((item) => ({
+        id: item.id,
+        title: item.name,
+        start_date: item.start_date?.split("T")[0],
+        end_date: item.end_date?.split("T")[0],
+        status: item.status ?  "Ongoing" : "Finished",
+      }));
+      setReviewData(formattedData);
+    }
+    
+    const pickReview = (reviewID) => {
+      console.log("AAA", reviewID);
+      localStorage.setItem('review_id', reviewID);
+    }
   
+    useEffect(() => {
+      fetchSysRevData();
+    }, []);
+
     return (
       <div className="flex flex-wrap gap-6 justify-center m-10 overflow-y-auto h-[calc(100vh-150px)]">
-        {dummyData.map((review) => (
+        {reviewData.map((review) => (
           <Card key={review.id} className="w-md h-60 bg-violet-200 hover:bg-violet-300">
+            <div onClick={() => pickReview(review.id)} className="cursor-pointer">
             <CardHeader className="p-4 h-20">
               <CardTitle className="font-bold">{review.title}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               <div>
-                <b>Start Date:</b> {review.startdate}
+                <b>Start Date:</b> {review.start_date}
               </div>
               <div>
-                <b>End Date: </b> {review.enddate}
+                {review.end_date && (
+                <span> <b>End Date: </b> {review.end_date} </span>
+                )}
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -105,11 +62,19 @@ import {
                     {review.status}
                   </Badge>
                 </div>
-                <Button className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950">
+                <Button
+                  className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // llenar con logica dps
+                    console.log("Edit clicked for", review.id);
+                  }}
+                >
                   Edit Systematic Review
                 </Button>
               </div>
             </CardContent>
+            </div>
           </Card>
         ))}
       </div>

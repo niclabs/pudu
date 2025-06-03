@@ -8,8 +8,10 @@ function EditStudyView() {
   const [fileUrl, setFileUrl] = useState("");
   //const fileUrl = ""
 
+  const reviewId = localStorage.getItem('review_id');
+
   const fetchPDFPath = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
+    const response = await fetch(`http://localhost:8000/api/studies/${id}?review_id=${reviewId}`);
     const data = await response.json();
 
     if (data.pathto_pdf) {

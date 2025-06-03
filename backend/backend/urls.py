@@ -16,11 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from sysrev.views import TagTreeView, StudiesView, AuthorsView, tag_study_counts,flag_study_counts, ReviewExportView, ReviewImportView
+from sysrev.views import TagTreeView, StudiesView, AuthorsView, SysRevView, tag_study_counts,flag_study_counts, ReviewExportView, ReviewImportView
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/reviews/', SysRevView.as_view(), name='review-list'),
+    path('api/reviews/<int:review_id>/', SysRevView.as_view(), name='review-detail'),
     path('api/tags/', TagTreeView.as_view(), name='tag-tree'),
     path('api/tags/<int:tag_id>/', TagTreeView.as_view(), name='tag-detail'),
     path('api/studies/', StudiesView.as_view(), name='study-list'),

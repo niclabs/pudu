@@ -2,11 +2,65 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
-from .models import Tag, Study, Author
-from .serializers import TagSerializer, StudySerializer, AuthorSerializer
+from .models import Tag, Study, Author, Review
+from .serializers import TagSerializer, StudySerializer, AuthorSerializer, ReviewSerializer
 from django.db.models import Count
 from collections import Counter
 
+
+class SysRevView(APIView):
+    '''API view for managing systematic reviews.
+    This view handles CRUD operations for reviews, including creating, retrieving, updating, and deleting reviews.
+    '''
+    def get(self, request, review_id=None):
+        '''Retrieve a specific review by ID or all reviews if no ID is provided.'''
+        if review_id:
+            try:
+                review = Review.objects.get(id=review_id)
+                serializer = ReviewSerializer(review)
+                return Response(serializer.data)
+            except Review.DoesNotExist:
+                return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            reviews = Review.objects.all()
+            serializer = ReviewSerializer(reviews, many=True)
+            return Response(serializer.data)
+        
+    def post(self, request):
+        '''Create a new review.'''
+        serializer = ReviewSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, review_id=None):
+        '''Delete a specific review by ID.'''
+        if not review_id:
+            return Response({'error': 'Review ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            review = Review.objects.get(id=review_id)
+            review.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Review.DoesNotExist:
+            return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+    def patch(self, request, review_id=None):
+        '''Update a specific review by ID.'''
+        if not review_id:
+            return Response({'error': 'Review ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            review = Review.objects.get(id=review_id)
+        except Review.DoesNotExist:
+            return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ReviewSerializer(review, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #CRUD operations on the tag tree
 class TagTreeView(APIView):
@@ -17,16 +71,20 @@ class TagTreeView(APIView):
         GET retrieves the tag tree or a specific tag by ID.
     '''
     def get(self, request, tag_id=None):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         if tag_id:
             try:
-                tag = Tag.objects.get(id=tag_id)
-                return Response(tag.get_tree(), status=status.HTTP_200_OK)
+                tag = Tag.objects.get(id=tag_id, review_id=review_id)
+                return Response(tag.get_tree())
             except Tag.DoesNotExist:
-                return Response({'error': 'Tag not found.'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error': 'Tag not found or not part of this review'}, status=404)
         else:
-            root_tags = Tag.objects.filter(parent_tag__isnull=True)
+            root_tags = Tag.objects.filter(parent_tag__isnull=True, review_id=review_id)
             tree = [tag.get_tree() for tag in root_tags]
-            return Response(tree, status=status.HTTP_200_OK)
+            return Response(tree)
         
         
     '''
@@ -41,19 +99,22 @@ class TagTreeView(APIView):
     '''
 
     def post(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         data = request.data
-
-        # Check if the request contains multiple tags (list of dicts)
         if isinstance(data, list):
-            serializer = TagSerializer(data=data, many=True)
+            for d in data:
+                d['review'] = review_id
         else:
-            serializer = TagSerializer(data=data)
+            data['review'] = review_id
 
+        serializer = TagSerializer(data=data, many=isinstance(data, list))
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
     '''
     PUT moves a tag to a new parent tag.
@@ -69,49 +130,53 @@ class TagTreeView(APIView):
     '''
 
     def put(self, request):
-        tag_id = request.data.get('id')
+        print('PUT request received for updating tag parent')
+        print(request.data)
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
 
+        tag_id = request.data.get('id')
         if not tag_id:
-            return Response({'error': 'Tag ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Tag ID is required.'}, status=400)
 
         try:
-            tag = Tag.objects.get(id=tag_id)
+            tag = Tag.objects.get(id=tag_id, review_id=review_id)
         except Tag.DoesNotExist:
-            return Response({'error': 'Tag not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Tag not found in this review.'}, status=404)
 
         new_parent_id = request.data.get('parent_tag')
-
         if new_parent_id == 0:
-            tag.parent_tag = None  # Tag becomes a root node
-            request.data['parent_tag'] = None
-        else:
+            tag.parent_tag = None
+        elif new_parent_id:
             try:
-                new_parent_tag = Tag.objects.get(id=new_parent_id)
+                new_parent_tag = Tag.objects.get(id=new_parent_id, review_id=review_id)
                 tag.parent_tag = new_parent_tag
             except Tag.DoesNotExist:
-                return Response({'error': 'New parent tag not found.'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error': 'New parent tag not found in this review.'}, status=404)
 
-        serializer = TagSerializer(tag, data=request.data, partial=True)
+        serializer = TagSerializer(tag, data={'id': tag.id}, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data)
 
 
 
 
     def delete(self, request, tag_id=None):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         if not tag_id:
-            return Response({'error': 'Tag ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Tag ID is required in the URL.'}, status=400)
 
         try:
-            tag = Tag.objects.get(id=tag_id)
+            tag = Tag.objects.get(id=tag_id, review_id=review_id)
             tag.delete()
-            return Response({'message': 'Tag deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'message': 'Tag deleted successfully'}, status=204)
         except Tag.DoesNotExist:
-            return Response({'error': 'Tag not found.'}, status=status.HTTP_404_NOT_FOUND)
-        
+            return Response({'error': 'Tag not found in this review.'}, status=404)
 
     '''
     PATCH edits a tag's details.
@@ -125,163 +190,181 @@ class TagTreeView(APIView):
     '''
    
     def patch(self, request, tag_id=None):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         if not tag_id:
-            return Response({'error': 'Tag ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Tag ID is required in the URL.'}, status=400)
 
         try:
-            tag = Tag.objects.get(id=tag_id)
+            tag = Tag.objects.get(id=tag_id, review_id=review_id)
         except Tag.DoesNotExist:
-            return Response({'error': 'Tag not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Tag not found in this review.'}, status=404)
 
-        new_name = request.data.get('name')
-        if not new_name:
-            new_description = request.data.get('description')
-            if not new_description:
-                return Response({'error': 'Name or description is required.'}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                tag.description = new_description
-                tag.save()
-                return Response({'message': 'Tag description updated successfully'}, status=status.HTTP_200_OK)
+        updated = False
+        if 'name' in request.data:
+            tag.name = request.data['name']
+            updated = True
+        if 'description' in request.data:
+            tag.description = request.data['description']
+            updated = True
 
-        tag.name = new_name
+        if not updated:
+            return Response({'error': 'No name or description provided to update.'}, status=400)
+
         tag.save()
-
-        return Response({'message': 'Tag renamed successfully'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Tag updated successfully'}, status=200)
 
 class StudiesView(APIView):
     '''
     API view for managing studies.
     '''
     def get(self, request, study_id=None):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         if study_id:
             try:
-                study = Study.objects.get(id=study_id)
+                study = Study.objects.get(id=study_id, review_id=review_id)
                 serializer = StudySerializer(study)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.data)
             except Study.DoesNotExist:
-                return Response({'error': 'Study not found.'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error': 'Study not found'}, status=404)
         else:
-            studies = Study.objects.all()
+            studies = Study.objects.filter(review_id=review_id)
             serializer = StudySerializer(studies, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        
+            return Response(serializer.data)
+
     def delete(self, request, study_id=None):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         if not study_id:
-            return Response({'error': 'Study ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Study ID is required.'}, status=400)
 
         try:
-            study = Study.objects.get(id=study_id)
+            study = Study.objects.get(id=study_id, review_id=review_id)
             study.delete()
-            return Response({'message': 'Study deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'message': 'Study deleted successfully'}, status=204)
         except Study.DoesNotExist:
-            return Response({'error': 'Study not found.'}, status=status.HTTP_404_NOT_FOUND)
-    '''
-    Example POST request body:
-    {
-    "title": "A Study on AI",
-    "year": 2023,
-    "summary": "This is a summary of the study.",
-    "abstract": "This is an abstract of the study.",
-    "flags": ["Pending Review"]
-    "tags": [1, 2],
-    "authors": [1, 2],
-    "doi": "10.1234/abcd",
-    "url": "http://example.com",
-    "pages": "1-10",
-    "pathto_pdf": "/path/to/pdf"
-    }
-    '''
+            return Response({'error': 'Study not found or does not belong to this review'}, status=404)
+    
     def post(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         data = request.data
         if isinstance(data, list):
-            serializer = StudySerializer(data=data, many=True)
+            for d in data:
+                d['review'] = review_id
         else:
-            serializer = StudySerializer(data=data)
-        
+            data['review'] = review_id
+
+        serializer = StudySerializer(data=data, many=isinstance(data, list))
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
     def patch(self, request, study_id=None):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         if not study_id:
-            return Response({'error': 'Study ID is required in the URL.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Study ID is required.'}, status=400)
 
         try:
-            study = Study.objects.get(id=study_id)
+            study = Study.objects.get(id=study_id, review_id=review_id)
         except Study.DoesNotExist:
-            return Response({'error': 'Study not found.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Study not found or does not belong to this review'}, status=404)
 
         serializer = StudySerializer(study, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 class AuthorsView(APIView):
     '''
     API view for managing authors.
     '''
     def get(self, request, author_id=None):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         if author_id:
             try:
-                author = Author.objects.get(id=author_id)
+                author = Author.objects.get(id=author_id, review_id=review_id)
                 serializer = AuthorSerializer(author)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.data)
             except Author.DoesNotExist:
-                return Response({'error': 'Author not found.'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'error': 'Author not found'}, status=404)
         else:
-            authors = Author.objects.all()
+            authors = Author.objects.filter(review_id=review_id)
             serializer = AuthorSerializer(authors, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    '''
-    Example POST request body:
-        {
-        "name": "Alice Smith"
-        }
-    '''
+            return Response(serializer.data)
+        
 
     def post(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
 
         data = request.data
         if isinstance(data, list):
-            serializer = AuthorSerializer(data=data, many=True)
+            for d in data:
+                d['review'] = review_id
         else:
-            serializer = AuthorSerializer(data=data)
+            data['review'] = review_id
 
+        serializer = AuthorSerializer(data=data, many=isinstance(data, list))
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
     def delete(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         authors = request.data.get('authors')
-
         if not isinstance(authors, list) or not authors:
-            return Response(
-                {'error': 'A non-empty list of authors must be provided.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'A non-empty list of authors must be provided.'}, status=400)
 
-        authors_qs = Author.objects.filter(id__in=authors)
+        authors_qs = Author.objects.filter(id__in=authors, review_id=review_id)
         found_ids = list(authors_qs.values_list('id', flat=True))
         authors_qs.delete()
 
-        return Response({'deleted': found_ids}, status=status.HTTP_200_OK)
+        return Response({'deleted': found_ids}, status=200)
 
 @api_view(['GET'])
 def tag_study_counts(request):
-    tags_with_counts = Tag.objects.annotate(
+    review_id = request.query_params.get('review_id')
+    if not review_id:
+        return Response({'error': 'review_id is required'}, status=400)
+
+    tags_with_counts = Tag.objects.filter(review_id=review_id).annotate(
         study_count=Count('studies')
     ).values('id', 'name', 'study_count')
+
     return Response(tags_with_counts)
 
 @api_view(['GET'])
 def flag_study_counts(request):
+    review_id = request.query_params.get('review_id')
+    if not review_id:
+        return Response({'error': 'review_id is required'}, status=400)
+
     counter = Counter()
-    for study in Study.objects.all():
+    studies = Study.objects.filter(review_id=review_id)
+    for study in studies:
         for flag in study.flags:
             counter[flag] += 1
 
@@ -290,8 +373,12 @@ def flag_study_counts(request):
 
 class ReviewExportView(APIView):
     def get(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         # Serialize tag tree
-        root_tags = Tag.objects.filter(parent_tag__isnull=True)
+        root_tags = Tag.objects.filter(parent_tag__isnull=True, review_id=review_id)
         def strip_ids(tree):
             tree.pop('id', None)
             for child in tree.get('children', []):
@@ -300,10 +387,10 @@ class ReviewExportView(APIView):
         tag_tree = [strip_ids(tag.get_tree()) for tag in root_tags]
 
         # Serialize authors
-        authors = Author.objects.all().values('name')  # Only include name
+        authors = Author.objects.filter(review_id=review_id).values('name')
 
         # Serialize studies
-        studies = Study.objects.all()
+        studies = Study.objects.filter(review_id=review_id)
         study_list = []
         for study in studies:
             study_list.append({
@@ -321,14 +408,16 @@ class ReviewExportView(APIView):
 
         return Response({
             "tag_tree": tag_tree,
-            "authors": list(authors.values("name")),
+            "authors": list(authors),
             "studies": study_list
         })
-    
-from .models import Tag, Author, Study
 
 class ReviewImportView(APIView):
     def post(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
         data = request.data
         tag_tree_data = data.get("tag_tree", [])
         authors_data = data.get("authors", [])
@@ -337,11 +426,12 @@ class ReviewImportView(APIView):
         # Importing tag tree
         def create_tag_from_tree(data, parent=None):
             name = data["name"].strip()
-            description = data.get("description", "").strip()
+            description = (data.get("description") or "").strip()
 
             tag, _ = Tag.objects.get_or_create(
                 name=name,
                 parent_tag=parent,
+                review_id=review_id,
                 defaults={"description": description}
             )
 
@@ -352,13 +442,13 @@ class ReviewImportView(APIView):
             create_tag_from_tree(tag_data)
 
         # Build a tag lookup (by name + parent) for fast access
-        tag_map = {(tag.name, tag.parent_tag_id): tag for tag in Tag.objects.all()}
+        tag_map = {(tag.name, tag.parent_tag_id): tag for tag in Tag.objects.filter(review_id=review_id)}
 
         # Importing authors
         author_map = {}
         for author in authors_data:
             name = author["name"].strip()
-            obj, _ = Author.objects.get_or_create(name=name)
+            obj, _ = Author.objects.get_or_create(name=name, review_id=review_id)
             author_map[name] = obj
 
         # Importing Studies
@@ -375,10 +465,13 @@ class ReviewImportView(APIView):
                 for key in study_data
                 if key not in ["tags", "authors"]
             }
+            study_defaults["review_id"] = review_id
+
             # Creates or updates the study
             study, _ = Study.objects.get_or_create(
                 title=title,
                 year=year,
+                review_id=review_id,
                 defaults=study_defaults
             )
 
@@ -397,365 +490,5 @@ class ReviewImportView(APIView):
                 for name in author_names
                 if name.strip() in author_map
             ])
+
         return Response({"message": "Review imported successfully."})
-    
-
-    '''
-        Example import/export
-
-
-        {
-    "tag_tree": [
-        {
-            "name": "Machine Learning in Healthcare",
-            "description": "Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia Mama mia papa pia ",
-            "children": [
-                {
-                    "name": "Supervised Learning",
-                    "description": "",
-                    "children": []
-                },
-                {
-                    "name": "Unsupervised Learning",
-                    "description": "",
-                    "children": []
-                },
-                {
-                    "name": "Reinforcement Learning",
-                    "description": "",
-                    "children": []
-                }
-            ]
-        },
-        {
-            "name": "Explainability & Interpretability",
-            "description": "",
-            "children": []
-        },
-        {
-            "name": "Bias & Fairness",
-            "description": "",
-            "children": []
-        },
-        {
-            "name": "Study Characteristics",
-            "description": "",
-            "children": [
-                {
-                    "name": "Peer-Reviewed",
-                    "description": "",
-                    "children": []
-                },
-                {
-                    "name": "Preprint",
-                    "description": "",
-                    "children": []
-                },
-                {
-                    "name": "Published in Journal",
-                    "description": "",
-                    "children": []
-                },
-                {
-                    "name": "Published in Conference",
-                    "description": "",
-                    "children": []
-                }
-            ]
-        },
-        {
-            "name": "Evaluation",
-            "description": "",
-            "children": [
-                {
-                    "name": "Real-World Testing",
-                    "description": "",
-                    "children": []
-                },
-                {
-                    "name": "Benchmark Dataset",
-                    "description": "",
-                    "children": []
-                },
-                {
-                    "name": "No Empirical Evaluation",
-                    "description": "",
-                    "children": []
-                }
-            ]
-        },
-        {
-            "name": "Dataset Type",
-            "description": "Si te he fallado te pido perdon de la unica forma que se",
-            "children": [
-                {
-                    "name": "Public Dataset",
-                    "description": "",
-                    "children": []
-                },
-                {
-                    "name": "Private Dataset",
-                    "description": "",
-                    "children": []
-                },
-                {
-                    "name": "Synthetic Data",
-                    "description": "",
-                    "children": []
-                }
-            ]
-        }
-    ],
-    "authors": [
-        {
-            "name": "Gordon Freeman"
-        },
-        {
-            "name": "Tony Mamamia"
-        },
-        {
-            "name": "Alice Smith"
-        },
-        {
-            "name": "Baby Yoda"
-        },
-        {
-            "name": "Don Cheadle"
-        },
-        {
-            "name": "Morton Devries"
-        },
-        {
-            "name": "Brukan Silverhorn"
-        },
-        {
-            "name": "Bird Johnson"
-        },
-        {
-            "name": "Gabriel Borinc"
-        },
-        {
-            "name": "Johan Cleric"
-        },
-        {
-            "name": "Dr Magnuson"
-        },
-        {
-            "name": "Alyx Vance"
-        },
-        {
-            "name": "Cherished Mathew"
-        },
-        {
-            "name": "Panini Cat"
-        },
-        {
-            "name": "Menjunje Cat"
-        }
-    ],
-    "studies": [
-    {
-        "title": "Exploring Machine Learning in Healthcare",
-        "year": 2023,
-        "summary": "This study explores the application of machine learning in healthcare, focusing on supervised learning.",
-        "abstract": "The paper delves into the role of supervised learning in healthcare, particularly in disease prediction and diagnosis.",
-        "flags": ["Reviewed"],
-        "tags": [
-            "Machine Learning in Healthcare",
-            "Supervised Learning"
-        ],
-        "authors": [
-            "Gordon Freeman",
-            "Tony Mamamia"
-        ],
-        "doi": "10.1234/ai.healthcare.2023",
-        "url": "http://example.com/study1",
-        "pages": "1-10"
-    },
-    {
-        "title": "Unsupervised Learning Techniques in Medical Imaging",
-        "year": 2022,
-        "summary": "Unsupervised learning methods for image classification in medical diagnostics.",
-        "abstract": "This study highlights how unsupervised learning algorithms can be utilized for improving medical imaging diagnostics.",
-        "flags": ["Pending Review"],
-        "tags": [
-            "Machine Learning in Healthcare",
-            "Unsupervised Learning"
-        ],
-        "authors": [
-            "Alice Smith",
-            "Baby Yoda"
-        ],
-        "doi": "10.1234/ai.medical.2022",
-        "url": "http://example.com/study2",
-        "pages": "11-20"
-    },
-    {
-        "title": "Reinforcement Learning for Optimizing Healthcare Decisions",
-        "year": 2023,
-        "summary": "The potential of reinforcement learning to improve decision-making processes in healthcare systems.",
-        "abstract": "This paper investigates the integration of reinforcement learning techniques in healthcare decision support systems.",
-        "flags": ["Missing Data", "Flagged"],
-        "tags": [
-            "Machine Learning in Healthcare",
-            "Reinforcement Learning"
-        ],
-        "authors": [
-            "Don Cheadle",
-            "Morton Devries"
-        ],
-        "doi": "10.1234/rl.healthcare.2023",
-        "url": "http://example.com/study3",
-        "pages": "21-30"
-    },
-    {
-        "title": "Explainability in Healthcare Machine Learning Models",
-        "year": 2024,
-        "summary": "A deep dive into the importance of explainability and interpretability in healthcare AI models.",
-        "abstract": "The study examines methods for enhancing the transparency of AI-based systems used in healthcare.",
-        "flags": ["Reviewed"],
-        "tags": [
-            "Explainability & Interpretability"
-        ],
-        "authors": [
-            "Brukan Silverhorn",
-            "Bird Johnson"
-        ],
-        "doi": "10.1234/explainability.ai.2024",
-        "url": "http://example.com/study4",
-        "pages": "31-40"
-    },
-    {
-        "title": "Bias & Fairness in Healthcare AI Algorithms",
-        "year": 2024,
-        "summary": "Investigating the presence of biases in healthcare AI systems and their impact on patient outcomes.",
-        "abstract": "This paper explores the issues of fairness and bias in machine learning algorithms used in healthcare.",
-        "flags": ["Reviewed"],
-        "tags": [
-            "Bias & Fairness"
-        ],
-        "authors": [
-            "Gabriel Borinc",
-            "Johan Cleric"
-        ],
-        "doi": "10.1234/bias.fairness.2024",
-        "url": "http://example.com/study5",
-        "pages": "41-50"
-    },
-    {
-        "title": "Papers in Healthcare AI",
-        "year": 2021,
-        "summary": "An analysis of peer-reviewed studies in healthcare AI and their impact on the field.",
-        "abstract": "This paper reviews the most influential peer-reviewed studies in healthcare AI, with a focus on diagnostic applications.",
-        "flags": ["Pending Review"],
-        "tags": [
-            "Study Characteristics",
-            "Peer-Reviewed"
-        ],
-        "authors": [
-            "Dr Magnuson",
-            "Alyx Vance"
-        ],
-        "doi": "10.1234/peerreviewed.healthcare.2021",
-        "url": "http://example.com/study6",
-        "pages": "51-60"
-    },
-    {
-        "title": "Preprint Papers on Healthcare AI",
-        "year": 2022,
-        "summary": "This paper analyzes the growing role of preprint papers in healthcare AI research.",
-        "abstract": "Focusing on the significance of preprints, this paper discusses their importance in rapid healthcare AI advancements.",
-        "flags": ["Missing Data"],
-        "tags": [
-            "Study Characteristics",
-            "Preprint"
-        ],
-        "authors": [
-            "Cherished Mathew",
-            "Panini Cat"
-        ],
-        "doi": "10.1234/preprint.healthcare.2022",
-        "url": "http://example.com/study7",
-        "pages": "61-70"
-    },
-    {
-        "title": "Journal Publications on Healthcare AI",
-        "year": 2023,
-        "summary": "The role of journal publications in shaping the future of AI in healthcare.",
-        "abstract": "This study examines journal publications in the field of healthcare AI and their influence on medical research and practice.",
-        "flags": ["Reviewed"],
-        "tags": [
-            "Study Characteristics",
-            "Published in Journal"
-        ],
-        "authors": [
-            "Gordon Freeman",
-            "Menjunje Cat"
-        ],
-        "doi": "10.1234/journal.healthcare.2023",
-        "url": "http://example.com/study8",
-        "pages": "71-80"
-    },
-    {
-        "title": "Conference Publications on Healthcare AI",
-        "year": 2021,
-        "summary": "A review of key conference publications in healthcare AI, focusing on real-world applications.",
-        "abstract": "This paper provides an overview of conference papers related to healthcare AI and their practical implementations.",
-        "flags": ["Pending Review"],
-        "tags": [
-            "Study Characteristics",
-            "Published in Conference"
-        ],
-        "authors": [
-            "Tony Mamamia",
-            "Baby Yoda"
-        ],
-        "doi": "10.1234/conference.healthcare.2021",
-        "url": "http://example.com/study9",
-        "pages": "81-90"
-    },
-    {
-        "title": "Real-World Testing of Healthcare AI Models",
-        "year": 2024,
-        "summary": "Exploring the role of real-world testing in healthcare AI and its impact on model performance.",
-        "abstract": "The paper discusses the importance of testing AI models in real-world healthcare environments.",
-        "flags": ["Reviewed", "Flagged"],
-        "tags": [
-            "Evaluation",
-            "Real-World Testing"
-        ],
-        "authors": [
-            "Don Cheadle",
-            "Morton Devries"
-        ],
-        "doi": "10.1234/realworld.healthcare.2024",
-        "url": "http://example.com/study10",
-        "pages": "91-100"
-    },
-    {
-        "title": "Advanced Techniques in Healthcare AI",
-        "year": 2024,
-        "summary": "This study explores various advanced machine learning techniques for healthcare applications, covering supervised, unsupervised, and reinforcement learning, as well as considerations of fairness and bias.",
-        "abstract": "The paper investigates the impact of advanced AI techniques such as supervised, unsupervised, and reinforcement learning in healthcare. It also addresses the challenges of fairness and bias in AI-driven healthcare solutions.",
-        "flags": ["Reviewed"],
-        "tags": [
-            "Machine Learning in Healthcare",
-            "Supervised Learning",
-            "Unsupervised Learning",
-            "Bias & Fairness",
-            "Real-World Testing"
-        ],
-        "authors": [
-            "Gordon Freeman",
-            "Tony Mamamia",
-            "Alice Smith",
-            "Baby Yoda",
-            "Don Cheadle"
-        ],
-        "doi": "10.1234/advanced.ai.healthcare.2024",
-        "url": "http://example.com/advanced-healthcare-ai",
-        "pages": "1-20"
-    }
-]
-}
-    '''

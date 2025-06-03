@@ -3,13 +3,13 @@ import { Button } from "../../components/ui/button";
 import { Tag, Trash2 } from "lucide-react";
 import { Tree } from "react-arborist";
 import Node from "./Node";
-import {
-  createTag,
-  deleteTag,
-  editTagName,
-  editTagDescription,
-  moveTag,
-} from "./tagApi";
+// import {
+//   createTag,
+//   deleteTag,
+//   editTagName,
+//   editTagDescription,
+//   moveTag,
+// } from "./tagApi";
 import {
   Card,
   CardContent,
@@ -46,14 +46,66 @@ function TagView() {
   const [selectedStudy, setSelectedStudy] = useState(null);
   const [selectedStudyDetail, setSelectedStudyDetail] = useState(null);
 
+
+  const reviewId = localStorage.getItem('review_id');
+
+  const createTag = async (newTag) => {
+    const response = await fetch(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newTag),
+    });
+    return response.json();
+  };
+  
+  const deleteTag = async (tagId) => {
+    const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (response.status === 204) {
+      return { success: true };
+    }
+    return response.json();
+  };
+  
+  const moveTag = async (dragMove) => {
+    console.log("Moving tag with data:", dragMove);
+    const response = await fetch(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dragMove),
+    });
+    return response.json();
+  };
+  
+  const editTagName = async (tagId, newName) => {
+    const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName }),
+    });
+    return response.json();
+  };
+  
+  const editTagDescription = async (tagId, newDescription) => {
+    const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: newDescription }),
+    });
+    return response.json();
+  };
+  
+
   const fetchTreeData = async () => {
-    const response = await fetch("http://localhost:8000/api/tags/");
+    const response = await fetch(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
     const data = await response.json();
     setTags(data);
   };
 
   const fetchStudyData = async () => {
-    const response = await fetch("http://localhost:8000/api/studies/");
+    const response = await fetch(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
     const data = await response.json();
 
     const refineTable = data.map((study) => ({
@@ -69,7 +121,7 @@ function TagView() {
   };
 
   const fetchTagCount = async () => {
-    const response = await fetch("http://localhost:8000/api/tags/count/");
+    const response = await fetch(`http://localhost:8000/api/tags/count/?review_id=${reviewId}`);
     const data = await response.json();
     setTagCount(data);
   };
@@ -101,14 +153,14 @@ function TagView() {
   };
 
   const fetchStudyDetailed = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
     console.log("fetched study detail data", data);
   };
 
   const deleteStudyData = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/`, {
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`, {
       method: "DELETE",
     });
     if (response.ok) {
@@ -206,6 +258,7 @@ function TagView() {
   };
 
   useEffect(() => {
+    console.log("Current Review ",reviewId);
     fetchTreeData();
     fetchStudyData();
     fetchTagCount();

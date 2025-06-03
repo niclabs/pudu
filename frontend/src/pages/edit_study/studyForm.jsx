@@ -76,6 +76,9 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   const flagslist = ["Reviewed", "Pending Review", "Missing Data", "Flagged"];
   const [addedAuthor, setAddedAuthor] = useState("");
 
+  const reviewId = localStorage.getItem('review_id');
+
+
   const handleAuthorSubmit = async () => {
     const authorName = addedAuthor.trim();
 
@@ -89,7 +92,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
 
   const addAuthor = async (authorName) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/authors/", {
+      const response = await fetch(`http://127.0.0.1:8000/api/authors/${reviewId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: authorName }),
@@ -123,7 +126,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   };
 
   const fetchTreeData = async () => {
-    const response = await fetch("http://localhost:8000/api/tags/");
+    const response = await fetch(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
     const data = await response.json();
     setTags(data);
   };
@@ -146,7 +149,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   });
 
   const fetchStudyDetailed = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/`);
+    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
     console.log(data);
@@ -155,7 +158,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   async function deleteAuthors() {
     try {
       const authorIds = form.getValues("authors");
-      const response = await fetch("http://127.0.0.1:8000/api/authors/", {
+      const response = await fetch(`http://127.0.0.1:8000/api/authors/$?review_id=${reviewId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ authors: authorIds }),
@@ -188,8 +191,8 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   const saveStudy = async (studyid, form) => {
     const method = studyid ? "PATCH" : "POST";
     const url = studyid
-      ? `http://127.0.0.1:8000/api/studies/${studyid}/`
-      : "http://127.0.0.1:8000/api/studies/";
+      ? `http://127.0.0.1:8000/api/studies/${studyid}/?review_id=${reviewId}`
+      : `http://127.0.0.1:8000/api/studies/?review_id=${reviewId}`;
 
     const response = await fetch(url, {
       method,
@@ -207,7 +210,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   };
 
   const fetchAuthors = async () => {
-    const response = await fetch(`http://localhost:8000/api/authors/`);
+    const response = await fetch(`http://localhost:8000/api/authors/?review_id=${reviewId}`);
     const data = await response.json();
     const authorsList = data.map((author) => ({
       value: String(author.id),
