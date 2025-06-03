@@ -26,20 +26,20 @@ export default function Navbar() {
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
               <Link
-                to="/tags"
+                to="/studies"
                 className=" p-2 text-xl  hover:bg-violet-950 rounded-md"
               >
-                Tag Management
+                Studies
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
               <Link
-                to="/studies"
+                to="/tags"
                 className=" p-2 text-xl  hover:bg-violet-950 rounded-md"
               >
-                Studies
+                Tag Management
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>

@@ -271,12 +271,13 @@ function TagView() {
   if (loading) return <div>Loading tree...</div>;
 
   return (
-    <div className="flex flex-row w-full h-full bg-violet-50">
+    <div className="flex flex-row w-full h-full bg-violet-50 ">
       {/* Tree */}
       <div className="m-4 p-4 tree-component flex-1 bg-indigo-100 rounded-xl shadow-lg relative">
         <div className="flex justify-between items-start">
           <div className="demo-instructions">
-            <h1 className="text-2xl font-bold">Tag Manager</h1>
+            <h1 className="text-2xl font-bold">Tag Management</h1>
+            
           </div>
           <div className="flex space-x-2">
             <Button
@@ -292,9 +293,11 @@ function TagView() {
               <Trash2 className="" /> Delete Tag
             </Button>
           </div>
+          
         </div>
-
+        <p className=" text-gray-600">Organize your review with a custom tag tree.</p>
         <div className="tree-container flex-grow overflow-auto mt-4">
+          
           <Tree
             data={tags}
             openByDefault={false}

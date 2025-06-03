@@ -168,8 +168,9 @@ function StudyView() {
 
   return (
     <div className="flex flex-col w-full h-full p-4 bg-violet-50 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">Studies</h1>
-      <div className="flex justify-between items-start mb-6">
+      <h1 className="text-2xl font-bold">Studies</h1>
+      <p className=" text-gray-600 mb-6">Browse and manage studies in your review.</p>
+      <div className="flex justify-between items-start">
         <div className="flex flex-wrap gap-4">
           <Button
             className="bg-emerald-400 text-violet-50 font-bold text-xl p-6 hover:bg-emerald-500"
