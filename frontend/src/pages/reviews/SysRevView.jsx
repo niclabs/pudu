@@ -7,12 +7,23 @@ import {
     CardHeader,
     CardTitle,
   } from "../../components/ui/card";
+  import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+  } from "@/components/ui/dialog";
   import { Input } from "../../components/custom/input";
   import { Badge } from "@/components/ui/badge"
   import { Button } from "@/components/ui/button"
   import { BookText } from "lucide-react";
   function SysRevView() {
     const [reviewData, setReviewData] = useState([]);
+    const [reviewOpen, setReviewOpen] = useState(false);
+    const [deleteReviewOpen, setDeleteReviewOpen] = useState(false);
 
     const fetchSysRevData = async () => {
       const response = await fetch("http://localhost:8000/api/reviews/");
@@ -94,6 +105,7 @@ import {
       onClick={(e) => {
         e.stopPropagation();
         console.log("Edit clicked for", review.id);
+        setReviewOpen(true);
       }}
     >
       Edit Review
@@ -102,12 +114,62 @@ import {
 </CardContent>
           </div>
         </Card>
+        
       ))}
+
+<Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
+                <DialogContent className=" bg-violet-50">
+                  <DialogHeader>
+                    <DialogTitle>Editing Review</DialogTitle>
+                  </DialogHeader>
+                      
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setReviewOpen(false)}
+                      className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                    >
+                      Close
+                    </Button>
+                      <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                        onClick={() => {setReviewOpen(false); setDeleteReviewOpen(true)}}
+                        >
+                        Delete Review
+                      </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+      <Dialog open={deleteReviewOpen} onOpenChange={setDeleteReviewOpen}>
+                <DialogContent className=" bg-violet-50">
+                  <DialogHeader>
+                    <DialogTitle>Deleting Review</DialogTitle>
+                  </DialogHeader>
+                      {/* <b>{selectedNode?.data?.name}</b> */}
+                      <div>This review and all of its content is being deleted.</div>
+                      <div>This action cannot be undone.</div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setDeleteReviewOpen(false)}
+                      className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                    >
+                      Close
+                    </Button>
+                      <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                        //onClick={() => onDelete()}
+                        >
+                        Delete Review
+                      </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
     </div>
   </div>
 </div>
 
     );
+    
   }
   
   export default SysRevView;
