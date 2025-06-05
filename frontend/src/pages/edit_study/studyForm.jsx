@@ -287,7 +287,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
         <Button
           type="submit"
           form="study-form"
-          className="bg-violet-900 text-violet-50 hover:bg-violet-950"
+          className=" font-bold bg-violet-900 text-violet-50 hover:bg-violet-950"
         >
           Submit
         </Button>
@@ -452,7 +452,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                               </Button>
                               <Button
                                 onClick={handleAuthorSubmit}
-                                className="bg-violet-900 text-violet-50 hover:bg-violet-950"
+                                className="bg-violet-900 text-violet-50 hover:bg-violet-950 "
                               >
                                 Confirm
                               </Button>
@@ -460,7 +460,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                           </DialogContent>
                         </Dialog>
                         <Button
-                          className="bg-red-600 text-violet-50 h-6 hover:bg-red-800"
+                          className="bg-red-600 text-violet-50 h-6 hover:bg-red-800 font-bold"
                           type="button"
                           onClick={() => setDeleteOpen(true)}
                         >

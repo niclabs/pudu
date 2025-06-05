@@ -79,7 +79,7 @@ export const columns = (setStudyOpen, setSelectedStudy, setDeleteOpen) => [
                     flag === "Reviewed"
                       ? "bg-emerald-400"
                       : flag === "Pending Review"
-                        ? "bg-amber-400"
+                        ? "bg-cyan-500"
                         : flag === "Flagged"
                           ? "bg-orange-400"
                           : flag === "Missing Data"

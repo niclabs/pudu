@@ -282,13 +282,13 @@ function TagView() {
           <div className="flex space-x-2">
             <Button
               onClick={onCreate}
-              className="bg-violet-900 text-violet-50 text-xs hover:bg-violet-950 flex"
+              className="bg-violet-900 text-violet-50 text-xs font-bold hover:bg-violet-950 flex"
             >
               <Tag className="" /> Add Tag
             </Button>
             <Button
               onClick={() => {setTagDeleteOpen(true)}}
-              className="bg-red-600 text-violet-50 text-xs hover:bg-red-800 flex"
+              className="bg-red-600 text-violet-50 text-xs font-bold hover:bg-red-800 flex"
             >
               <Trash2 className="" /> Delete Tag
             </Button>

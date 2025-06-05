@@ -168,7 +168,7 @@ function StudyView() {
 
   return (
     <div className="flex flex-col w-full h-full p-4 bg-violet-50 min-h-screen">
-      <h1 className="text-2xl font-bold">Studies</h1>
+      <h1 className="text-4xl font-bold">Studies</h1>
       <p className=" text-gray-600 mb-6">Browse and manage studies in your review.</p>
       <div className="flex justify-between items-start">
         <div className="flex flex-wrap gap-4">
@@ -182,7 +182,7 @@ function StudyView() {
             {flagCount["Reviewed"] || 0}
           </Button>
           <Button
-            className="bg-amber-400 text-violet-50 font-bold text-xl p-6 hover:bg-amber-500"
+            className="bg-cyan-500 text-violet-50 font-bold text-xl p-6 hover:bg-cyan-600"
             onClick={() =>
               setFilterBy(
                 filterBy === "Pending Review" ? null : "Pending Review",
