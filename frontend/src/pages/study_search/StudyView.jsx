@@ -300,48 +300,51 @@ function StudyView() {
             </DialogContent>
           </Dialog>
           <Dialog open={studyOpen} onOpenChange={setStudyOpen}>
-            <DialogContent className="!w-[40vw] !max-w-none !p-8 bg-violet-50 text-lg h-[80vh]">
-              <DialogHeader>
-                <DialogTitle>Study Metadata</DialogTitle>
-              </DialogHeader>
-              <div className="p-4 h-[calc(80vh-160px)] overflow-auto">
-                {selectedStudyDetail &&
-                  Object.entries(refineStudy(selectedStudyDetail)).map(
-                    ([key, value]) => (
-                      <div key={key} className="mb-4">
-                        <strong>{labelMap[key] || key}:</strong>{" "}
-                        {key === "url" ? (
-                          <a
-                            href={value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 underline"
-                          >
-                            {value}
-                          </a>
-                        ) : (
-                          String(value)
-                        )}
-                      </div>
-                    ),
-                  )}
-              </div>
-              <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-                <Button
-                  variant="outline"
-                  onClick={() => setStudyOpen(false)}
-                  className="border-violet-700 text-violet-700 hover:bg-violet-200"
-                >
-                  Cancel
-                </Button>
-                <Link to={`/editstudy/${selectedStudyDetail?.id}/`}>
-                  <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950">
-                    Edit Study
-                  </Button>
-                </Link>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+  <DialogContent className="bg-indigo-100 border-violet-200 max-w-3xl !p-8">
+    <DialogHeader className="space-y-3">
+      <DialogTitle className="font-bold">Study Metadata</DialogTitle>
+      <DialogDescription className="text-gray-600">
+        Detailed metadata for the selected study.
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="space-y-4 py-4 h-[calc(80vh-220px)] overflow-y-auto pr-2">
+      {selectedStudyDetail &&
+        Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
+          <div key={key} className="mb-2">
+            <span className="font-semibold">{labelMap[key] || key}:</span>{" "}
+            {key === "url" ? (
+              <a
+                href={value}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline"
+              >
+                {value}
+              </a>
+            ) : (
+              <span>{String(value)}</span>
+            )}
+          </div>
+        ))}
+    </div>
+
+    <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+      <Button
+        variant="outline"
+        onClick={() => setStudyOpen(false)}
+        className="text-violet-700 hover:bg-violet-100"
+      >
+        Close
+      </Button>
+      <Link to={`/editstudy/${selectedStudyDetail?.id}/`}>
+        <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950 font-bold">
+          Edit Study
+        </Button>
+      </Link>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
           <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
           <DialogContent className="  bg-violet-50  ">
             <DialogHeader>
