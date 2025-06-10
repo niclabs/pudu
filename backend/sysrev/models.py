@@ -1,4 +1,17 @@
 from django.db import models
+<<<<<<< Updated upstream
+=======
+from django.contrib.auth.models import User
+
+
+class Review(models.Model):
+    name = models.CharField(max_length=255)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField(blank=True, null=True)
+    status = models.BooleanField(default=False)  # True for completed, False for ongoing
+
+>>>>>>> Stashed changes
 
 class Study(models.Model):
     id = models.AutoField(primary_key=True)

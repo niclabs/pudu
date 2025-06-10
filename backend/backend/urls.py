@@ -15,8 +15,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+<<<<<<< Updated upstream
 from django.urls import path
 from sysrev.views import TagTreeView, StudiesView, AuthorsView, tag_study_counts, ReviewExportView, ReviewImportView
+=======
+from django.urls import path, include
+from sysrev.views import csrf_token_view, LoginView, LogoutView, TagTreeView, StudiesView, AuthorsView, SysRevView, tag_study_counts,flag_study_counts, ReviewExportView, ReviewImportView
+from rest_framework.authtoken.views import obtain_auth_token
+>>>>>>> Stashed changes
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,4 +35,12 @@ urlpatterns = [
     path('api/authors/<int:author_id>/', AuthorsView.as_view(), name='author-detail'),
     path('api/export/', ReviewExportView.as_view(), name='review-export'),
     path('api/import/', ReviewImportView.as_view(), name='review-import'),
+<<<<<<< Updated upstream
+=======
+    path('api-auth/', include('rest_framework.urls')),
+    path('auth/login/', LoginView.as_view(), name='login'),
+    path('auth/logout/', LogoutView.as_view(), name='logout'),
+    path('auth/csrf/', csrf_token_view, name='csrf-token'),
+
+>>>>>>> Stashed changes
 ]

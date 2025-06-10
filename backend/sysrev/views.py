@@ -5,6 +5,88 @@ from rest_framework.decorators import api_view
 from .models import Tag, Study, Author
 from .serializers import TagSerializer, StudySerializer, AuthorSerializer
 from django.db.models import Count
+<<<<<<< Updated upstream
+=======
+from collections import Counter
+from django.contrib.auth import authenticate, login, logout
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+
+@api_view(['GET'])
+def csrf_token_view(request):
+    return JsonResponse({'csrfToken': get_token(request)})
+
+class LoginView(APIView):
+    permission_classes = []  # Allow unauthenticated users
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)  # Creates session
+            return Response({'message': 'Login successful.'})
+        else:
+            return Response({'error': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class LogoutView(APIView):
+    def post(self, request):
+        logout(request)
+        return Response({'message': 'Logged out successfully.'})
+
+class SysRevView(APIView):
+    '''API view for managing systematic reviews.
+    This view handles CRUD operations for reviews, including creating, retrieving, updating, and deleting reviews.
+    '''
+    def get(self, request, review_id=None):
+        '''Retrieve a specific review by ID or all reviews if no ID is provided.'''
+        if review_id:
+            try:
+                review = Review.objects.get(id=review_id, owner=request.user)
+                serializer = ReviewSerializer(review)
+                return Response(serializer.data)
+            except Review.DoesNotExist:
+                return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            reviews = Review.objects.filter(owner=request.user)
+            serializer = ReviewSerializer(reviews, many=True)
+            return Response(serializer.data)
+                
+    def post(self, request):
+        serializer = ReviewSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(owner=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, review_id=None):
+        if not review_id:
+            return Response({'error': 'Review ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            review = Review.objects.get(id=review_id, owner=request.user)
+            review.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Review.DoesNotExist:
+            return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+    def patch(self, request, review_id=None):
+        if not review_id:
+            return Response({'error': 'Review ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            review = Review.objects.get(id=review_id, owner=request.user)
+        except Review.DoesNotExist:
+            return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ReviewSerializer(review, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+>>>>>>> Stashed changes
 
 #CRUD operations on the tag tree
 class TagTreeView(APIView):

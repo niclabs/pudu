@@ -1,5 +1,16 @@
 from rest_framework import serializers
+<<<<<<< Updated upstream
 from .models import Tag, Study, Author
+=======
+from .models import Tag, Study, Author, Review
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'name', 'start_date', 'end_date', 'status']
+        read_only_fields = ['owner']
+
+>>>>>>> Stashed changes
 
 class TagSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
