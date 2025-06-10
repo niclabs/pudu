@@ -48,6 +48,7 @@ class SysRevView(APIView):
         
     def patch(self, request, review_id=None):
         '''Update a specific review by ID.'''
+        print("patching: ", request.data)
         if not review_id:
             return Response({'error': 'Review ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 

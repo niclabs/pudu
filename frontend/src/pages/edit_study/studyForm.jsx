@@ -442,8 +442,8 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                                 </div>
                               </div>
                             </div>
-                            <DialogFooter>
-                              <Button
+                            <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+                            <Button
                                 variant="outline"
                                 onClick={() => setAuthorOpen(false)}
                                 className="border-violet-700 text-violet-700 hover:bg-violet-100"
@@ -650,8 +650,8 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                           return <li key={id}>{author?.label || `ID ${id}`}</li>;
                         })}
                         These authors are being deleted. This action cannot be undone.
-                    <DialogFooter>
-                      <Button
+                        <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+                        <Button
                         variant="outline"
                         onClick={() => setDeleteOpen(false)}
                         className="border-violet-700 text-violet-700 hover:bg-violet-100"

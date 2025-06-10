@@ -250,11 +250,11 @@ function StudyView() {
                   </div>
                 )}
               </div>
-              <DialogFooter>
+              <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
                 <Button
                   variant="outline"
                   onClick={() => setImportOpen(false)}
-                  className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                  className="border-violet-700 text-violet-700 hover:bg-violet-200"
                 >
                   Cancel
                 </Button>
@@ -282,11 +282,11 @@ function StudyView() {
                   for this review.
                 </DialogDescription>
               </DialogHeader>
-              <DialogFooter>
+              <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
                 <Button
                   variant="outline"
                   onClick={() => setExportOpen(false)}
-                  className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                  className="border-violet-700 text-violet-700 hover:bg-violet-200"
                 >
                   Cancel
                 </Button>
@@ -326,13 +326,13 @@ function StudyView() {
                     ),
                   )}
               </div>
-              <DialogFooter>
+              <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
                 <Button
                   variant="outline"
                   onClick={() => setStudyOpen(false)}
-                  className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                  className="border-violet-700 text-violet-700 hover:bg-violet-200"
                 >
-                  Close
+                  Cancel
                 </Button>
                 <Link to={`/editstudy/${selectedStudyDetail?.id}/`}>
                   <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950">
@@ -349,13 +349,13 @@ function StudyView() {
             </DialogHeader>
                 <b>{selectedStudyDetail?.title}</b>
                 This study is being deleted. This action cannot be undone.
-            <DialogFooter>
-              <Button
+                <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+                <Button
                 variant="outline"
                 onClick={() => setDeleteOpen(false)}
                 className="border-violet-700 text-violet-700 hover:bg-violet-100"
               >
-                Close
+                Cancel
               </Button>
                 <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
                   onClick={() => deleteStudyData(selectedStudyDetail?.id)}>
