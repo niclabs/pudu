@@ -149,16 +149,39 @@ function StudyView() {
     setImportOpen(false);
   };
 
-  const handleExport = async () => {
+  const handleExportJSON = async () => {
     const response = await fetch(`http://localhost:8000/api/export/?review_id=${reviewId}`);
+
     const data = await response.json();
     const json = JSON.stringify(data);
+
     const blob = new Blob([json], { type: "application/json" });
     const href = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
     link.href = href;
     link.download = "review_export" + ".json"; //remember to add review name when it exists!
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(href);
+    setExportOpen(false);
+  };
+
+  const handleExportCSV = async () => {
+    const response = await fetch(`http://localhost:8000/api/export_csv/?review_id=${reviewId}`);
+  
+    if (!response.ok) {
+      console.error("Export failed:", response.statusText);
+      return;
+    }
+  
+    const blob = await response.blob();
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+  
+    link.href = href;
+    link.download = `review_export_${reviewId}.csv`; // Optional: add review name if available
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -291,10 +314,16 @@ function StudyView() {
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleExport}
+                  onClick={handleExportJSON}
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
                 >
-                  Export
+                  Export as JSON
+                </Button>
+                <Button
+                  onClick={handleExportCSV}
+                  className="bg-violet-900 text-violet-50 hover:bg-violet-950"
+                >
+                  Export as CSV
                 </Button>
               </DialogFooter>
             </DialogContent>

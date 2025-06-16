@@ -7,6 +7,44 @@ from .models import Tag, Study, Author, Review
 from .serializers import TagSerializer, StudySerializer, AuthorSerializer, ReviewSerializer, RegisterSerializer
 from django.db.models import Count
 from collections import Counter
+import csv
+from django.http import HttpResponse
+
+import csv
+from django.http import HttpResponse
+
+class ReviewCSVExportView(APIView):
+    def get(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
+        studies = Study.objects.filter(review_id=review_id)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="review_{review_id}_export.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Title', 'Year', 'Summary', 'Abstract', 'Flags',
+            'Tags', 'Authors', 'DOI', 'URL', 'Pages'
+        ])
+
+        for study in studies:
+            writer.writerow([
+                study.title,
+                study.year,
+                study.summary,
+                study.abstract,
+                ", ".join(study.flags),
+                ", ".join(tag.name for tag in study.tags.all()),
+                ", ".join(author.name for author in study.authors.all()),
+                study.doi,
+                study.url,
+                study.pages
+            ])
+
+        return response
 
 
 class RegisterView(generics.CreateAPIView):
