@@ -3,13 +3,6 @@ import { Button } from "../../components/ui/button";
 import { Tag, Trash2 } from "lucide-react";
 import { Tree } from "react-arborist";
 import Node from "./Node";
-// import {
-//   createTag,
-//   deleteTag,
-//   editTagName,
-//   editTagDescription,
-//   moveTag,
-// } from "./tagApi";
 import {
   Card,
   CardContent,

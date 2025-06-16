@@ -16,8 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from sysrev.views import TagTreeView, StudiesView, AuthorsView, SysRevView, tag_study_counts,flag_study_counts, ReviewExportView, ReviewImportView
+from sysrev.views import TagTreeView, StudiesView, AuthorsView, SysRevView, tag_study_counts,flag_study_counts, ReviewExportView, ReviewImportView, RegisterView
 from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,5 +38,8 @@ urlpatterns = [
     path('api/authors/<int:author_id>/', AuthorsView.as_view(), name='author-detail'),
     path('api/export/', ReviewExportView.as_view(), name='review-export'),
     path('api/import/', ReviewImportView.as_view(), name='review-import'),
-    #path('api/token/', obtain_auth_token),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/register/', RegisterView.as_view(), name='register'),
+
 ]

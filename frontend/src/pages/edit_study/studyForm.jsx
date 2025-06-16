@@ -92,7 +92,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
 
   const addAuthor = async (authorName) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/authors/${reviewId}`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: authorName }),
@@ -158,7 +158,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   async function deleteAuthors() {
     try {
       const authorIds = form.getValues("authors");
-      const response = await fetch(`http://127.0.0.1:8000/api/authors/$?review_id=${reviewId}`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ authors: authorIds }),

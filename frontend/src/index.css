@@ -21,11 +21,11 @@ input:focus-visible {
 }
 
 input {
-  background-color: var(--color-indigo-50);
+  background-color: var(--color-white);
 }
 
 textarea {
-  background-color: var(--color-indigo-50);
+  background-color: var(--color-white);
 }
 
 textarea:focus-visible {

@@ -15,6 +15,8 @@ import { Input } from "../../components/custom/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BookText } from "lucide-react"
+import { AuthService } from '/src/utils/authservice.jsx';
+
 function SysRevView() {
   const [reviewData, setReviewData] = useState([])
   const [reviewOpen, setReviewOpen] = useState(false)
@@ -27,57 +29,68 @@ function SysRevView() {
 
 
   const fetchSysRevData = async () => {
-    const response = await fetch("http://localhost:8000/api/reviews/")
-    const data = await response.json()
-    console.log(data)
+    const token = AuthService.getAccessToken();
+    const response = await fetch("http://localhost:8000/api/reviews/", {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+  
+    if (!response.ok) {
+      console.error("Failed to fetch reviews:", response.statusText);
+      return;
+    }
+  
+    const data = await response.json();
+    console.log(data);
     const formattedData = data.map((item) => ({
       id: item.id,
       title: item.name,
       start_date: item.start_date?.split("T")[0],
       end_date: item.end_date?.split("T")[0],
       status: item.status,
-    }))
-    setReviewData(formattedData)
-    
-  }
+    }));
+    setReviewData(formattedData);
+  };
 
   const createReview = async () => {
     try {
+      const token = AuthService.getAccessToken();
       const reviewData = {
-        name: "Untitled Review",  // Provide a default name
-      }
+        name: "Untitled Review",
+      };
   
       const response = await fetch("http://localhost:8000/api/reviews/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, 
         },
         body: JSON.stringify(reviewData),
-      })
+      });
   
       if (!response.ok) {
-        const errorData = await response.json()
-        console.error("Error details:", errorData)
-        throw new Error("Failed to create review")
+        const errorData = await response.json();
+        console.error("Error details:", errorData);
+        throw new Error("Failed to create review");
       }
   
-      const newReview = await response.json()
+      const newReview = await response.json();
+      await fetchSysRevData();
   
-      // Refresh the list
-      await fetchSysRevData()
-  
-      // Open edit mode for the new review
-      setEditingReviewName(newReview.name || "")
-      setEditingReviewStartDate(newReview.start_date?.split("T")[0] || null)
-      setEditingReviewEndDate(newReview.end_date?.split("T")[0] || null)
-      setEditingReviewStatus(newReview.status)
-      setEditingReviewID(newReview.id)
-      setReviewOpen(true)
+      // Set current review to open for editing
+      setEditingReviewName(newReview.name || "");
+      setEditingReviewStartDate(newReview.start_date?.split("T")[0] || null);
+      setEditingReviewEndDate(newReview.end_date?.split("T")[0] || null);
+      setEditingReviewStatus(newReview.status);
+      setEditingReviewID(newReview.id);
+      setReviewOpen(true);
   
     } catch (error) {
-      console.error("Error creating review:", error)
+      console.error("Error creating review:", error);
     }
-  }
+  };
   const saveReview = async () => {
     try {
       const reviewData = {
@@ -125,6 +138,8 @@ function SysRevView() {
       console.error("Error deleting review:", error)
     }
   }
+
+
 
   const pickReview = (reviewID) => {
     localStorage.setItem("review_id", reviewID)

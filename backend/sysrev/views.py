@@ -1,12 +1,17 @@
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.decorators import api_view
 from .models import Tag, Study, Author, Review
-from .serializers import TagSerializer, StudySerializer, AuthorSerializer, ReviewSerializer
+from .serializers import TagSerializer, StudySerializer, AuthorSerializer, ReviewSerializer, RegisterSerializer
 from django.db.models import Count
 from collections import Counter
 
+
+class RegisterView(generics.CreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
 
 class SysRevView(APIView):
     '''API view for managing systematic reviews.
@@ -22,16 +27,17 @@ class SysRevView(APIView):
             except Review.DoesNotExist:
                 return Response({'error': 'Review not found'}, status=status.HTTP_404_NOT_FOUND)
         else:
-            reviews = Review.objects.all()
+            reviews = Review.objects.filter(owner=request.user)
             serializer = ReviewSerializer(reviews, many=True)
             return Response(serializer.data)
         
     def post(self, request):
-        '''Create a new review.'''
         serializer = ReviewSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(owner=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        print("Review creation errors:", serializer.errors) 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, review_id=None):
