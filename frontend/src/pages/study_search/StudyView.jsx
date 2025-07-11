@@ -398,7 +398,7 @@ function StudyView() {
         </Dialog>
         </div>
       </div>
-      <div className="h-[calc(100vh-200px)] m-4">
+      <div className="h-[calc(100vh-240px)] m-4">
         <DataTable
           columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
           data={tableData}

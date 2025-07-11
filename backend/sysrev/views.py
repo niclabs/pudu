@@ -513,12 +513,17 @@ class ReviewImportView(APIView):
             study_defaults["review_id"] = review_id
 
             # Creates or updates the study
-            study, _ = Study.objects.get_or_create(
-                title=title,
-                year=year,
-                review_id=review_id,
-                defaults=study_defaults
+            study, created = Study.objects.get_or_create(
+            title=title,
+            year=year,
+            review_id=review_id,
+            defaults=study_defaults
             )
+
+            if not created:
+                for key, value in study_defaults.items():
+                    setattr(study, key, value)
+                study.save()
 
             # Assigns study tags
             tag_instances = []
