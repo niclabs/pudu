@@ -398,13 +398,13 @@ function StudyView() {
         </Dialog>
         </div>
       </div>
-      <div className="h-[calc(100vh-240px)] m-4">
-        <DataTable
-          columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
-          data={tableData}
-          filterBy={filterBy}
-        />
-      </div>
+      <div className="h-[calc(100vh-240px)] m-4 overflow-y-auto">
+      <DataTable
+        columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
+        data={tableData}
+        filterBy={filterBy}
+      />
+    </div>
     </div>
   );
 }
