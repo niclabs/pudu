@@ -47,6 +47,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/custom/tooltip";
+import { useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -75,8 +76,8 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   const [tags, setTags] = useState(null);
   const flagslist = ["Reviewed", "Pending Review", "Missing Data", "Flagged"];
   const [addedAuthor, setAddedAuthor] = useState("");
-
   const reviewId = localStorage.getItem('review_id');
+  const navigate = useNavigate();
 
 
   const handleAuthorSubmit = async () => {
@@ -223,10 +224,15 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   async function onSubmit(values) {
     try {
       console.log("submitting: ", values);
-      await saveStudy(studyid, values);
+      const result = await saveStudy(studyid, values); // <-- capture the created/updated study
+  
       if (refreshPdf) {
         refreshPdf();
       }
+  
+      const newStudyId = result?.id || studyid;
+  
+      navigate(`/editstudy/${newStudyId}`);
     } catch (error) {
       console.error("Form submission error", error);
     }
