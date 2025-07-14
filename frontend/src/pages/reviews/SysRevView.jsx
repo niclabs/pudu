@@ -117,7 +117,6 @@ function SysRevView() {
       setReviewOpen(false)
     } catch (error) {
       console.error("Error saving review:", error)
-      // You might want to show an error message to the user here
     }
   }
 
