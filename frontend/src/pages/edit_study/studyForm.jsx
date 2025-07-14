@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Toaster, toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -224,7 +225,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   async function onSubmit(values) {
     try {
       console.log("submitting: ", values);
-      const result = await saveStudy(studyid, values); // <-- capture the created/updated study
+      const result = await saveStudy(studyid, values);
   
       if (refreshPdf) {
         refreshPdf();
@@ -233,6 +234,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       const newStudyId = result?.id || studyid;
   
       navigate(`/editstudy/${newStudyId}`);
+      toast.success("Saved successfully!")
     } catch (error) {
       console.error("Form submission error", error);
     }
@@ -257,12 +259,11 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   }, [tags]);
 
   useEffect(() => {
-    // Only reset form when both studyDetail and authorsList are ready
     if (studyDetail && authorsList) {
       const authorIds =
         studyDetail.authors_display?.map((name) => {
           const match = authorsList.find((a) => a.label === name);
-          return match ? match.value : name; // use ID, fallback to name if not found
+          return match ? match.value : name;
         }) || [];
 
       const tagIds =
@@ -281,12 +282,15 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
         flags: Array.isArray(studyDetail.flags)
           ? studyDetail.flags
           : ["Pending Review"],
-        pathto_pdf: studyDetail.pathto_pdf || "", // Make sure to load the existing filename
+        pathto_pdf: studyDetail.pathto_pdf || "", 
       });
     }
   }, [studyDetail, authorsList, form]); // Trigger effect when studyDetail or authorsList change
 
   return (
+    <>
+    <Toaster />
+
     <Card className="max-w-4xl m-4 mb-4 mx-auto border-0 bg-indigo-100 ">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-2xl font-bold">Article Metadata</CardTitle>
@@ -677,6 +681,6 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
         </Form>
       </CardContent>
     </Card>
-    
+    </>
   );
 }

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { Toaster, toast } from 'sonner'
+
 
 export function RegisterForm() {
   const navigate = useNavigate();
@@ -21,19 +23,23 @@ export function RegisterForm() {
       });
 
       if (response.ok) {
-        alert("Registration successful! Please login.");
-        navigate("/");
+        toast.success("Registration successful! Redirecting to login.");
+        setTimeout(() => {
+          navigate("/");
+        }, 5000); 
       } else {
         const errorData = await response.json();
         console.log("Registration failed:", JSON.stringify(errorData));
-        alert("Registration failed: " + JSON.stringify(errorData.username));
+        toast.error("Registration failed: " + JSON.stringify(errorData.username));
       }
     } catch (error) {
-      alert("Error during registration: " + error.message);
+      toast.error("Error during registration: " + error.message);
     }
   };
 
   return (
+    <>
+    <Toaster />
     <Card className="max-w-md mx-auto m-4 bg-indigo-100 border-0">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Register</CardTitle>
@@ -115,5 +121,6 @@ export function RegisterForm() {
         </Form>
       </CardContent>
     </Card>
+    </>
   );
 }
