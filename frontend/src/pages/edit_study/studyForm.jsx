@@ -69,7 +69,7 @@ const formSchema = z.object({
 
 export default function StudyForm({ studyid = "", refreshPdf }) {
   const [studyDetail, setSelectedStudyDetail] = useState(null);
-  const [authorsList, setAuthorsList] = useState(null);
+  const [authorsList, setAuthorsList] = useState([]);
   const [selectTreeData, setSelectTreeData] = useState(null);
   const [authorOpen, setAuthorOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -175,12 +175,12 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       console.log("Deleted authors:", data.deleted);
 
       await fetchAuthors();
-      form.setValue("authors", []);
+      // form.setValue("authors", []);
       setDeleteOpen(false);
-      setSelectedStudyDetail((prev) => ({
-        ...prev,
-        authors_display: [],
-      }));
+      // setSelectedStudyDetail((prev) => ({
+        // ...prev,
+        // authors_display: [],
+      // }));
 
       return data.deleted;
     } catch (error) {
@@ -245,15 +245,12 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
     fetchTreeData();
   }, []);
 
-useEffect(() => {
-  fetchAuthors();
-}, [studyid]);
-
-useEffect(() => {
-  if (studyid) {
-    fetchStudyDetailed(studyid);
-  }
-}, [studyid]);
+  useEffect(() => {
+    if (studyid) {
+      fetchStudyDetailed(studyid);
+    }
+    fetchAuthors();
+  }, [studyid]);
 
   useEffect(() => {
     if (tags) {
@@ -264,15 +261,6 @@ useEffect(() => {
 
   useEffect(() => {
     if (studyDetail) {
-      const authorIds =
-        studyDetail.authors_display?.map((name) => {
-          const match = authorsList?.find((a) => a.label === name);
-          return match ? match.value : name;
-        }) || [];
-  
-      const tagIds =
-        studyDetail.tags_display?.map((tag) => String(tag.id)) || [];
-  
       form.reset({
         title: studyDetail.title || "",
         year: studyDetail.year || undefined,
@@ -281,15 +269,27 @@ useEffect(() => {
         pages: studyDetail.pages || "",
         abstract: studyDetail.abstract || "",
         summary: studyDetail.summary || "",
-        authors: authorIds,
-        tags: tagIds,
-        flags: Array.isArray(studyDetail.flags)
-          ? studyDetail.flags
-          : ["Pending Review"],
+        authors: studyDetail.authors_display?.map((name) => {
+          const match = authorsList?.find((a) => a.label === name);
+          return match ? match.value : name;
+        }) || [],
+        tags: studyDetail.tags_display?.map((tag) => String(tag.id)) || [],
+        flags: Array.isArray(studyDetail.flags) ? studyDetail.flags : ["Pending Review"],
         pathto_pdf: studyDetail.pathto_pdf || "",
       });
     }
-  }, [studyDetail.id, form]);
+  }, [studyDetail, form]);
+
+  useEffect(() => {
+    if (studyDetail && authorsList) {
+      const updatedAuthors = studyDetail.authors_display?.map((name) => {
+        const match = authorsList.find((a) => a.label === name);
+        return match ? match.value : name;
+      }) || [];
+  
+      form.setValue("authors", updatedAuthors);
+    }
+  }, [authorsList]);
 
   return (
     <>
