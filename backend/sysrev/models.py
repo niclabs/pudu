@@ -1,11 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 
 
 class Review(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
-    start_date = models.DateTimeField(auto_now_add=True)
+    start_date = models.DateTimeField(default=now, null=True, blank=True)
     end_date = models.DateTimeField(blank=True, null=True)
     status = models.BooleanField(default=False)  # True for completed, False for ongoing
 
