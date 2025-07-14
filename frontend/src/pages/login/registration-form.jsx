@@ -39,7 +39,7 @@ export function RegisterForm() {
 
   return (
     <>
-    <Toaster />
+    <Toaster richColors  />
     <Card className="max-w-md mx-auto m-4 bg-indigo-100 border-0">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Register</CardTitle>

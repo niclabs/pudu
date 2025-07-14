@@ -289,8 +289,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
 
   return (
     <>
-    <Toaster />
-
+    <Toaster richColors  />
     <Card className="max-w-4xl m-4 mb-4 mx-auto border-0 bg-indigo-100 ">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-2xl font-bold">Article Metadata</CardTitle>
