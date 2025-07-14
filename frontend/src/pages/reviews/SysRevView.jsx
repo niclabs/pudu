@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { BookText } from "lucide-react"
 import { AuthService } from '/src/utils/authservice.jsx';
+import { Toaster, toast } from 'sonner'
+
 
 function SysRevView() {
   const [reviewData, setReviewData] = useState([])
@@ -144,6 +146,8 @@ function SysRevView() {
     localStorage.setItem("review_id", reviewID)
     localStorage.setItem("review_name", reviewData.find((review) => review.id === reviewID).title)
     window.dispatchEvent(new Event("reviewNameUpdated"))
+    toast.success("Review Picked!")
+
   }
 
   useEffect(() => {
@@ -152,6 +156,7 @@ function SysRevView() {
 
   return (
     <div className="bg-violet-50 h-[calc(100vh-65px)] flex flex-col">
+      <Toaster richColors />
       <div className="max-w-screen-xl w-full mx-auto px-4 lg:px-8 mb-4">
         <div className="flex items-center justify-between">
           <div className="mt-4">

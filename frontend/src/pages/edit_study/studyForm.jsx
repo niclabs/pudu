@@ -55,7 +55,7 @@ const formSchema = z.object({
   year: z.preprocess(
     (val) => (val === "" ? undefined : Number(val)),
     z.number().int().min(1000).max(9999).optional(),
-  ),
+  ).optional(),
   doi: z.string().optional(),
   url: z.string().optional(),
   pages: z.string().optional(),
@@ -195,7 +195,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
     const url = studyid
       ? `http://127.0.0.1:8000/api/studies/${studyid}/?review_id=${reviewId}`
       : `http://127.0.0.1:8000/api/studies/?review_id=${reviewId}`;
-
+      console.log(studyid,method, url)
     const response = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
@@ -236,6 +236,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       navigate(`/editstudy/${newStudyId}`);
       toast.success("Saved successfully!")
     } catch (error) {
+      toast.error("Error saving study: " + error.message);
       console.error("Form submission error", error);
     }
   }
@@ -244,12 +245,15 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
     fetchTreeData();
   }, []);
 
-  useEffect(() => {
-    if (studyid) {
-      fetchStudyDetailed(studyid);
-    }
-    fetchAuthors();
-  }, [studyid]);
+useEffect(() => {
+  fetchAuthors();
+}, [studyid]);
+
+useEffect(() => {
+  if (studyid) {
+    fetchStudyDetailed(studyid);
+  }
+}, [studyid]);
 
   useEffect(() => {
     if (tags) {
@@ -259,16 +263,16 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   }, [tags]);
 
   useEffect(() => {
-    if (studyDetail && authorsList) {
+    if (studyDetail) {
       const authorIds =
         studyDetail.authors_display?.map((name) => {
-          const match = authorsList.find((a) => a.label === name);
+          const match = authorsList?.find((a) => a.label === name);
           return match ? match.value : name;
         }) || [];
-
+  
       const tagIds =
         studyDetail.tags_display?.map((tag) => String(tag.id)) || [];
-
+  
       form.reset({
         title: studyDetail.title || "",
         year: studyDetail.year || undefined,
@@ -282,15 +286,15 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
         flags: Array.isArray(studyDetail.flags)
           ? studyDetail.flags
           : ["Pending Review"],
-        pathto_pdf: studyDetail.pathto_pdf || "", 
+        pathto_pdf: studyDetail.pathto_pdf || "",
       });
     }
-  }, [studyDetail, authorsList, form]); // Trigger effect when studyDetail or authorsList change
+  }, [studyDetail.id, form]);
 
   return (
     <>
     <Toaster richColors  />
-    <Card className="max-w-4xl m-4 mb-4 mx-auto border-0 bg-indigo-100 ">
+    <Card className="max-w-4xl m-2 mb-2 mx-auto border-0 bg-indigo-100 ">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-2xl font-bold">Article Metadata</CardTitle>
         <Button
@@ -306,9 +310,9 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
           <form
             id="study-form"
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6"
+            className="space-y-4"
           >
-            <div className="space-y-4">
+            <div className="space-y-2">
               <FormField
                 control={form.control}
                 name="title"
@@ -325,7 +329,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-sm text-red-600"/>
                   </FormItem>
                 )}
               />
@@ -341,13 +345,14 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                         Year
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="The year it was published."
-                          type="number"
-                          {...field}
-                        />
+                      <Input
+                        placeholder="The year it was published."
+                        type="number"
+                        className="hide-number-spinner"
+                        {...field}
+                      />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-sm text-red-600"/>
                     </FormItem>
                   )}
                 />
@@ -615,8 +620,9 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
+                      
                         {field.value && (
-                          <span className="ml-2 font-normal text-sm text-gray-600">
+                          <span className="ml-2 font-normal text-sm text-gray-600 truncate max-w-[200px] inline-block align-middle">
                             {field.value}
                           </span>
                         )}
