@@ -81,7 +81,7 @@ export default function Navbar() {
                   <Link to="/sysrev" className="block">
                     <div
                       title={reviewName ?? "No review selected"}
-                      className="p-2 text-md border-l border-r border-violet-700 pl-4 pr-4 hover:bg-violet-950 cursor-pointer"
+                      className="p-2 text-xl border-l border-r border-violet-700 pl-4 pr-4 hover:bg-violet-950 cursor-pointer"
                     >
                       Review: {reviewName ?? "No review selected"}
                     </div>
