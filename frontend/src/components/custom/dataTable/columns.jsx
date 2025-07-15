@@ -122,7 +122,7 @@ export const columns = (setStudyOpen, setSelectedStudy, setDeleteOpen) => [
                 setStudyOpen(true);
               }}
             >
-              View Study
+              View or Edit Study
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-violet-100" />
             <DropdownMenuItem

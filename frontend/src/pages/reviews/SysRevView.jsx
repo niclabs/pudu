@@ -214,7 +214,7 @@ function SysRevView() {
                         setEditingReviewStatus(review.status)
                       }}
                     >
-                      Edit Review
+                      Edit Details
                     </Button>
                   </div>
                 </CardContent>

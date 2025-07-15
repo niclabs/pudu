@@ -165,7 +165,8 @@ const MultiSelect = React.forwardRef(
               className="border-b bg-white border-violet-200 h-0.5 focus:ring-violet-200"
             />
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>No results found. </CommandEmpty>
+              <CommandEmpty>Register using Add Author. </CommandEmpty>
               <CommandGroup>
                 <CommandItem
                   key="all"

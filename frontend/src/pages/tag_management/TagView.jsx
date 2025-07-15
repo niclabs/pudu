@@ -289,6 +289,7 @@ function TagView() {
           
         </div>
         <p className=" text-gray-600">Organize your review with a custom tag tree.</p>
+        <p className=" text-gray-600"> Drag and Drop tags to edit the tree's structure.</p>
         <div className="tree-container flex-grow overflow-auto mt-4">
           
           <Tree

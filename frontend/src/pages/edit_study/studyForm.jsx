@@ -175,7 +175,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       console.log("Deleted authors:", data.deleted);
 
       await fetchAuthors();
-      // form.setValue("authors", []);
+      form.setValue("authors", []);
       setDeleteOpen(false);
       // setSelectedStudyDetail((prev) => ({
         // ...prev,
@@ -282,10 +282,12 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
 
   useEffect(() => {
     if (studyDetail && authorsList) {
-      const updatedAuthors = studyDetail.authors_display?.map((name) => {
-        const match = authorsList.find((a) => a.label === name);
-        return match ? match.value : name;
-      }) || [];
+      const updatedAuthors = studyDetail.authors_display
+        ?.map((name) => {
+          const match = authorsList.find((a) => a.label === name);
+          return match ? match.value : null;
+        })
+        .filter((v) => v !== null) || [];
   
       form.setValue("authors", updatedAuthors);
     }
