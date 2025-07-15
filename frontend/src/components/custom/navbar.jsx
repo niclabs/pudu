@@ -49,15 +49,17 @@ export default function Navbar() {
         <NavigationMenu>
           <NavigationMenuList className="flex items-center space-x-4">
             <NavigationMenuItem>
+            <Link to="/sysrev" className="block">
                 <img
                   src={pudu || "/placeholder.svg"}
                   alt="Logo"
-                  className="custom-cursor h-16 w-auto hover:bg-violet-950 rounded-md"
+                  className="custom-cursor h-16 w-auto  hover:bg-violet-950 rounded-md"
                 />
+              </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <Link to="/studies" className="p-2 text-xl hover:bg-violet-950 rounded-md">
+                <Link to="/studies" className="p-2 text-xl  hover:bg-violet-950 rounded-md">
                   Studies
                 </Link>
               </NavigationMenuLink>
