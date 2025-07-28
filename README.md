@@ -18,13 +18,15 @@ python -m venv venv
 .\venv\Scripts\activate
 pip install -r requirements.txt  # Update using: pip freeze > requirements.txt
 
-\pudu\backend py manage.py makemigrations
-\pudu\backend py manage.py migrate
-\pudu\backend py manage.py runserver #Run backend
+While in folder \pudu\backend:
+py manage.py makemigrations
+py manage.py migrate
+py manage.py runserver #Run backend
 ```
 
 ### Frontend (React-Vite)  
 ```sh
-\pudu\frontend npm install #Install dependencies
-\pudu\frontend npm run dev #Run Frontend
+While in folder \pudu\frontend:
+npm install #Install dependencies
+npm run dev #Run Frontend
 ```
