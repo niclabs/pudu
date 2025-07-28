@@ -59,14 +59,14 @@ export default function Navbar() {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <Link to="/studies" className="p-2 text-xl  hover:bg-violet-950 rounded-md">
+                <Link to="/studies"   className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
                   Studies
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <Link to="/tags" className="p-2 text-xl hover:bg-violet-950 rounded-md">
+                <Link to="/tags"   className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
                   Tag Management
                 </Link>
               </NavigationMenuLink>
@@ -83,8 +83,7 @@ export default function Navbar() {
                   <Link to="/sysrev" className="block">
                     <div
                       title={reviewName ?? "No review selected"}
-                      className="p-2 text-xl border-l border-r border-violet-700 pl-4 pr-4 hover:bg-violet-950 cursor-pointer"
-                    >
+                        className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
                       Review: {reviewName ?? "No review selected"}
                     </div>
                   </Link>
