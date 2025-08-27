@@ -31,7 +31,7 @@ npm install #Install dependencies
 npm run dev #Run Frontend
 ```
 
-Este proyecto es parte del trabajo de memoria de Andrés Basáez. Guiado por las profesoras Ivana Bachmann y Jocelyn Simmonds. El diseño se basa en una herramienta de revisión sistematica de la profesora Bachmann. [systematic-review-tool](https://github.com/tami-di/systematic-review-tool/tree/tami-updates)
+Este proyecto es parte del trabajo de memoria de Andrés Basáez. Guiado por las profesoras Ivana Bachmann y Jocelyn Simmonds. El diseño se basa en una herramienta de revisión sistematica de la profesora Bachmann: [systematic-review-tool](https://github.com/tami-di/systematic-review-tool/tree/tami-updates)
 
 
 ### Trabajo futuro
