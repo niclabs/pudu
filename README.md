@@ -31,6 +31,9 @@ npm install #Install dependencies
 npm run dev #Run Frontend
 ```
 
+Este proyecto es parte del trabajo de memoria de Andrés Basáez. Guiado por las profesoras Ivana Bachmann y Jocelyn Simmonds. El diseño se basa en una herramienta de revisión sistematica de la profesora Bachmann. [systematic-review-tool](https://github.com/tami-di/systematic-review-tool/tree/tami-updates)
+
+
 ### Trabajo futuro
 A lo largo del desarrollo de este proyecto, surgen múltiples oportunidades de mejora. Estas aparecen en diversas formas cada vez que se implementa un componente, ya sea identificando asperezas, buscando feedback de usuarios, o al encontrar nuevas tecnologías y soluciones en el camino. Se itera varias veces sobre cada elemento de la herramienta para lograr entregar una solución más integral y robusta. Dicho esto, dadas las limitaciones de tiempo, siempre se busca priorizar aquellas tareas que generen un mayor impacto y valor para el producto final. Es por esto que algunas funcionalidades y mejoras quedan pendientes.
 
