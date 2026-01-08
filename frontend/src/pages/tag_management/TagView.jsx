@@ -1,3 +1,4 @@
+import { AuthService } from "../../utils/authservice";
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
 import { Tag, Trash2 } from "lucide-react";
@@ -41,9 +42,9 @@ function TagView() {
 
 
   const reviewId = localStorage.getItem('review_id');
-
+  // const response = await AuthService.fetchWithAuth(
   const createTag = async (newTag) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newTag),
@@ -52,7 +53,7 @@ function TagView() {
   };
   
   const deleteTag = async (tagId) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
     });
@@ -64,7 +65,7 @@ function TagView() {
   
   const moveTag = async (dragMove) => {
     console.log("Moving tag with data:", dragMove);
-    const response = await fetch(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dragMove),
@@ -73,7 +74,7 @@ function TagView() {
   };
   
   const editTagName = async (tagId, newName) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newName }),
@@ -82,7 +83,7 @@ function TagView() {
   };
   
   const editTagDescription = async (tagId, newDescription) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ description: newDescription }),
@@ -92,13 +93,13 @@ function TagView() {
   
 
   const fetchTreeData = async () => {
-    const response = await fetch(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
     const data = await response.json();
     setTags(data);
   };
 
   const fetchStudyData = async () => {
-    const response = await fetch(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
     const data = await response.json();
 
     const refineTable = data.map((study) => ({
@@ -114,7 +115,7 @@ function TagView() {
   };
 
   const fetchTagCount = async () => {
-    const response = await fetch(`http://localhost:8000/api/tags/count/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/tags/count/?review_id=${reviewId}`);
     const data = await response.json();
     setTagCount(data);
   };
@@ -146,14 +147,14 @@ function TagView() {
   };
 
   const fetchStudyDetailed = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
     console.log("fetched study detail data", data);
   };
 
   const deleteStudyData = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`, {
       method: "DELETE",
     });
     if (response.ok) {

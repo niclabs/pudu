@@ -1,4 +1,5 @@
 "use client";
+import { AuthService } from "../../utils/authservice";
 import { useEffect, useState } from "react";
 import { Toaster, toast } from 'sonner'
 import {
@@ -94,7 +95,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
 
   const addAuthor = async (authorName) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
+      const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: authorName }),
@@ -128,7 +129,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   };
 
   const fetchTreeData = async () => {
-    const response = await fetch(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
     const data = await response.json();
     setTags(data);
   };
@@ -151,7 +152,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   });
 
   const fetchStudyDetailed = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
     console.log(data);
@@ -160,7 +161,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   async function deleteAuthors() {
     try {
       const authorIds = form.getValues("authors");
-      const response = await fetch(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
+      const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ authors: authorIds }),
@@ -196,7 +197,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       ? `http://127.0.0.1:8000/api/studies/${studyid}/?review_id=${reviewId}`
       : `http://127.0.0.1:8000/api/studies/?review_id=${reviewId}`;
       console.log(studyid,method, url)
-    const response = await fetch(url, {
+    const response = await AuthService.fetchWithAuth(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -212,7 +213,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   };
 
   const fetchAuthors = async () => {
-    const response = await fetch(`http://localhost:8000/api/authors/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/authors/?review_id=${reviewId}`);
     const data = await response.json();
     const authorsList = data.map((author) => ({
       value: String(author.id),

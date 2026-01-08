@@ -31,12 +31,15 @@ function SysRevView() {
 
 
   const fetchSysRevData = async () => {
-    const token = AuthService.getAccessToken();
-    const response = await fetch("http://localhost:8000/api/reviews/", {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
+    // const token = AuthService.getAccessToken();
+    // const response = await fetch("http://localhost:8000/api/reviews/", {
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     "Authorization": `Bearer ${token}`,
+    //   },
+    // });
+    const response = await AuthService.fetchWithAuth("http://127.0.0.1:8000/api/reviews/", {
+        method: "GET"
     });
   
     if (!response.ok) {

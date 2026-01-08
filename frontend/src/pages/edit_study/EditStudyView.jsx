@@ -1,4 +1,5 @@
 "use client";
+import { AuthService } from "../../utils/authservice";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import StudyForm from "./studyForm";
@@ -11,7 +12,7 @@ function EditStudyView() {
   const reviewId = localStorage.getItem('review_id');
 
   const fetchPDFPath = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}?review_id=${reviewId}`);
     const data = await response.json();
 
     if (data.pathto_pdf) {
@@ -20,7 +21,7 @@ function EditStudyView() {
         : `/${data.pathto_pdf}`;
 
       try {
-        const headResponse = await fetch(filePath, { method: "HEAD" });
+        const headResponse = await AuthService.fetchWithAuth(filePath, { method: "HEAD" });
         const contentType = headResponse.headers.get("Content-Type");
         const contentLength = headResponse.headers.get("Content-Length");
 

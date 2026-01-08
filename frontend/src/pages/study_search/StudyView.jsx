@@ -1,3 +1,4 @@
+import { AuthService } from "../../utils/authservice";
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/custom/dataTable/data-table";
 import { columns } from "@/components/custom/dataTable/columns";
@@ -39,7 +40,7 @@ function StudyView() {
   const reviewId = localStorage.getItem('review_id');
 
   const fetchStudyData = async () => {
-    const response = await fetch(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
     const data = await response.json();
     const refineTable = data.map((study) => ({
       id: study.id,
@@ -54,7 +55,7 @@ function StudyView() {
   };
 
   const deleteStudyData = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`, {
       method: "DELETE",
     });
     if (response.ok) {
@@ -93,7 +94,7 @@ function StudyView() {
   };
 
   const fetchStudyDetailed = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
     console.log("fetched study detail data", data);
@@ -109,7 +110,7 @@ function StudyView() {
   }, [studyOpen, selectedStudy]);
 
   const fetchFlagCount = async () => {
-    const response = await fetch(`http://localhost:8000/api/flags/count/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/flags/count/?review_id=${reviewId}`);
     const data = await response.json();
     setFlagCount(data);
     console.log(data);
@@ -126,7 +127,7 @@ function StudyView() {
       const jsonData = JSON.parse(fileText); // Parse JSON content
       console.log("Imported JSON Data:", jsonData);
 
-      const response = await fetch(`http://localhost:8000/api/import/?review_id=${reviewId}`, {
+      const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/import/?review_id=${reviewId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(jsonData),
@@ -150,7 +151,7 @@ function StudyView() {
   };
 
   const handleExportJSON = async () => {
-    const response = await fetch(`http://localhost:8000/api/export/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export/?review_id=${reviewId}`);
 
     const data = await response.json();
     const json = JSON.stringify(data);
@@ -169,7 +170,7 @@ function StudyView() {
   };
 
   const handleExportCSV = async () => {
-    const response = await fetch(`http://localhost:8000/api/export_csv/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export_csv/?review_id=${reviewId}`);
   
     if (!response.ok) {
       console.error("Export failed:", response.statusText);
