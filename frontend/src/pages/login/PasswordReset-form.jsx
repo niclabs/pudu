@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Toaster, toast } from 'sonner'
 
-
+// CAMBIAR INTERFAZ
 export function PasswordResetForm() {
   const navigate = useNavigate();
   const form = useForm({
@@ -42,25 +42,11 @@ export function PasswordResetForm() {
     <Toaster richColors  />
     <Card className="max-w-md mx-auto m-4 bg-indigo-100 border-0">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Register</CardTitle>
+        <CardTitle className="text-2xl font-bold">Request Password Reset</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="username"
-              rules={{ required: "Username is required" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your username" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="email"
@@ -75,39 +61,6 @@ export function PasswordResetForm() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="password"
-              rules={{ required: "Password is required" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-                control={form.control}
-                name="password2"
-                rules={{
-                    required: "Please confirm your password",
-                    validate: (value) =>
-                    value === form.watch("password") || "Passwords do not match!",
-                    className: "text-red-500",
-                }}
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                        <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
             <Button type="submit" className="font-bold bg-violet-900 text-violet-50 hover:bg-violet-950 w-full">
               Register
             </Button>
