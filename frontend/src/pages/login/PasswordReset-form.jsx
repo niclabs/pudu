@@ -62,7 +62,7 @@ export function PasswordResetForm() {
               )}
             />
             <Button type="submit" className="font-bold bg-violet-900 text-violet-50 hover:bg-violet-950 w-full">
-              Register
+              Reset Password
             </Button>
           </form>
           <div className="text-center text-sm">
