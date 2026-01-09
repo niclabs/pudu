@@ -8,6 +8,7 @@ import SysRevView from "./pages/reviews/SysRevView";
 import LoginView from "./pages/login/LoginView";
 import RegisterView from "./pages/login/RegisterView";
 import ProtectedRoute from "./utils/protectedroute.jsx";
+import PasswordResetRequest from "./pages/login/PasswordResetView";
 
 export default function App() {
   return (
@@ -20,6 +21,8 @@ export default function App() {
             {/* Public Routes */}
             <Route path="/" element={<LoginView />} />
             <Route path="/register" element={<RegisterView />} />
+            <Route path="/request/password_reset" element={<PasswordResetRequest />} />
+
 
             {/* Protected Routes */}
             <Route
