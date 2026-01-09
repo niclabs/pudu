@@ -48,7 +48,9 @@ function EditStudyView() {
   };
 
   useEffect(() => {
-    fetchPDFPath(params.studyid);
+    if (params.studyid) {
+          fetchPDFPath(params.studyid);
+        }
   }, [params.studyid]);
 
   function PdfEmbed({ url }) {
