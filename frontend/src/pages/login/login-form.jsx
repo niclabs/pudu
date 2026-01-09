@@ -88,6 +88,11 @@ export function LoginForm() {
         <Link to="/register" className="underline underline-offset-4">
           Sign up
         </Link>
+        <br />
+        Forgot your password?{" "}
+        <Link to="/request/password_reset" className="underline underline-offset-4">
+          Reset it
+        </Link>
       </div>
         </Form>
       </CardContent>
