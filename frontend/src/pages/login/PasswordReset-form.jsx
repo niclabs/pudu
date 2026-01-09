@@ -7,33 +7,36 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Toaster, toast } from 'sonner'
 
-// CAMBIAR INTERFAZ
+
+
+
 export function PasswordResetForm() {
   const navigate = useNavigate();
   const form = useForm({
-    defaultValues: { username: "", email: "", password: "", password2: "" },
+    defaultValues: { email: "" },
   });
 
   const onSubmit = async (data) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/register/", {
+      const response = await fetch("http://127.0.0.1:8000/api/password_reset/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      toast.success("If your email exists, you will receive password reset instructions.");
 
       if (response.ok) {
-        toast.success("Registration successful! Redirecting to login.");
+        toast.success("Password reset successful! Redirecting to login.");
         setTimeout(() => {
           navigate("/");
         }, 5000); 
       } else {
         const errorData = await response.json();
-        console.log("Registration failed:", JSON.stringify(errorData));
-        toast.error("Registration failed: " + JSON.stringify(errorData.username));
+        console.log("Password reset failed:", JSON.stringify(errorData));
+        toast.error("Password reset failed: " + JSON.stringify(errorData.email));
       }
     } catch (error) {
-      toast.error("Error during registration: " + error.message);
+      toast.error("Error during password reset: " + error.message);
     }
   };
 
