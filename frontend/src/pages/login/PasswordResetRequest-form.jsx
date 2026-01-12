@@ -1,39 +1,30 @@
-// Archivo: src/login/PasswordReset-form.jsx
 import { useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom"; // Importante: useParams
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Toaster, toast } from 'sonner';
+import { Toaster, toast } from 'sonner'
 
-export function PasswordReset() {
+
+
+
+export function PasswordResetForm() {
   const navigate = useNavigate();
-  const { token } = useParams(); // Captura el token de la URL /password_reset/:token
-  
   const form = useForm({
-    defaultValues: { password: "" },
+    defaultValues: { email: "" },
   });
 
   const onSubmit = async (data) => {
     try {
-      // Usamos el token que sacamos de useParams
-      const response = await fetch("http://127.0.0.1:8000/api/password_reset/confirm/", {
+      const response = await fetch("http://127.0.0.1:8000/api/password_reset/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, token: token }),
+        body: JSON.stringify(data),
       });
+      toast.success("If your email exists, you will receive password reset instructions.");
 
-      if (response.ok) {
-          toast.success("Password has been reset successfully, directing to login.");
-          setTimeout(() => {
-            navigate("/");
-          }, 2000);
-      } else {
-          const errorData = await response.json();
-          toast.error("Error: " + JSON.stringify(errorData));
-      }
     } catch (error) {
       toast.error("Error during password reset: " + error.message);
     }
@@ -44,20 +35,20 @@ export function PasswordReset() {
     <Toaster richColors  />
     <Card className="max-w-md mx-auto m-4 bg-indigo-100 border-0">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Password Reset</CardTitle>
+        <CardTitle className="text-2xl font-bold">Request Password Reset</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="password"
-              rules={{ required: "Password is required" }}
+              name="email"
+              rules={{ required: "Email is required" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>New Password</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input placeholder="you@example.com" type="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -68,10 +59,11 @@ export function PasswordReset() {
             </Button>
           </form>
           <div className="text-center text-sm">
-            <Link to="/" className="underline underline-offset-4">
-              Log in
-            </Link>
-          </div>
+        Already have an account?{" "}
+        <Link to="/" className="underline underline-offset-4">
+          Log in
+        </Link>
+      </div>
         </Form>
       </CardContent>
     </Card>
