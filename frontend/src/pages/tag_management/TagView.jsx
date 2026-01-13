@@ -1,7 +1,7 @@
 import { AuthService } from "../../utils/authservice";
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
-import { Tag, Trash2 } from "lucide-react";
+import { Filter, ListFilter, Tag, Trash2 } from "lucide-react";
 import { Tree } from "react-arborist";
 import Node from "./Node";
 import {
@@ -96,6 +96,7 @@ function TagView() {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
     const data = await response.json();
     setTags(data);
+    setOriginalTags(data);
   };
 
   const fetchStudyData = async () => {
@@ -251,6 +252,34 @@ function TagView() {
     }
   };
 
+
+  const [originalTags, setOriginalTags] = useState([]); 
+  const [isSortMenuOpen, setSortMenuOpen] = useState(false);
+  const handleSort = (order) => {
+    if (order === 'reset') {
+      setTags(originalTags);
+      setSortMenuOpen(false);
+      return;
+    }
+    const sortNodes = (nodes) => {
+      return [...nodes].sort((a, b) => {
+        const nameA = a.name ? a.name.toLowerCase() : "";
+        const nameB = b.name ? b.name.toLowerCase() : "";
+
+        if (order === 'asc') return nameA.localeCompare(nameB); // A-Z
+        // if (order === 'desc') return nameB.localeCompare(nameA); // Z-A
+        return 0;
+      }).map(node => ({
+        ...node,
+        children: node.children ? sortNodes(node.children) : [] 
+      }));
+    };
+
+    const sortedTags = sortNodes(tags);
+    setTags(sortedTags); 
+    setSortMenuOpen(false); 
+  };
+
   useEffect(() => {
     console.log("Current Review ",reviewId);
     fetchTreeData();
@@ -273,20 +302,43 @@ function TagView() {
             <h1 className="text-2xl font-bold">Tag Management</h1>
             
           </div>
-          <div className="flex space-x-2">
-            <Button
-              onClick={onCreate}
-              className="bg-violet-900 text-violet-50 text-xs font-bold hover:bg-violet-950 flex"
-            >
-              <Tag className="" /> Add Tag
-            </Button>
-            <Button
-              onClick={() => {setTagDeleteOpen(true)}}
-              className="bg-red-600 text-violet-50 text-xs font-bold hover:bg-red-800 flex"
-            >
-              <Trash2 className="" /> Delete Tag
-            </Button>
-          </div>
+            <div className="flex space-x-2 relative">
+              
+              <Button
+                onClick={onCreate}
+                className="bg-violet-900 text-violet-50 text-xs font-bold hover:bg-violet-950 flex"
+              >
+                <Tag className="mr-2 h-4 w-4" /> Add Tag
+              </Button>
+
+              <div className="relative">
+                <Button
+                  onClick={() => setSortMenuOpen(!isSortMenuOpen)}
+                  className="bg-violet-900 text-violet-50 text-xs font-bold hover:bg-violet-950 flex"
+                >
+                  <Filter className="mr-2 h-4 w-4" /> Sort Tag
+                </Button>
+                {isSortMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded shadow-lg z-10">
+                    <button
+                      onClick={() => handleSort('asc')}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      A-Z
+                    </button>
+
+                    <button
+                      onClick={() => handleSort('reset')}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      Created (desc)
+                    </button>
+                  </div>
+                )}
+
+
+              </div>
+            </div>
           
         </div>
         <p className=" text-gray-600">Organize your review with a custom tag tree.</p>
@@ -313,7 +365,13 @@ function TagView() {
             )}
           </Tree>
         </div>
-      </div>
+        <Button
+              onClick={() => {setTagDeleteOpen(true)}}
+              className="absolute bottom-4 right-4 bg-red-600 text-violet-50 text-xs font-bold hover:bg-red-800 flex"
+            >
+              <Trash2 className="" /> Delete Tag
+        </Button>
+        </div>
       {/*  Card and Table */}
       <div className="p-4 flex-1/2">
         <div>
