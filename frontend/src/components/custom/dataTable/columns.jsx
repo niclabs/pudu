@@ -44,7 +44,17 @@ export const columns = (setStudyOpen, setSelectedStudy, setDeleteOpen) => [
   },
   {
     accessorKey: "authors",
-    header: "Authors",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Authors
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    }
   },
   {
     accessorKey: "flags",
@@ -97,7 +107,17 @@ export const columns = (setStudyOpen, setSelectedStudy, setDeleteOpen) => [
   },
   {
     accessorKey: "tags",
-    header: "Tags",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Tags
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    }
   },
   {
     id: "actions", // No accessorKey: doesn't map to a data property
