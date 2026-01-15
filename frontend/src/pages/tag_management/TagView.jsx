@@ -267,7 +267,7 @@ function TagView() {
         const nameB = b.name ? b.name.toLowerCase() : "";
 
         if (order === 'asc') return nameA.localeCompare(nameB); // A-Z
-        // if (order === 'desc') return nameB.localeCompare(nameA); // Z-A
+        if (order === 'desc') return nameB.localeCompare(nameA); // Z-A
         return 0;
       }).map(node => ({
         ...node,
@@ -325,6 +325,12 @@ function TagView() {
                       className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                     >
                       A-Z
+                    </button>
+                                        <button
+                      onClick={() => handleSort('desc')}
+                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    >
+                      Z-A
                     </button>
 
                     <button
