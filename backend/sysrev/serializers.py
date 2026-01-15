@@ -67,8 +67,21 @@ class StudySerializer(serializers.ModelSerializer):
         return value
 
 class AuthorSerializer(serializers.ModelSerializer):
-    studies = StudySerializer(many=True, read_only=True)
 
     class Meta:
         model = Author
-        fields = ['id', 'name', 'studies', 'review']
+        fields = ['id', 'name']
+
+
+class SimpleTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['id', 'name', 'review']
+
+class SimpleStudySerializer(serializers.ModelSerializer):
+    tags_display = SimpleTagSerializer(source='tags', many=True, read_only=True)
+    authors_display = serializers.StringRelatedField(source='authors', many=True, read_only=True)
+
+    class Meta:
+        model = Study
+        fields = ['id', 'title', 'year', 'authors_display', 'tags_display', 'doi', 'url', 'flags', 'review']

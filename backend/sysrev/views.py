@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.decorators import api_view
 from .models import Tag, Study, Author, Review
-from .serializers import TagSerializer, StudySerializer, AuthorSerializer, ReviewSerializer, RegisterSerializer
+from .serializers import SimpleStudySerializer, TagSerializer, StudySerializer, AuthorSerializer, ReviewSerializer, RegisterSerializer
 from django.db.models import Count
 from django.db import transaction
 from collections import Counter
@@ -280,7 +280,7 @@ class StudiesView(APIView):
                 return Response({'error': 'Study not found'}, status=404)
         else:
             studies = Study.objects.filter(review_id=review_id)
-            serializer = StudySerializer(studies, many=True)
+            serializer = SimpleStudySerializer(studies, many=True)
             return Response(serializer.data)
 
     def delete(self, request, study_id=None):
