@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Tag, Study, Author, Review
 from django.contrib.auth.models import User
-
+from django.contrib.auth.password_validation import validate_password
 
 class ReviewSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')  
@@ -22,6 +22,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data['password'] != data['password2']:
             raise serializers.ValidationError("Passwords must match.")
+        #validate_password(data['password']) #descomentar para validar contraseñas
         return data
 
     def create(self, validated_data):

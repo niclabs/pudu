@@ -30,7 +30,9 @@ export function RegisterForm() {
       } else {
         const errorData = await response.json();
         console.log("Registration failed:", JSON.stringify(errorData));
-        toast.error("Registration failed: " + JSON.stringify(errorData.username));
+        const firstErrorKey = Object.keys(errorData)[0];
+        const firstErrorMessage = errorData[firstErrorKey][0];
+        toast.error("Registration failed: " + firstErrorMessage);
       }
     } catch (error) {
       toast.error("Error during registration: " + error.message);
