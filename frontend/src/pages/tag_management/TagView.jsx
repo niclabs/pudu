@@ -23,6 +23,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
+import { Toaster, toast } from 'sonner';
+import { ta } from "date-fns/locale";
 
 function TagView() {
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -183,7 +185,7 @@ function TagView() {
   const onDelete = async () => {
     try {
       const tagId = selectedNode ? selectedNode.data.id : null;
-      if (!tagId) return;
+      if (!tagId) return; 
       const result = await deleteTag(tagId);
       if (result.success) {
         fetchTreeData();
@@ -295,6 +297,7 @@ function TagView() {
 
   return (
     <div className="flex flex-row w-full h-full bg-violet-50 ">
+      <Toaster richColors />
       {/* Tree */}
       <div className="m-4 p-4 tree-component flex-1 bg-indigo-100 rounded-xl shadow-lg relative">
         <div className="flex justify-between items-start">
@@ -372,7 +375,13 @@ function TagView() {
           </Tree>
         </div>
         <Button
-              onClick={() => {setTagDeleteOpen(true)}}
+              onClick={() => {
+                if (!selectedNode) {
+                  toast.error("No tag selected for deletion.");
+                  return;
+                }
+                setTagDeleteOpen(true);
+              }}
               className="absolute bottom-4 right-4 bg-red-600 text-violet-50 text-xs font-bold hover:bg-red-800 flex"
             >
               <Trash2 className="" /> Delete Tag
