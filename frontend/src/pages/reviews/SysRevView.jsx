@@ -147,8 +147,8 @@ function SysRevView() {
 
 
   const pickReview = (reviewID) => {
-    localStorage.setItem("review_id", reviewID)
-    localStorage.setItem("review_name", reviewData.find((review) => review.id === reviewID).title)
+    sessionStorage.setItem("review_id", reviewID)
+    sessionStorage.setItem("review_name", reviewData.find((review) => review.id === reviewID).title)
     window.dispatchEvent(new Event("reviewNameUpdated"))
     toast.success("Review Picked!")
 

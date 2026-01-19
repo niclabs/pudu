@@ -37,7 +37,7 @@ function StudyView() {
   const [flagCount, setFlagCount] = useState([]);
   const [selectedStudyDetail, setSelectedStudyDetail] = useState(null);
 
-  const reviewId = localStorage.getItem('review_id');
+  const reviewId = sessionStorage.getItem('review_id');
 
   const fetchStudyData = async () => {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
@@ -161,7 +161,7 @@ function StudyView() {
     const link = document.createElement("a");
 
     link.href = href;
-    const reviewName = (localStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
+    const reviewName = (sessionStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
     link.download = `${reviewName}.json`;
     document.body.appendChild(link);
     link.click();
@@ -183,7 +183,7 @@ function StudyView() {
     const link = document.createElement("a");
   
     link.href = href;
-    const reviewName = (localStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
+    const reviewName = (sessionStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
     link.download = `${reviewName}.csv`;
     link.click();
     document.body.removeChild(link);

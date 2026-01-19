@@ -43,7 +43,7 @@ function TagView() {
   const [selectedStudyDetail, setSelectedStudyDetail] = useState(null);
 
 
-  const reviewId = localStorage.getItem('review_id');
+  const reviewId = sessionStorage.getItem('review_id');
   // const response = await AuthService.fetchWithAuth(
   const createTag = async (newTag) => {
     const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {

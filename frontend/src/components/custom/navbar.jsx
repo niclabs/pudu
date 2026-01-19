@@ -21,13 +21,13 @@ import { useNavigate } from "react-router-dom"
 
 
 export default function Navbar() {
-  const [reviewName, setReviewName] = useState(localStorage.getItem("review_name"))
+  const [reviewName, setReviewName] = useState(sessionStorage.getItem("review_name"))
   const navigate = useNavigate();
 
   const handleLogout = () => {
     AuthService.clearTokens();
-    localStorage.removeItem("review_name");
-    localStorage.removeItem("review_id");
+    sessionStorage.removeItem("review_name");
+    sessionStorage.removeItem("review_id");
     setReviewName(null);
 
     navigate('/');
@@ -35,7 +35,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const updateReviewName = () => {
-      setReviewName(localStorage.getItem("review_name"))
+      setReviewName(sessionStorage.getItem("review_name"))
     }
 
     window.addEventListener("reviewNameUpdated", updateReviewName)
@@ -57,6 +57,9 @@ export default function Navbar() {
                 />
               </Link>
             </NavigationMenuItem>
+
+
+
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
                 <Link to="/studies"   className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
@@ -64,6 +67,8 @@ export default function Navbar() {
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
+
+
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
                 <Link to="/tags"   className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
@@ -71,6 +76,8 @@ export default function Navbar() {
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
+
+
           </NavigationMenuList>
         </NavigationMenu>
 

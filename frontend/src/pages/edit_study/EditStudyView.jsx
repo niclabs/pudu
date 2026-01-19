@@ -9,7 +9,7 @@ function EditStudyView() {
   const [fileUrl, setFileUrl] = useState("");
   //const fileUrl = ""
 
-  const reviewId = localStorage.getItem('review_id');
+  const reviewId = sessionStorage.getItem('review_id');
 
   const fetchPDFPath = async (id) => {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}?review_id=${reviewId}`);
