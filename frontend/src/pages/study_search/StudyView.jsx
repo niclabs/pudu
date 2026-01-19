@@ -197,7 +197,7 @@ function StudyView() {
       <div className="flex justify-between items-start">
         <div className="flex flex-wrap gap-4">
           <Button
-            className="bg-emerald-400 text-violet-50 font-bold text-xl p-6 hover:bg-emerald-500"
+            className="bg-emerald-400 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-emerald-500"
             onClick={() =>
               setFilterBy(filterBy === "Reviewed" ? null : "Reviewed")
             }
@@ -206,7 +206,7 @@ function StudyView() {
             {flagCount["Reviewed"] || 0}
           </Button>
           <Button
-            className="bg-cyan-500 text-violet-50 font-bold text-xl p-6 hover:bg-cyan-600"
+            className="bg-cyan-500 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-cyan-600"
             onClick={() =>
               setFilterBy(
                 filterBy === "Pending Review" ? null : "Pending Review",
@@ -217,7 +217,7 @@ function StudyView() {
             {flagCount["Pending Review"] || 0}
           </Button>
           <Button
-            className="bg-red-400 text-violet-50 font-bold text-xl p-6 hover:bg-red-500"
+            className="bg-red-400 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-red-500"
             onClick={() =>
               setFilterBy(filterBy === "Missing Data" ? null : "Missing Data")
             }
@@ -226,7 +226,7 @@ function StudyView() {
             {flagCount["Missing Data"] || 0}
           </Button>
           <Button
-            className="bg-orange-400 text-violet-50 font-bold text-xl p-6 hover:bg-orange-500"
+            className="bg-orange-400 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-orange-500"
             onClick={() =>
               setFilterBy(filterBy === "Flagged" ? null : "Flagged")
             }
@@ -237,14 +237,14 @@ function StudyView() {
 
         <div className="flex flex-wrap gap-4">
           <Link to={`/editstudy/`}>
-            <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
+            <Button className="bg-violet-900 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-violet-950">
               <BookText className="mr-2" /> Create Study
             </Button>
           </Link>
 
           <Dialog open={importOpen} onOpenChange={setImportOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
+              <Button className="bg-violet-900 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-violet-950">
                 <Upload className="mr-2" /> Import Studies
               </Button>
             </DialogTrigger>
@@ -294,7 +294,7 @@ function StudyView() {
 
           <Dialog open={exportOpen} onOpenChange={setExportOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-violet-900 text-violet-50 text-xl font-bold p-6 hover:bg-violet-950">
+              <Button className="bg-violet-900 text-violet-50 text-sm font-bold px-3 py-2 hover:bg-violet-950">
                 <Download className="mr-2" /> Export Studies
               </Button>
             </DialogTrigger>
