@@ -25,6 +25,7 @@ import {
 import { Link } from "react-router-dom";
 import { Toaster, toast } from 'sonner';
 import { ta } from "date-fns/locale";
+import { set } from "date-fns";
 
 function TagView() {
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -113,6 +114,7 @@ function TagView() {
       authors: study.authors_display.join(", "),
       flags: study.flags,
       tags: study.tags_display.map((tag) => tag.name).join(", "),
+      tags_list: study.tags_display.map((tag) => tag.name),
     }));
     setTableData(refineTable);
     console.log("fetched table data");
@@ -177,6 +179,7 @@ function TagView() {
       const result = await createTag(newTag);
       if (result.id) {
         fetchTreeData();
+        setSelectedNode(null);
       }
     } catch (error) {
       console.error("Error creating tag:", error);
@@ -282,6 +285,12 @@ function TagView() {
     setTags(sortedTags); 
     setSortMenuOpen(false); 
   };
+
+  const filteredData = selectedNode
+    ? tableData.filter((item) => 
+        item.tags_list && item.tags_list.includes(selectedNode.data.name)
+      )
+    : tableData;
 
   useEffect(() => {
     console.log("Current Review ",reviewId);
@@ -568,8 +577,8 @@ function TagView() {
         <div className="h-[calc(100vh-400px)] m-4 overflow-y-auto">
           <DataTable
             columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
-            data={tableData}
-            filterBy={selectedNode ? selectedNode.data.name : null}
+            data={filteredData}
+            filterBy={null}
           />
         </div>
       </div>
