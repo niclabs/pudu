@@ -562,7 +562,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                         }}
                         treeCheckable
                         treeCheckStrictly
-                        showCheckedStrategy={SHOW_CHILD}
+                        showCheckedStrategy={TreeSelect.SHOW_ALL}
                         placeholder="Select tags for this article"
                         style={{ width: "100%" }}
                       />
