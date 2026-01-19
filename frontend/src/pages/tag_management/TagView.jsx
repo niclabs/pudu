@@ -41,6 +41,7 @@ function TagView() {
   const [studyOpen, setStudyOpen] = useState(false);
   const [selectedStudy, setSelectedStudy] = useState(null);
   const [selectedStudyDetail, setSelectedStudyDetail] = useState(null);
+  const [filterBy, setFilterBy] = useState(null);
 
 
   const reviewId = sessionStorage.getItem('review_id');
@@ -564,11 +565,11 @@ function TagView() {
           </DialogContent>
         </Dialog>
 
-        <div className="h-[calc(100vh-400px)]">
+        <div className="h-[calc(100vh-400px)] m-4 overflow-y-auto">
           <DataTable
             columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
             data={tableData}
-            selectedTag={selectedNode?.data?.name}
+            filterBy={selectedNode ? selectedNode.data.name : null}
           />
         </div>
       </div>

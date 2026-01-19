@@ -100,7 +100,7 @@ function evaluateCondition(row, condition) {
 
 export function DataTable({ columns, data, filterBy }) {
   const [sorting, setSorting] = useState([]);
-  const [globalFilter, setGlobalFilter] = useState(""); // Estado para la búsqueda simple
+  const [globalFilter, setGlobalFilter] = useState("");
   
   const [searchConditions, setSearchConditions] = useState([
     { id: Date.now(), operator: "AND", field: "title", value: "" }
