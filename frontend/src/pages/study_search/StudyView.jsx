@@ -161,7 +161,8 @@ function StudyView() {
     const link = document.createElement("a");
 
     link.href = href;
-    link.download = "review_export" + ".json"; //remember to add review name when it exists!
+    const reviewName = (localStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
+    link.download = `${reviewName}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -182,8 +183,8 @@ function StudyView() {
     const link = document.createElement("a");
   
     link.href = href;
-    link.download = `review_export_${reviewId}.csv`; // Optional: add review name if available
-    document.body.appendChild(link);
+    const reviewName = (localStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
+    link.download = `${reviewName}.csv`;
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(href);
