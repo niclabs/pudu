@@ -18,6 +18,7 @@ import pudu from "@/assets/pudulogo.png"
 import { Button } from "@/components/ui/button"
 import { AuthService } from '/src/utils/authservice.jsx';
 import { useNavigate } from "react-router-dom"
+import { Toaster, toast } from 'sonner'
 
 
 export default function Navbar() {
@@ -33,6 +34,14 @@ export default function Navbar() {
     navigate('/');
   };
 
+  const handleNavigation = (e) => {
+  const reviewId = sessionStorage.getItem("review_id");
+  if (!reviewId || reviewId === "undefined") {
+    e.preventDefault(); 
+    toast.error("No review selected.");
+  }
+  };
+
   useEffect(() => {
     const updateReviewName = () => {
       setReviewName(sessionStorage.getItem("review_name"))
@@ -44,6 +53,7 @@ export default function Navbar() {
 
   return (
     <nav className="w-full bg-violet-900 shadow-sm overflow-hidden text-violet-50">
+      <Toaster richColors /> 
       <div className="w-full h-16 px-4 flex items-center justify-between">
         {/* Left side navigation items */}
         <NavigationMenu>
@@ -62,7 +72,7 @@ export default function Navbar() {
 
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <Link to="/studies"   className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
+                <Link to="/studies" onClick={handleNavigation}  className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
                   Studies
                 </Link>
               </NavigationMenuLink>
@@ -71,7 +81,7 @@ export default function Navbar() {
 
             <NavigationMenuItem>
               <NavigationMenuLink asChild>
-                <Link to="/tags"   className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
+                <Link to="/tags" onClick={handleNavigation}   className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
                   Tag Management
                 </Link>
               </NavigationMenuLink>
