@@ -78,7 +78,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   const [tags, setTags] = useState(null);
   const flagslist = ["Reviewed", "Pending Review", "Missing Data", "Flagged"];
   const [addedAuthor, setAddedAuthor] = useState("");
-  const reviewId = localStorage.getItem('review_id');
+  const reviewId = sessionStorage.getItem('review_id');
   const navigate = useNavigate();
 
 
