@@ -207,7 +207,7 @@ function SysRevView() {
                     </div>
                     <Button
                       size="sm"
-                      className="bg-violet-800 text-white hover:bg-violet-900"
+                      className="bg-violet-600 text-white hover:bg-violet-900"
                       onClick={(e) => {
                         e.stopPropagation()
                         setReviewOpen(true)
@@ -223,7 +223,7 @@ function SysRevView() {
                       
                     <Button
                       size="sm"
-                      className="bg-violet-600 text-white hover:bg-violet-900"
+                      className="bg-violet-800 text-white hover:bg-violet-900"
                       onClick={(e) => {
                         pickReview(review.id);
                         e.stopPropagation();
