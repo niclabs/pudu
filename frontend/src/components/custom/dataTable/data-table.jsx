@@ -36,6 +36,29 @@ const SEARCH_FIELDS = [
   { value: "tags", label: "Tags" },
 ];
 
+function crossColumnAndFilter(row, columnId, filterValue, addMeta) {
+  if (!filterValue) return true;
+  
+  const searchTerms = filterValue
+    .toString()
+    .split(",")
+    .map((term) => term.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (searchTerms.length === 0) return true;
+
+  return searchTerms.every((term) => {
+    return row.getAllCells().some((cell) => {
+      const cellValue = cell.getValue();
+      return (
+        cellValue !== null &&
+        cellValue !== undefined &&
+        cellValue.toString().toLowerCase().includes(term)
+      );
+    });
+  });
+}
+
 function advancedFilterFunction(row, filterConditions) {
   if (!filterConditions || filterConditions.length === 0) return true;
 
@@ -61,6 +84,9 @@ function evaluateCondition(row, condition) {
   const { field, value } = condition;
   if (!value) return true; 
 
+  if (field === "everything") {
+      return crossColumnAndFilter(row, null, value);
+  }
   const cellValue = row.getValue(field);
 
   if (cellValue == null) return false;
@@ -74,6 +100,8 @@ function evaluateCondition(row, condition) {
 
 export function DataTable({ columns, data, filterBy }) {
   const [sorting, setSorting] = useState([]);
+  const [globalFilter, setGlobalFilter] = useState(""); // Estado para la búsqueda simple
+  
   const [searchConditions, setSearchConditions] = useState([
     { id: Date.now(), operator: "AND", field: "title", value: "" }
   ]);
@@ -99,9 +127,11 @@ export function DataTable({ columns, data, filterBy }) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(), 
     onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter, 
+    globalFilterFn: crossColumnAndFilter,  
     state: {
       sorting,
-      // globalFilter, // filtro global simple 
+      globalFilter: showAdvanced ? "" : globalFilter, 
     },
   });
 
