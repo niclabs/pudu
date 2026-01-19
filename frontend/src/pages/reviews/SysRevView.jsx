@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { BookText } from "lucide-react"
 import { AuthService } from '/src/utils/authservice.jsx';
 import { Toaster, toast } from 'sonner'
+import { useNavigate } from "react-router-dom";
 
 
 function SysRevView() {
@@ -28,7 +29,7 @@ function SysRevView() {
   const [editingReviewStartDate, setEditingReviewStartDate] = useState(null)
   const [editingReviewEndDate, setEditingReviewEndDate] = useState(null)
   const [editingReviewStatus, setEditingReviewStatus] = useState(false)
-
+  const navigate = useNavigate();
 
   const fetchSysRevData = async () => {
     // const token = AuthService.getAccessToken();
@@ -218,6 +219,19 @@ function SysRevView() {
                       }}
                     >
                       Edit Details
+                    </Button>
+                      
+                    <Button
+                      size="sm"
+                      className="bg-violet-600 text-white hover:bg-violet-900"
+                      onClick={(e) => {
+                        pickReview(review.id);
+                        e.stopPropagation();
+                        navigate(`/studies?review_id=${review.id}`);
+                      }}
+                    >
+                      Open Study
+
                     </Button>
                   </div>
                 </CardContent>
