@@ -16,7 +16,7 @@ import { Link } from "react-router-dom"
 import { CircleUser, LogOut, LogIn } from "lucide-react"
 import pudu from "@/assets/pudulogo.png"
 import { Button } from "@/components/ui/button"
-import { AuthService } from '/src/utils/authservice.jsx';
+import { AuthService } from "../../utils/authservice";
 import { useNavigate } from "react-router-dom"
 import { Toaster, toast } from 'sonner'
 
@@ -101,7 +101,25 @@ export default function Navbar() {
                     <div
                       title={reviewName ?? "No review selected"}
                         className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
-                      Review: {reviewName ?? "No review selected"}
+                      Review: {reviewName.slice(0,70) ?? "No review selected"}....
+                    </div>
+                  </Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
+
+        {/* Posible Dashboard */}
+        <div className="flex-1 px-4 overflow-hidden max-w-[75vw] min-w-0">
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild>
+                  <Link to="/dashboard" onClick={handleNavigation} className="block">
+                    <div
+                        className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
+                      Dashboard
                     </div>
                   </Link>
                 </NavigationMenuLink>

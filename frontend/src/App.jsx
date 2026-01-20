@@ -10,6 +10,7 @@ import RegisterView from "./pages/login/RegisterView";
 import ProtectedRoute from "./utils/protectedroute.jsx";
 import PasswordResetRequest from "./pages/login/PasswordResetViewRequest";
 import PasswordReset from "./pages/login/PasswordReset-View";
+import DashboardView from "./pages/dashboard/DashboardView";
 
 export default function App() {
   return (
@@ -44,6 +45,17 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
+            
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardView/>
+                </ProtectedRoute>
+              }
+            />
+            
 
             <Route
               path="/studies"
