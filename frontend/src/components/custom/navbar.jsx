@@ -101,7 +101,7 @@ export default function Navbar() {
                     <div
                       title={reviewName ?? "No review selected"}
                         className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
-                      Review: {reviewName.slice(0,70) ?? "No review selected"}....
+                      {reviewName ? `Review: ${reviewName.length > 70 ? reviewName.slice(0,70) + "..." : reviewName}` : "No review selected"}
                     </div>
                   </Link>
                 </NavigationMenuLink>
