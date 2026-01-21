@@ -35,7 +35,15 @@ export default function Navbar() {
   };
 
   const handleNavigation = (e) => {
+  const isLogged = localStorage.getItem("app.auth.access") !== null;
   const reviewId = sessionStorage.getItem("review_id");
+
+  if (!isLogged) {
+    e.preventDefault(); 
+    toast.error("You must be logged in to access this page.");
+    return;
+  }
+
   if (!reviewId || reviewId === "undefined") {
     e.preventDefault(); 
     toast.error("No review selected.");
@@ -97,7 +105,7 @@ export default function Navbar() {
             <NavigationMenuList>
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
-                  <Link to="/sysrev" className="block">
+                  <Link to="/sysrev" onClick={handleNavigation} className="block">
                     <div
                       title={reviewName ?? "No review selected"}
                         className="p-2 text-xl rounded-md border border-violet-700 hover:bg-violet-950 cursor-pointer transition-colors duration-150">
