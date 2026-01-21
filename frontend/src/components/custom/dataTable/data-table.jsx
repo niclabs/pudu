@@ -64,6 +64,10 @@ function advancedFilterFunction(row, filterConditions) {
 
   let result = evaluateCondition(row, filterConditions[0]);
 
+  if (filterConditions[0].operator === "NOT") {
+      result = !result;
+  }
+  
   for (let i = 1; i < filterConditions.length; i++) {
     const condition = filterConditions[i];
     const nextResult = evaluateCondition(row, condition);
@@ -113,11 +117,17 @@ export function DataTable({ columns, data, filterBy }) {
 
     return data.filter(item => {
         const mockRow = {
-            getValue: (key) => item[key]
+            getValue: (key) => item[key],
+            getAllCells: () => Object.values(item).map(val => ({ getValue: () => val }))
         };
-        return advancedFilterFunction(mockRow, searchConditions);
+        const passesAdvanced = advancedFilterFunction(mockRow, searchConditions);
+        let passesExternalButtons = true;
+        if (filterBy) {
+            passesExternalButtons = crossColumnAndFilter(mockRow, null, filterBy);
+        }
+        return passesAdvanced && passesExternalButtons;
     });
-  }, [data, searchConditions, showAdvanced]);
+  }, [data, searchConditions, showAdvanced, filterBy]); 
 
 
   const table = useReactTable({
@@ -162,7 +172,7 @@ export function DataTable({ columns, data, filterBy }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        {(
+        {!showAdvanced && (
              <div className="relative max-w-sm w-full">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -173,7 +183,7 @@ export function DataTable({ columns, data, filterBy }) {
                 />
             </div>
         )}
-        
+
         <Button 
             variant={showAdvanced ? "secondary" : "outline"}
             onClick={() => {
