@@ -544,3 +544,19 @@ class ReviewImportView(APIView):
         except Exception as e:
             print(f"Error importando: {e}") 
             return Response({'error': f'Import failed: {str(e)}'}, status=400)
+        
+class DashboardStatsView(APIView):
+    def get(self, request):
+        review_id = request.query_params.get('review_id')
+        studies = Study.objects.filter(review_id=review_id)
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
+        stats = {
+                "total": studies.count(),
+                "reviewed": studies.filter(flags__contains="Reviewed").count(),
+                "pending": studies.filter(flags__contains="Pending Review").count(),
+                "flagged": studies.filter(flags__contains="Flagged").count(),
+                "years": studies.values('year').annotate(count=Count('id')).order_by('year')
+            }
+        return Response(stats)

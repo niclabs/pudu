@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from sysrev.views import TagTreeView, StudiesView, AuthorsView, SysRevView, tag_study_counts,flag_study_counts, ReviewExportView, ReviewImportView, RegisterView, ReviewCSVExportView
+from sysrev.views import TagTreeView, StudiesView, AuthorsView, SysRevView, tag_study_counts,flag_study_counts, ReviewExportView, ReviewImportView, RegisterView, ReviewCSVExportView, DashboardStatsView
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/register/', RegisterView.as_view(), name='register'),
     path('api/export_csv/', ReviewCSVExportView.as_view(), name='review-export-csv'),
     path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    path('api/dashboard/stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
 
 
 ]

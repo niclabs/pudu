@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { AuthService } from "@/utils/authservice";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Asumiendo Shadcn
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; 
 import { FileText, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 
 function StatCard({ title, value, icon }) {
@@ -21,32 +22,58 @@ function StatCard({ title, value, icon }) {
 }
 
 export default function DashboardView() {
-    const stats = {
-        total: 1250,
-        reviewed: 450,
-        included: 120,
-        flagged: 15
-    };
+    const [stats, setStats] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const reviewId = sessionStorage.getItem('review_id');
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await AuthService.fetchWithAuth(
+                    `http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`
+                );
+                const data = await response.json();
+                setStats(data);
+            } catch (error) {
+                console.error("Error fetching dashboard stats:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (reviewId) fetchStats();
+    }, [reviewId]);
+
+    if (loading) return <div className="p-6">Cargando estadísticas...</div>;
+    if (!stats) return <div className="p-6">No se encontraron datos.</div>;
 
     const pieOptions = {
         chart: { type: 'pie', height: 300 },
-        title: { text: 'Progress' },
+        title: { text: 'Progreso de la Revisión' },
         series: [{
-            name: 'Studies',
+            name: 'Estudios',
             data: [
-                { name: 'Completed', y: stats.reviewed, color: '#4c1d95' }, 
-                { name: 'Pending', y: stats.total - stats.reviewed, color: '#ddd6fe' } 
+                { name: 'Completados', y: stats.reviewed, color: '#4c1d95' }, 
+                { name: 'Pendientes', y: stats.pending, color: '#ddd6fe' },
+                { name: 'Alertas', y: stats.flagged, color: '#fbbf24' },
+                { name: 'Totales', y: stats.total, color: '#a78bfa' }
             ]
         }]
     };
 
-    const lineOptions = {
-        chart: { height: 300 },
-        title: { text: 'Publication Year' },
-        series: [{
-            data: [10, 25, 15, 60, 100, 150] 
-        }]
-    };
+    // const lineOptions = {
+    //     chart: { type: 'column', height: 300 },
+    //     title: { text: 'Estudios por Año de Publicación' },
+    //     xAxis: {
+    //         categories: stats.years.map(y => y.year) 
+    //     },
+    //     yAxis: { title: { text: 'Cantidad' } },
+    //     series: [{
+    //         name: 'Publicaciones',
+    //         data: stats.years.map(y => y.count), 
+    //         color: '#6d28d9'
+    //     }]
+    // };
 
     return (
         <div className="p-6 space-y-6 bg-violet-50/30 min-h-screen">
@@ -66,12 +93,12 @@ export default function DashboardView() {
                 />
                 <StatCard 
                     title="Included" 
-                    value={stats.included} 
+                    value={stats.reviewed} 
                     icon={<CheckCircle className="h-4 w-4 text-green-500" />} 
                 />
                 <StatCard 
                     title="Excluded" 
-                    value={stats.reviewed - stats.included} 
+                    value={stats.pending - stats.included} 
                     icon={<XCircle className="h-4 w-4 text-red-500" />} 
                 />
                 <StatCard 
@@ -103,9 +130,9 @@ export default function DashboardView() {
                     <Card className="p-2 shadow-sm">
                          <HighchartsReact highcharts={Highcharts} options={pieOptions} />
                     </Card>
-                    <Card className="p-2 shadow-sm">
+                    {/* <Card className="p-2 shadow-sm">
                          <HighchartsReact highcharts={Highcharts} options={lineOptions} />
-                    </Card>
+                    </Card> */}
                 </div>
             </div>
         </div>
