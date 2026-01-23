@@ -10,17 +10,17 @@ function StatCard({ title, value, icon, subtitle }) {
         <Card className="bg-violet-100">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="flex flex-col space-y-1">
-                    <CardTitle className="text-xl font-medium">
+                    <CardTitle className="text-sm font-medium">
                         {title}
                     </CardTitle>
-                    <CardDescription className={`text-base text-muted-foreground ${!subtitle ? 'invisible' : ''}`}>
+                    <CardDescription className={`text-xs text-muted-foreground ${!subtitle ? 'invisible' : ''}`}>
                         {subtitle || "Placeholder"}
                     </CardDescription>
                 </div>
                 {icon}
             </CardHeader>
             <CardContent>
-                <div className="text-4xl font-bold">{value}</div>
+                <div className="text-2xl font-bold">{value}</div>
             </CardContent>
         </Card>
     )
@@ -90,36 +90,35 @@ export default function DashboardView() {
     };
 
     return (
-        <div className="p-6 space-y-6 bg-violet-50 h-[calc(100vh-64px)]">
-
+        <div className="p-6 space-y-4 bg-violet-50 h-[calc(100vh-64px)] overflow-y-auto">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <StatCard
                     title="Total"
                     subtitle="Studies can have more than one flag"
                     value={stats.total}
-                    icon={<FileText className="h-6 w-6 text-gray-500" />}
+                    icon={<FileText className="h-4 w-4 text-gray-500" />}
                 />
                 <StatCard
                     title="Reviewed"
                     value={stats.reviewed}
-                    icon={<CheckCircle className="h-6 w-6 text-green-500" />}
+                    icon={<CheckCircle className="h-4 w-4 text-green-500" />}
                 />
                 <StatCard
                     title="Pending"
                     value={stats.pending}
-                    icon={<CircleDashed className="h-6 w-6 text-blue-500" />}
+                    icon={<CircleDashed className="h-4 w-4 text-blue-500" />}
                 />
                 <StatCard
                     title="Flagged / Missing Data"
                     value={stats.flagged + stats.missing_data}
-                    icon={<AlertTriangle className="h-6 w-6 text-yellow-500" />}
+                    icon={<AlertTriangle className="h-4 w-4 text-yellow-500" />}
                 />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
                 <div className="lg:col-span-1 space-y-4">
-                    <Card className="min-h-[560px]">
+                    <Card className="min-h-[350px]">
                         <CardHeader>
                             <CardTitle className="text-lg">Filters</CardTitle>
                         </CardHeader>
