@@ -3,11 +3,11 @@ import { AuthService } from "@/utils/authservice";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileText, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { FileText, CheckCircle, CircleDashed, AlertTriangle } from "lucide-react";
 
 function StatCard({ title, value, icon, subtitle }) {
     return (
-        <Card>
+        <Card className="bg-violet-100">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="flex flex-col space-y-1">
                     <CardTitle className="text-xl font-medium">
@@ -20,7 +20,7 @@ function StatCard({ title, value, icon, subtitle }) {
                 {icon}
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{value}</div>
+                <div className="text-4xl font-bold">{value}</div>
             </CardContent>
         </Card>
     )
@@ -31,112 +31,146 @@ export default function DashboardView() {
     const [loading, setLoading] = useState(true)
     const reviewId = sessionStorage.getItem('review_id');
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await AuthService.fetchWithAuth(
-                    `http://127.0.0.1:8000/api/dashboard/stats/?review_id=${reviewId}`
-                );
-                const data = await response.json();
-                setStats(data);
-            } catch (error) {
-                console.error("Error fetching dashboard stats:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const [yearRange, setYearRange] = useState({ start: '', end: '' });
 
+    const fetchStats = async (filters = {}) => {
+        try {
+            const queryParams = new URLSearchParams({ review_id: reviewId, ...filters });
+            const response = await AuthService.fetchWithAuth(
+                `http://127.0.0.1:8000/api/dashboard/stats/?${queryParams.toString()}`
+            );
+            const data = await response.json();
+            setStats(data);
+        } catch (error) {
+            console.error("Error fetching dashboard stats:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         if (reviewId) fetchStats();
     }, [reviewId]);
+
+    const handleApplyFilters = () => {
+        const filters = {};
+        if (yearRange.start) filters.start_year = yearRange.start;
+        if (yearRange.end) filters.end_year = yearRange.end;
+        fetchStats(filters);
+    };
 
     if (loading) return <div className="p-6">Cargando estadísticas...</div>;
     if (!stats) return <div className="p-6">No se encontraron datos.</div>;
 
     const pieOptions = {
-        chart: { type: 'pie', height: 300 },
-        title: { text: 'Progreso de la Revisión' },
+        chart: { type: 'pie' },
+        title: { text: 'Review Progress' },
         series: [{
             name: 'Estudios',
             data: [
-                { name: 'Completados', y: stats.reviewed, color: '#4c1d95' },
-                { name: 'Pendientes', y: stats.pending, color: '#ddd6fe' },
-                { name: 'Alertas', y: stats.flagged + stats.missing_data, color: '#fbbf24' },
+                { name: 'Reviewed', y: stats.reviewed, color: '#4c1d95' },
+                { name: 'Pending', y: stats.pending, color: '#ddd6fe' },
+                { name: 'Flagged / Missing Data', y: stats.flagged + stats.missing_data, color: '#ffcf55ff' },
             ]
         }]
     };
 
     const lineOptions = {
-        chart: { type: 'column', height: 300 },
-        title: { text: 'Estudios por Año de Publicación' },
+        chart: { type: 'column' },
+        title: { text: 'Studies by Publication Year' },
         xAxis: {
             categories: stats.years.map(y => y.year)
         },
-        yAxis: { title: { text: 'Cantidad' } },
+        yAxis: { title: { text: 'Quantity' } },
         series: [{
-            name: 'Publicaciones',
+            name: 'Publications',
             data: stats.years.map(y => y.count),
             color: '#6d28d9'
         }]
     };
 
     return (
-        <div className="p-6 space-y-6 bg-violet-50/30 min-h-screen">
-
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold text-violet-900">Project Dashboard</h1>
-                <button className="bg-violet-900 text-white px-4 py-2 rounded shadow hover:bg-violet-800">
-                    Export Report
-                </button>
-            </div>
+        <div className="p-6 space-y-6 bg-violet-50 min-h-screen">
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <StatCard
                     title="Total"
                     subtitle="Studies can have more than one flag"
                     value={stats.total}
-                    icon={<FileText className="h-4 w-4 text-gray-500" />}
+                    icon={<FileText className="h-6 w-6 text-gray-500" />}
                 />
                 <StatCard
                     title="Reviewed"
                     value={stats.reviewed}
-                    icon={<CheckCircle className="h-4 w-4 text-green-500" />}
+                    icon={<CheckCircle className="h-6 w-6 text-green-500" />}
                 />
                 <StatCard
                     title="Pending"
                     value={stats.pending}
-                    icon={<XCircle className="h-4 w-4 text-red-500" />}
+                    icon={<CircleDashed className="h-6 w-6 text-blue-500" />}
                 />
                 <StatCard
                     title="Flagged / Missing Data"
                     value={stats.flagged + stats.missing_data}
-                    icon={<AlertTriangle className="h-4 w-4 text-yellow-500" />}
+                    icon={<AlertTriangle className="h-6 w-6 text-yellow-500" />}
                 />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
                 <div className="lg:col-span-1 space-y-4">
-                    <Card>
+                    <Card className="min-h-[560px]">
                         <CardHeader>
-                            <CardTitle className="text-lg">Quick Actions</CardTitle>
+                            <CardTitle className="text-lg">Filters</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex flex-col gap-2">
-                            <button className="w-full text-left px-4 py-2 text-sm font-medium bg-white border hover:bg-gray-50 rounded">
-                                Filter by Author
-                            </button>
-                            <button className="w-full text-left px-4 py-2 text-sm font-medium bg-white border hover:bg-gray-50 rounded">
-                                Filter by Year range
+                        <CardContent className="flex flex-col gap-4">
+                            <div className="flex flex-col space-y-2">
+                                <label className="text-sm font-medium">Year Range</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="number"
+                                        placeholder="Min"
+                                        className="w-full p-2 border rounded text-sm"
+                                        value={yearRange.start}
+                                        onChange={(e) => setYearRange({ ...yearRange, start: e.target.value })}
+                                    />
+                                    <input
+                                        type="number"
+                                        placeholder="Max"
+                                        className="w-full p-2 border rounded text-sm"
+                                        value={yearRange.end}
+                                        onChange={(e) => setYearRange({ ...yearRange, end: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleApplyFilters}
+                                className="w-full bg-violet-900 text-white px-4 py-2 rounded shadow hover:bg-violet-800 text-sm font-medium"
+                            >
+                                Apply Filters
                             </button>
                         </CardContent>
                     </Card>
                 </div>
 
-                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card className="p-2 shadow-sm">
-                        <HighchartsReact highcharts={Highcharts} options={pieOptions} />
+                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[500px]">
+                    <Card className="p-2 shadow-sm flex flex-col h-full">
+                        <CardContent className="flex-1 p-0">
+                            <HighchartsReact
+                                highcharts={Highcharts}
+                                options={lineOptions}
+                                containerProps={{ style: { height: "100%", width: "100%" } }}
+                            />
+                        </CardContent>
                     </Card>
-                    <Card className="p-2 shadow-sm">
-                        <HighchartsReact highcharts={Highcharts} options={lineOptions} />
+                    <Card className="p-2 shadow-sm flex flex-col h-full">
+                        <CardContent className="flex-1 p-0">
+                            <HighchartsReact
+                                highcharts={Highcharts}
+                                options={pieOptions}
+                                containerProps={{ style: { height: "100%", width: "100%" } }}
+                            />
+                        </CardContent>
                     </Card>
                 </div>
             </div>

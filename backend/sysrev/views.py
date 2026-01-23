@@ -549,8 +549,14 @@ class DashboardStatsView(APIView):
     def get(self, request):
         review_id = request.query_params.get('review_id')
         studies = Study.objects.filter(review_id=review_id)
-        if not review_id:
-            return Response({'error': 'review_id is required'}, status=400)
+
+        start_year = request.query_params.get('start_year')
+        end_year = request.query_params.get('end_year')
+
+        if start_year:
+            studies = studies.filter(year__gte=start_year)
+        if end_year:
+            studies = studies.filter(year__lte=end_year)
 
         all_studies_flags = studies.values_list('flags', flat=True)
         
