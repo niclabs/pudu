@@ -2,16 +2,21 @@ import { useEffect, useState } from "react";
 import { AuthService } from "@/utils/authservice";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; 
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileText, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 
-function StatCard({ title, value, icon }) {
+function StatCard({ title, value, icon, subtitle }) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                    {title}
-                </CardTitle>
+                <div className="flex flex-col space-y-1">
+                    <CardTitle className="text-xl font-medium">
+                        {title}
+                    </CardTitle>
+                    <CardDescription className={`text-base text-muted-foreground ${!subtitle ? 'invisible' : ''}`}>
+                        {subtitle || "Placeholder"}
+                    </CardDescription>
+                </div>
                 {icon}
             </CardHeader>
             <CardContent>
@@ -30,7 +35,7 @@ export default function DashboardView() {
         const fetchStats = async () => {
             try {
                 const response = await AuthService.fetchWithAuth(
-                    `http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`
+                    `http://127.0.0.1:8000/api/dashboard/stats/?review_id=${reviewId}`
                 );
                 const data = await response.json();
                 setStats(data);
@@ -53,31 +58,30 @@ export default function DashboardView() {
         series: [{
             name: 'Estudios',
             data: [
-                { name: 'Completados', y: stats.reviewed, color: '#4c1d95' }, 
+                { name: 'Completados', y: stats.reviewed, color: '#4c1d95' },
                 { name: 'Pendientes', y: stats.pending, color: '#ddd6fe' },
-                { name: 'Alertas', y: stats.flagged, color: '#fbbf24' },
-                { name: 'Totales', y: stats.total, color: '#a78bfa' }
+                { name: 'Alertas', y: stats.flagged + stats.missing_data, color: '#fbbf24' },
             ]
         }]
     };
 
-    // const lineOptions = {
-    //     chart: { type: 'column', height: 300 },
-    //     title: { text: 'Estudios por Año de Publicación' },
-    //     xAxis: {
-    //         categories: stats.years.map(y => y.year) 
-    //     },
-    //     yAxis: { title: { text: 'Cantidad' } },
-    //     series: [{
-    //         name: 'Publicaciones',
-    //         data: stats.years.map(y => y.count), 
-    //         color: '#6d28d9'
-    //     }]
-    // };
+    const lineOptions = {
+        chart: { type: 'column', height: 300 },
+        title: { text: 'Estudios por Año de Publicación' },
+        xAxis: {
+            categories: stats.years.map(y => y.year)
+        },
+        yAxis: { title: { text: 'Cantidad' } },
+        series: [{
+            name: 'Publicaciones',
+            data: stats.years.map(y => y.count),
+            color: '#6d28d9'
+        }]
+    };
 
     return (
         <div className="p-6 space-y-6 bg-violet-50/30 min-h-screen">
-            
+
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-violet-900">Project Dashboard</h1>
                 <button className="bg-violet-900 text-white px-4 py-2 rounded shadow hover:bg-violet-800">
@@ -86,30 +90,31 @@ export default function DashboardView() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <StatCard 
-                    title="Total" 
-                    value={stats.total} 
-                    icon={<FileText className="h-4 w-4 text-gray-500" />} 
+                <StatCard
+                    title="Total"
+                    subtitle="Studies can have more than one flag"
+                    value={stats.total}
+                    icon={<FileText className="h-4 w-4 text-gray-500" />}
                 />
-                <StatCard 
-                    title="Included" 
-                    value={stats.reviewed} 
-                    icon={<CheckCircle className="h-4 w-4 text-green-500" />} 
+                <StatCard
+                    title="Reviewed"
+                    value={stats.reviewed}
+                    icon={<CheckCircle className="h-4 w-4 text-green-500" />}
                 />
-                <StatCard 
-                    title="Excluded" 
-                    value={stats.pending - stats.included} 
-                    icon={<XCircle className="h-4 w-4 text-red-500" />} 
+                <StatCard
+                    title="Pending"
+                    value={stats.pending}
+                    icon={<XCircle className="h-4 w-4 text-red-500" />}
                 />
-                <StatCard 
-                    title="Flagged / Conflicts" 
-                    value={stats.flagged} 
-                    icon={<AlertTriangle className="h-4 w-4 text-yellow-500" />} 
+                <StatCard
+                    title="Flagged / Missing Data"
+                    value={stats.flagged + stats.missing_data}
+                    icon={<AlertTriangle className="h-4 w-4 text-yellow-500" />}
                 />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                
+
                 <div className="lg:col-span-1 space-y-4">
                     <Card>
                         <CardHeader>
@@ -128,11 +133,11 @@ export default function DashboardView() {
 
                 <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Card className="p-2 shadow-sm">
-                         <HighchartsReact highcharts={Highcharts} options={pieOptions} />
+                        <HighchartsReact highcharts={Highcharts} options={pieOptions} />
                     </Card>
-                    {/* <Card className="p-2 shadow-sm">
-                         <HighchartsReact highcharts={Highcharts} options={lineOptions} />
-                    </Card> */}
+                    <Card className="p-2 shadow-sm">
+                        <HighchartsReact highcharts={Highcharts} options={lineOptions} />
+                    </Card>
                 </div>
             </div>
         </div>

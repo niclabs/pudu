@@ -552,11 +552,30 @@ class DashboardStatsView(APIView):
         if not review_id:
             return Response({'error': 'review_id is required'}, status=400)
 
+        all_studies_flags = studies.values_list('flags', flat=True)
+        
+        total_reviewed = 0
+        total_pending = 0
+        total_flagged = 0
+        total_missing_data = 0
+        
+        for flags in all_studies_flags:
+            if flags: 
+                if "Reviewed" in flags:
+                    total_reviewed += 1
+                if "Pending Review" in flags:
+                    total_pending += 1
+                if "Flagged" in flags:
+                    total_flagged += 1
+                if "Missing Data" in flags:
+                    total_missing_data += 1
+
         stats = {
                 "total": studies.count(),
-                "reviewed": studies.filter(flags__contains="Reviewed").count(),
-                "pending": studies.filter(flags__contains="Pending Review").count(),
-                "flagged": studies.filter(flags__contains="Flagged").count(),
+                "reviewed": total_reviewed,
+                "pending": total_pending,
+                "flagged": total_flagged,
+                "missing_data": total_missing_data,
                 "years": studies.values('year').annotate(count=Count('id')).order_by('year')
             }
         return Response(stats)
