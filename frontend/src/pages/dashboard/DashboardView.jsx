@@ -90,7 +90,7 @@ export default function DashboardView() {
     };
 
     return (
-        <div className="p-6 space-y-6 bg-violet-50 min-h-screen">
+        <div className="p-6 space-y-6 bg-violet-50 h-[calc(100vh-64px)]">
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <StatCard
@@ -153,24 +153,18 @@ export default function DashboardView() {
                     </Card>
                 </div>
 
-                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[500px]">
-                    <Card className="p-2 shadow-sm flex flex-col h-full">
-                        <CardContent className="flex-1 p-0">
-                            <HighchartsReact
-                                highcharts={Highcharts}
-                                options={lineOptions}
-                                containerProps={{ style: { height: "100%", width: "100%" } }}
-                            />
-                        </CardContent>
+                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
+                    <Card className="p-2 shadow-sm h-full">
+                        <HighchartsReact
+                            highcharts={Highcharts}
+                            options={{ ...lineOptions, chart: { ...lineOptions.chart, height: null } }}
+                        />
                     </Card>
-                    <Card className="p-2 shadow-sm flex flex-col h-full">
-                        <CardContent className="flex-1 p-0">
-                            <HighchartsReact
-                                highcharts={Highcharts}
-                                options={pieOptions}
-                                containerProps={{ style: { height: "100%", width: "100%" } }}
-                            />
-                        </CardContent>
+                    <Card className="p-2 shadow-sm h-full">
+                        <HighchartsReact
+                            highcharts={Highcharts}
+                            options={{ ...pieOptions, chart: { ...pieOptions.chart, height: null } }}
+                        />
                     </Card>
                 </div>
             </div>

@@ -101,10 +101,10 @@ function StudyView() {
   };
 
   useEffect(() => {
-    console.log("Currently on review ",reviewId);
+    console.log("Currently on review ", reviewId);
     fetchStudyData();
     fetchFlagCount();
-    if ((studyOpen || deleteOpen ) && selectedStudy) {
+    if ((studyOpen || deleteOpen) && selectedStudy) {
       fetchStudyDetailed(selectedStudy);
     }
   }, [studyOpen, selectedStudy]);
@@ -172,16 +172,16 @@ function StudyView() {
 
   const handleExportCSV = async () => {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export_csv/?review_id=${reviewId}`);
-  
+
     if (!response.ok) {
       console.error("Export failed:", response.statusText);
       return;
     }
-  
+
     const blob = await response.blob();
     const href = URL.createObjectURL(blob);
     const link = document.createElement("a");
-  
+
     link.href = href;
     const reviewName = (sessionStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
     link.download = `${reviewName}.csv`;
@@ -192,7 +192,7 @@ function StudyView() {
   };
 
   return (
-    <div className="flex flex-col w-full h-full p-4 bg-violet-50 min-h-screen">
+    <div className="flex flex-col w-full p-4 bg-violet-50 h-[calc(100vh-64px)]">
       <h1 className="text-4xl font-bold">Studies</h1>
       <p className=" text-gray-600 mb-6">Browse and manage studies in your review.</p>
       <div className="flex justify-between items-start">
@@ -331,82 +331,82 @@ function StudyView() {
             </DialogContent>
           </Dialog>
           <Dialog open={studyOpen} onOpenChange={setStudyOpen}>
-  <DialogContent className="bg-indigo-100 border-violet-200 max-w-3xl !p-8">
-    <DialogHeader className="space-y-3">
-      <DialogTitle className="font-bold">Study Metadata</DialogTitle>
-      <DialogDescription className="text-gray-600">
-        Detailed metadata for the selected study.
-      </DialogDescription>
-    </DialogHeader>
+            <DialogContent className="bg-indigo-100 border-violet-200 max-w-3xl !p-8">
+              <DialogHeader className="space-y-3">
+                <DialogTitle className="font-bold">Study Metadata</DialogTitle>
+                <DialogDescription className="text-gray-600">
+                  Detailed metadata for the selected study.
+                </DialogDescription>
+              </DialogHeader>
 
-    <div className="space-y-4 py-4 h-[calc(80vh-220px)] overflow-y-auto pr-2">
-      {selectedStudyDetail &&
-        Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
-          <div key={key} className="mb-2">
-            <span className="font-semibold">{labelMap[key] || key}:</span>{" "}
-            {key === "url" ? (
-              <a
-                href={value}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline"
-              >
-                {value}
-              </a>
-            ) : (
-              <span>{String(value)}</span>
-            )}
-          </div>
-        ))}
-    </div>
+              <div className="space-y-4 py-4 h-[calc(80vh-220px)] overflow-y-auto pr-2">
+                {selectedStudyDetail &&
+                  Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
+                    <div key={key} className="mb-2">
+                      <span className="font-semibold">{labelMap[key] || key}:</span>{" "}
+                      {key === "url" ? (
+                        <a
+                          href={value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          {value}
+                        </a>
+                      ) : (
+                        <span>{String(value)}</span>
+                      )}
+                    </div>
+                  ))}
+              </div>
 
-    <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-      <Button
-        variant="outline"
-        onClick={() => setStudyOpen(false)}
-        className="text-violet-700 hover:bg-violet-100"
-      >
-        Close
-      </Button>
-      <Link to={`/editstudy/${selectedStudyDetail?.id}/`}>
-        <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950 font-bold">
-          Edit Study
-        </Button>
-      </Link>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
-          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-          <DialogContent className="  bg-violet-50  ">
-            <DialogHeader>
-              <DialogTitle>Deleting Study</DialogTitle>
-            </DialogHeader>
-                <b>{selectedStudyDetail?.title}</b>
-                This study is being deleted. This action cannot be undone.
-                <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+              <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
                 <Button
-                variant="outline"
-                onClick={() => setDeleteOpen(false)}
-                className="border-violet-700 text-violet-700 hover:bg-violet-100"
-              >
-                Cancel
-              </Button>
+                  variant="outline"
+                  onClick={() => setStudyOpen(false)}
+                  className="text-violet-700 hover:bg-violet-100"
+                >
+                  Close
+                </Button>
+                <Link to={`/editstudy/${selectedStudyDetail?.id}/`}>
+                  <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950 font-bold">
+                    Edit Study
+                  </Button>
+                </Link>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <DialogContent className="  bg-violet-50  ">
+              <DialogHeader>
+                <DialogTitle>Deleting Study</DialogTitle>
+              </DialogHeader>
+              <b>{selectedStudyDetail?.title}</b>
+              This study is being deleted. This action cannot be undone.
+              <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteOpen(false)}
+                  className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                >
+                  Cancel
+                </Button>
                 <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
                   onClick={() => deleteStudyData(selectedStudyDetail?.id)}>
                   Delete Study
                 </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       <div className="h-[calc(100vh-240px)] m-4 overflow-y-auto">
-      <DataTable
-        columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
-        data={tableData}
-        filterBy={filterBy}
-      />
-    </div>
+        <DataTable
+          columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
+          data={tableData}
+          filterBy={filterBy}
+        />
+      </div>
     </div>
   );
 }

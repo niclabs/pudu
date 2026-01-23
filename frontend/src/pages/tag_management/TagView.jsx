@@ -55,7 +55,7 @@ function TagView() {
     });
     return response.json();
   };
-  
+
   const deleteTag = async (tagId) => {
     const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
       method: "DELETE",
@@ -66,7 +66,7 @@ function TagView() {
     }
     return response.json();
   };
-  
+
   const moveTag = async (dragMove) => {
     console.log("Moving tag with data:", dragMove);
     const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
@@ -76,7 +76,7 @@ function TagView() {
     });
     return response.json();
   };
-  
+
   const editTagName = async (tagId, newName) => {
     const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
       method: "PATCH",
@@ -85,7 +85,7 @@ function TagView() {
     });
     return response.json();
   };
-  
+
   const editTagDescription = async (tagId, newDescription) => {
     const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
       method: "PATCH",
@@ -94,7 +94,7 @@ function TagView() {
     });
     return response.json();
   };
-  
+
 
   const fetchTreeData = async () => {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
@@ -189,12 +189,12 @@ function TagView() {
   const onDelete = async () => {
     try {
       const tagId = selectedNode ? selectedNode.data.id : null;
-      if (!tagId) return; 
+      if (!tagId) return;
       const result = await deleteTag(tagId);
       if (result.success) {
         fetchTreeData();
         setSelectedNode(null);
-        
+
 
       } else {
         console.error("Error deleting tag:", result.error);
@@ -202,7 +202,7 @@ function TagView() {
     } catch (error) {
       console.error("Error deleting tag:", error);
     }
-    
+
     setTagDeleteOpen(false)
   };
 
@@ -259,7 +259,7 @@ function TagView() {
   };
 
 
-  const [originalTags, setOriginalTags] = useState([]); 
+  const [originalTags, setOriginalTags] = useState([]);
   const [isSortMenuOpen, setSortMenuOpen] = useState(false);
   const handleSort = (order) => {
     if (order === 'reset') {
@@ -277,28 +277,28 @@ function TagView() {
         return 0;
       }).map(node => ({
         ...node,
-        children: node.children ? sortNodes(node.children) : [] 
+        children: node.children ? sortNodes(node.children) : []
       }));
     };
 
     const sortedTags = sortNodes(tags);
-    setTags(sortedTags); 
-    setSortMenuOpen(false); 
+    setTags(sortedTags);
+    setSortMenuOpen(false);
   };
 
   const filteredData = selectedNode
-    ? tableData.filter((item) => 
-        item.tags_list && item.tags_list.includes(selectedNode.data.name)
-      )
+    ? tableData.filter((item) =>
+      item.tags_list && item.tags_list.includes(selectedNode.data.name)
+    )
     : tableData;
 
   useEffect(() => {
-    console.log("Current Review ",reviewId);
+    console.log("Current Review ", reviewId);
     fetchTreeData();
     fetchStudyData();
     fetchTagCount();
     setLoading(false);
-    if ((studyOpen | deleteOpen ) && selectedStudy) {
+    if ((studyOpen | deleteOpen) && selectedStudy) {
       fetchStudyDetailed(selectedStudy);
     }
   }, [studyOpen, selectedStudy]);
@@ -306,64 +306,64 @@ function TagView() {
   if (loading) return <div>Loading tree...</div>;
 
   return (
-    <div className="flex flex-row w-full h-full bg-violet-50 ">
+    <div className="flex flex-row w-full h-[calc(100vh-64px)] bg-violet-50 ">
       <Toaster richColors />
       {/* Tree */}
       <div className="m-4 p-4 tree-component flex-1 bg-indigo-100 rounded-xl shadow-lg relative">
         <div className="flex justify-between items-start">
           <div className="demo-instructions">
             <h1 className="text-2xl font-bold">Tag Management</h1>
-            
+
           </div>
-            <div className="flex space-x-2 relative">
-              
+          <div className="flex space-x-2 relative">
+
+            <Button
+              onClick={onCreate}
+              className="bg-violet-900 text-violet-50 text-xs font-bold hover:bg-violet-950 flex"
+            >
+              <Tag className="mr-2 h-4 w-4" /> Add Tag
+            </Button>
+
+            <div className="relative">
               <Button
-                onClick={onCreate}
+                onClick={() => setSortMenuOpen(!isSortMenuOpen)}
                 className="bg-violet-900 text-violet-50 text-xs font-bold hover:bg-violet-950 flex"
               >
-                <Tag className="mr-2 h-4 w-4" /> Add Tag
+                <Filter className="mr-2 h-4 w-4" /> Sort Tag
               </Button>
+              {isSortMenuOpen && (
+                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded shadow-lg z-10">
+                  <button
+                    onClick={() => handleSort('asc')}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    A-Z
+                  </button>
+                  <button
+                    onClick={() => handleSort('desc')}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    Z-A
+                  </button>
 
-              <div className="relative">
-                <Button
-                  onClick={() => setSortMenuOpen(!isSortMenuOpen)}
-                  className="bg-violet-900 text-violet-50 text-xs font-bold hover:bg-violet-950 flex"
-                >
-                  <Filter className="mr-2 h-4 w-4" /> Sort Tag
-                </Button>
-                {isSortMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded shadow-lg z-10">
-                    <button
-                      onClick={() => handleSort('asc')}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                    >
-                      A-Z
-                    </button>
-                                        <button
-                      onClick={() => handleSort('desc')}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                    >
-                      Z-A
-                    </button>
-
-                    <button
-                      onClick={() => handleSort('reset')}
-                      className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                    >
-                      Created (desc)
-                    </button>
-                  </div>
-                )}
+                  <button
+                    onClick={() => handleSort('reset')}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    Created (desc)
+                  </button>
+                </div>
+              )}
 
 
-              </div>
             </div>
-          
+          </div>
+
         </div>
         <p className=" text-gray-600">Organize your review with a custom tag tree.</p>
         <p className=" text-gray-600"> Drag and Drop tags to edit the tree's structure.</p>
         <div className="tree-container flex-grow overflow-auto mt-4">
-          
+
           <Tree
             data={tags}
             openByDefault={false}
@@ -385,18 +385,18 @@ function TagView() {
           </Tree>
         </div>
         <Button
-              onClick={() => {
-                if (!selectedNode) {
-                  toast.error("No tag selected for deletion.");
-                  return;
-                }
-                setTagDeleteOpen(true);
-              }}
-              className="absolute bottom-4 right-4 bg-red-600 text-violet-50 text-xs font-bold hover:bg-red-800 flex"
-            >
-              <Trash2 className="" /> Delete Tag
+          onClick={() => {
+            if (!selectedNode) {
+              toast.error("No tag selected for deletion.");
+              return;
+            }
+            setTagDeleteOpen(true);
+          }}
+          className="absolute bottom-4 right-4 bg-red-600 text-violet-50 text-xs font-bold hover:bg-red-800 flex"
+        >
+          <Trash2 className="" /> Delete Tag
         </Button>
-        </div>
+      </div>
       {/*  Card and Table */}
       <div className="p-4 flex-1/2">
         <div>
@@ -511,7 +511,7 @@ function TagView() {
                 )}
             </div>
             <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-            <Button
+              <Button
                 variant="outline"
                 onClick={() => setStudyOpen(false)}
                 className="border-violet-700 text-violet-700 hover:bg-violet-100"
@@ -532,20 +532,20 @@ function TagView() {
             <DialogHeader>
               <DialogTitle>Deleting Study</DialogTitle>
             </DialogHeader>
-                <b>{selectedStudyDetail?.title}</b>
-                <div>This study is being deleted. This action cannot be undone.</div>
-                <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-                <Button
+            <b>{selectedStudyDetail?.title}</b>
+            <div>This study is being deleted. This action cannot be undone.</div>
+            <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+              <Button
                 variant="outline"
                 onClick={() => setDeleteOpen(false)}
                 className="border-violet-700 text-violet-700 hover:bg-violet-100"
               >
                 Cancel
               </Button>
-                <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
-                  onClick={() => deleteStudyData(selectedStudyDetail?.id)}>
-                  Delete Study
-                </Button>
+              <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                onClick={() => deleteStudyData(selectedStudyDetail?.id)}>
+                Delete Study
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -555,21 +555,21 @@ function TagView() {
             <DialogHeader>
               <DialogTitle>Deleting Tag</DialogTitle>
             </DialogHeader>
-                <b>{selectedNode?.data?.name}</b>
-                <div>This tag and any children it has are being deleted.</div>
-                <div>This action cannot be undone.</div>
-                <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-                <Button
+            <b>{selectedNode?.data?.name}</b>
+            <div>This tag and any children it has are being deleted.</div>
+            <div>This action cannot be undone.</div>
+            <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+              <Button
                 variant="outline"
                 onClick={() => setTagDeleteOpen(false)}
                 className="border-violet-700 text-violet-700 hover:bg-violet-100"
               >
                 Cancel
               </Button>
-                <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
-                  onClick={() => onDelete()}>
-                  Delete Tag
-                </Button>
+              <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                onClick={() => onDelete()}>
+                Delete Tag
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
