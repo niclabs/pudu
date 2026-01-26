@@ -576,12 +576,17 @@ class DashboardStatsView(APIView):
                 if "Missing Data" in flags:
                     total_missing_data += 1
 
+        tag_stats = studies.exclude(tags__isnull=True).values(
+            'tags__name', 'tags__parent_tag__name', 'year'
+        ).annotate(count=Count('id')).order_by('tags__parent_tag__name', 'tags__name', 'year')
+
         stats = {
                 "total": studies.count(),
                 "reviewed": total_reviewed,
                 "pending": total_pending,
                 "flagged": total_flagged,
                 "missing_data": total_missing_data,
-                "years": studies.values('year').annotate(count=Count('id')).order_by('year')
+                "years": studies.values('year').annotate(count=Count('id')).order_by('year'),
+                "tag_stats": list(tag_stats)
             }
         return Response(stats)

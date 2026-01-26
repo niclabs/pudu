@@ -4,6 +4,7 @@ import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileText, CheckCircle, CircleDashed, AlertTriangle } from "lucide-react";
+import CustomChartWidget from "./CustomChartWidget";
 
 function StatCard({ title, value, icon, subtitle }) {
     return (
@@ -32,6 +33,7 @@ export default function DashboardView() {
     const reviewId = sessionStorage.getItem('review_id');
 
     const [yearRange, setYearRange] = useState({ start: '', end: '' });
+    const [selectedTag, setSelectedTag] = useState('');
 
     const fetchStats = async (filters = {}) => {
         try {
@@ -49,18 +51,37 @@ export default function DashboardView() {
     };
 
     useEffect(() => {
-        if (reviewId) fetchStats();
-    }, [reviewId]);
+        if (!reviewId) return;
 
-    const handleApplyFilters = () => {
-        const filters = {};
-        if (yearRange.start) filters.start_year = yearRange.start;
-        if (yearRange.end) filters.end_year = yearRange.end;
-        fetchStats(filters);
-    };
+        const timer = setTimeout(() => {
+            const filters = {};
+            if (yearRange.start) filters.start_year = yearRange.start;
+            if (yearRange.end) filters.end_year = yearRange.end;
+            fetchStats(filters);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [reviewId, yearRange]);
+
+
 
     if (loading) return <div className="p-6">Cargando estadísticas...</div>;
     if (!stats) return <div className="p-6">No se encontraron datos.</div>;
+
+    const availableTags = stats.tag_stats ? Array.from(new Set(stats.tag_stats.map(t => t.tags__name))).sort() : [];
+
+    let chartCategories = stats.years.map(y => y.year);
+    let chartData = stats.years.map(y => y.count);
+    let chartTitle = 'Studies by Publication Year';
+
+    if (selectedTag && stats.tag_stats) {
+        chartTitle = `Studies with tag "${selectedTag}" by Year`;
+        const tagData = stats.tag_stats.filter(t => t.tags__name === selectedTag);
+        const tagMap = {};
+        tagData.forEach(t => tagMap[t.year] = t.count);
+
+        chartData = chartCategories.map(year => tagMap[year] || 0);
+    }
 
     const pieOptions = {
         chart: { type: 'pie' },
@@ -77,14 +98,14 @@ export default function DashboardView() {
 
     const lineOptions = {
         chart: { type: 'column' },
-        title: { text: 'Studies by Publication Year' },
+        title: { text: chartTitle },
         xAxis: {
-            categories: stats.years.map(y => y.year)
+            categories: chartCategories
         },
         yAxis: { title: { text: 'Quantity' } },
         series: [{
             name: 'Publications',
-            data: stats.years.map(y => y.count),
+            data: chartData,
             color: '#6d28d9'
         }]
     };
@@ -142,12 +163,22 @@ export default function DashboardView() {
                                     />
                                 </div>
                             </div>
-                            <button
-                                onClick={handleApplyFilters}
-                                className="w-full bg-violet-900 text-white px-4 py-2 rounded shadow hover:bg-violet-800 text-sm font-medium"
-                            >
-                                Apply Filters
-                            </button>
+
+                            <div className="flex flex-col space-y-2">
+                                <label className="text-sm font-medium">Filter by Tag</label>
+                                <select
+                                    className="w-full p-2 border rounded text-sm"
+                                    value={selectedTag}
+                                    onChange={(e) => setSelectedTag(e.target.value)}
+                                >
+                                    <option value="">All Tags</option>
+                                    {availableTags.map(tag => (
+                                        <option key={tag} value={tag}>{tag}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+
                         </CardContent>
                     </Card>
                 </div>
