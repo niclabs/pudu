@@ -558,6 +558,42 @@ class DashboardStatsView(APIView):
         if end_year:
             studies = studies.filter(year__lte=end_year)
 
+        # available options
+        studies_base = studies
+
+        tag_filter = request.query_params.get('tag')
+        author_filter = request.query_params.get('author')
+
+        # Logic for available tags:
+        # If an author is selected, only show tags that appear in studies by that author, otherwise show all tags in the review
+        if author_filter:
+            available_tags = studies_base.filter(authors__name=author_filter).values_list('tags__name', flat=True).distinct().order_by('tags__name')
+            available_tags = [t for t in available_tags if t] # Filter out None/empty
+        else:
+            available_tags = studies_base.values_list('tags__name', flat=True).distinct().order_by('tags__name')
+            available_tags = [t for t in available_tags if t]
+            if not available_tags and not start_year and not end_year:
+                 available_tags = Tag.objects.filter(review_id=review_id).values_list('name', flat=True).distinct().order_by('name')
+
+        # Logic for available authors:
+        # If a tag is selected, only show authors that have studies with that tag, otherwise show all authors in the review
+        if tag_filter:
+            available_authors = studies_base.filter(tags__name=tag_filter).values_list('authors__name', flat=True).distinct().order_by('authors__name')
+            available_authors = [a for a in available_authors if a]
+        else:
+            available_authors = studies_base.values_list('authors__name', flat=True).distinct().order_by('authors__name')
+            available_authors = [a for a in available_authors if a]
+
+            if not available_authors and not start_year and not end_year:
+                 available_authors = Author.objects.filter(review_id=review_id).values_list('name', flat=True).distinct().order_by('name')
+
+        # Apply stats filters to the main queryset
+        if tag_filter:
+             studies = studies.filter(tags__name=tag_filter)
+            
+        if author_filter:
+            studies = studies.filter(authors__name=author_filter)
+
         all_studies_flags = studies.values_list('flags', flat=True)
         
         total_reviewed = 0
@@ -580,6 +616,13 @@ class DashboardStatsView(APIView):
             'tags__name', 'tags__parent_tag__name', 'year'
         ).annotate(count=Count('id')).order_by('tags__parent_tag__name', 'tags__name', 'year')
 
+        authors_stats = studies.exclude(authors__isnull=True).values(
+            'authors__name'
+        ).annotate(count=Count('id')).order_by('authors__name')
+
+        root_tags = Tag.objects.filter(review_id=review_id, parent_tag__isnull=True).values_list('name', flat=True).distinct().order_by('name')
+        tag_hierarchy = Tag.objects.filter(review_id=review_id).values('name', 'parent_tag__name')
+
         stats = {
                 "total": studies.count(),
                 "reviewed": total_reviewed,
@@ -587,6 +630,11 @@ class DashboardStatsView(APIView):
                 "flagged": total_flagged,
                 "missing_data": total_missing_data,
                 "years": studies.values('year').annotate(count=Count('id')).order_by('year'),
-                "tag_stats": list(tag_stats)
+                "tag_stats": list(tag_stats),
+                "authors_stats": list(authors_stats),
+                "available_tags": list(available_tags),
+                "available_authors": list(available_authors),
+                "root_tags": list(root_tags),
+                "tag_hierarchy": list(tag_hierarchy)
             }
         return Response(stats)
