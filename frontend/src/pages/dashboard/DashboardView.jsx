@@ -62,6 +62,7 @@ export default function DashboardView() {
             if (yearRange.end) filters.end_year = yearRange.end;
             if (selectedTag) filters.tag = selectedTag;
             if (selectedAuthor) filters.author = selectedAuthor;
+            if (breakdownBy !== 'none') filters.parent_tag = breakdownBy;
 
             fetchStats(filters);
         }, 500);
@@ -84,7 +85,7 @@ export default function DashboardView() {
 
     // breakdown by tag
     if (breakdownBy !== 'none') {
-        chartTitle = `Studies by ${breakdownBy} over Time`;
+        chartTitle = `Studies of ${breakdownBy} over Time`;
 
         const parentToChildren = {};
         const hierarchy = stats.tag_hierarchy || [];
@@ -319,8 +320,8 @@ export default function DashboardView() {
                     </Card>
                 </div>
 
-                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-                    <Card className="p-2 shadow-sm h-full">
+                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
+                    <Card className="md:col-span-2 p-2 shadow-sm h-full">
                         <HighchartsReact
                             highcharts={Highcharts}
                             options={lineOptions}

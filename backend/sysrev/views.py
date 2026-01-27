@@ -562,6 +562,7 @@ class DashboardStatsView(APIView):
         studies_base = studies
 
         tag_filter = request.query_params.get('tag')
+        parent_tag_filter = request.query_params.get('parent_tag')
         author_filter = request.query_params.get('author')
 
         # Logic for available tags:
@@ -590,27 +591,48 @@ class DashboardStatsView(APIView):
         # Apply stats filters to the main queryset
         if tag_filter:
              studies = studies.filter(tags__name=tag_filter)
+        # Get all descendant tags for parent tag 
+        if parent_tag_filter:
+            try:
+                parent_tag_obj = Tag.objects.get(name=parent_tag_filter, review_id=review_id)
+                
+                def get_descendants(tag):
+                    descendants = {tag.id}
+                    for child in tag.child_tags.all():
+                        descendants.update(get_descendants(child))
+                    return descendants
+                
+                all_descendant_ids = get_descendants(parent_tag_obj)
+                studies = studies.filter(tags__id__in=all_descendant_ids)
+                
+            except Tag.DoesNotExist:
+                studies = studies.none()
             
         if author_filter:
             studies = studies.filter(authors__name=author_filter)
 
-        all_studies_flags = studies.values_list('flags', flat=True)
+        studies = studies.distinct()
+        all_studies_data = studies.values_list('id', 'flags')
         
         total_reviewed = 0
         total_pending = 0
         total_flagged = 0
         total_missing_data = 0
         
-        for flags in all_studies_flags:
-            if flags: 
-                if "Reviewed" in flags:
-                    total_reviewed += 1
-                if "Pending Review" in flags:
-                    total_pending += 1
+        for _, flags in all_studies_data:
+            is_reviewed = False
+            if flags and "Reviewed" in flags:
+                total_reviewed += 1
+                is_reviewed = True
+
+            if flags:
                 if "Flagged" in flags:
                     total_flagged += 1
                 if "Missing Data" in flags:
                     total_missing_data += 1
+
+            if not is_reviewed:
+                total_pending += 1
 
         tag_stats = studies.exclude(tags__isnull=True).values(
             'tags__name', 'tags__parent_tag__name', 'year'
