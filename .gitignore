@@ -7,3 +7,4 @@
 /backend/sysrev/__pycache__
 *.pyc
 *.pyc
+.env
