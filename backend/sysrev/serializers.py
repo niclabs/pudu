@@ -1,8 +1,20 @@
+"""
+Django-REST Serializers for the application.
+
+Serializers convert complex Django data types (such as QuerySets set or Model instances)
+into native Python data types that can then be easily rendered as JSON, XML, etc.
+They also handle validation of data received from the frontend.
+
+For more information on this file, see:
+https://www.django-rest-framework.org/api-guide/serializers/
+"""
+
 from rest_framework import serializers
 from .models import Tag, Study, Author, Review
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 
+# Simple serializers for reviews data
 class ReviewSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')  
 
@@ -10,7 +22,27 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ['id', 'name', 'start_date', 'end_date', 'status', 'owner']  
 
+# Serializer for tags, with a recursive field to display child tags
+class TagSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
 
+    class Meta:
+        model = Tag
+        fields = ['id', 'name', 'description', 'parent_tag', 'children', 'review']
+
+    #recursively obtains children for each tag
+    def get_children(self, obj):
+        if obj.child_tags.exists():
+            return TagSerializer(obj.child_tags.all(), many=True).data
+        return []
+
+# Simple Serializer for authors data
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+        fields = ['id', 'name']    
+
+# Serializer for user registration form, including password validation and confirmation
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(write_only=True, required=True)
@@ -30,20 +62,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
 
-class TagSerializer(serializers.ModelSerializer):
-    children = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Tag
-        fields = ['id', 'name', 'description', 'parent_tag', 'children', 'review']
-
-#recursively obtains children for each tag
-    def get_children(self, obj):
-        if obj.child_tags.exists():
-            return TagSerializer(obj.child_tags.all(), many=True).data
-        return []
-    
-    
+# Serializer for studies, with nested serializers for tags and authors
 class StudySerializer(serializers.ModelSerializer):
     #write only fields for tags and authors using id arrays
     tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, write_only=True)
@@ -67,18 +86,13 @@ class StudySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Invalid flag(s): {', '.join(invalid)}")
         return value
 
-class AuthorSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Author
-        fields = ['id', 'name']
-
-
+# Another tag serializer that only returns id and name, used for a quick display of tags in the study list view
 class SimpleTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ['id', 'name', 'review']
 
+# Another study serializer that only returns the necessary info on the study view, used for a quick display
 class SimpleStudySerializer(serializers.ModelSerializer):
     tags_display = SimpleTagSerializer(source='tags', many=True, read_only=True)
     authors_display = serializers.StringRelatedField(source='authors', many=True, read_only=True)

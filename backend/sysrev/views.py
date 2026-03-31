@@ -1,3 +1,13 @@
+"""
+Django-REST Views.
+
+This file contains all the logic for the API endpoints (URLs) consumed by the Frontend (React).
+It also handles HTTP requests (GET, POST, PUT, PATCH, DELETE).
+
+For more information on this file, see
+https://www.django-rest-framework.org/api-guide/views/
+"""
+
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -11,9 +21,7 @@ from collections import Counter
 import csv
 from django.http import HttpResponse
 
-import csv
-from django.http import HttpResponse
-
+# Used on study view for exporting
 class ReviewCSVExportView(APIView):
     def get(self, request):
         review_id = request.query_params.get('review_id')
@@ -47,7 +55,7 @@ class ReviewCSVExportView(APIView):
 
         return response
 
-
+# Used on registration page for creating new users
 class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
@@ -416,7 +424,7 @@ def flag_study_counts(request):
 
     return Response(counter)
 
-
+# Used on the review view for exporting the whole review data in JSON format
 class ReviewExportView(APIView):
     def get(self, request):
         review_id = request.query_params.get('review_id')
@@ -458,6 +466,8 @@ class ReviewExportView(APIView):
             "studies": study_list
         })
 
+# Used on the review view when importing the whole review data in JSON format
+# Clears all existing review data and replaces with imported data
 class ReviewImportView(APIView):
     def post(self, request):
         review_id = request.query_params.get('review_id')
@@ -546,6 +556,11 @@ class ReviewImportView(APIView):
             return Response({'error': f'Import failed: {str(e)}'}, status=400)
         
 class DashboardStatsView(APIView):
+    """
+    API view for retrieving statistics and available filter options for the dashboard.
+    Get all studies for the review, then apply filters step by step to set up for the graphs stats
+    """
+
     def get(self, request):
         review_id = request.query_params.get('review_id')
         studies = Study.objects.filter(review_id=review_id)

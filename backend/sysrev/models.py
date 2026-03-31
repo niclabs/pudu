@@ -1,3 +1,14 @@
+"""
+Django Database Models definitions.
+
+This module defines the database tables and their relationships.
+It also includes the logic for sending password recovery emails.
+
+For more information on this file, see:
+https://docs.djangoproject.com/en/6.0/topics/db/models/
+"""
+
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now
@@ -9,6 +20,8 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 
+
+# Represents a systematic review, which can contain multiple studies, tags, and authors
 class Review(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
@@ -16,7 +29,7 @@ class Review(models.Model):
     end_date = models.DateTimeField(blank=True, null=True)
     status = models.BooleanField(default=False)  # True for completed, False for ongoing
 
-
+# Represents an individual study within a systematic review, with its metadata and relationships to tags and authors
 class Study(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255)
@@ -36,6 +49,7 @@ class Study(models.Model):
     def __str__(self):
         return self.title
 
+# Represents an author of a study
 class Author(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
@@ -49,6 +63,8 @@ class Author(models.Model):
     def __str__(self):
         return self.name
 
+# Represents a tag that can be applied to studies
+# A tag can contain child tags, allowing for a hierarchical structure (parent-child) using a self-referential foreign key
 class Tag(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
@@ -76,7 +92,7 @@ class Tag(models.Model):
     
 
 
-
+# Password recovery logic
 @receiver(reset_password_token_created)
 def password_reset_token_created(reset_password_token, *args, **kwargs):
     sitelink = "http://localhost:5173/"
