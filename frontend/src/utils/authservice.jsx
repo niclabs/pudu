@@ -1,15 +1,25 @@
+/** * AuthService  
+ * Manages authentication tokens and making authenticated requests.
+ *
+ * Checks authentication status, makes API requests that automatically handle token refresh when the access token expires.
+ * It uses localStorage to persist tokens across sessions and provides functions to set, get, and clear tokens.
+ *
+ * @module AuthService
+ */
+
 const ACCESS_TOKEN_KEY = "app.auth.access";
 const REFRESH_TOKEN_KEY = "app.auth.refresh";
+// Base URL for API requests (this could be an environment variable in a future)
 const BASE_URL = "http://127.0.0.1:8000"; 
 
 export const AuthService = {
-  // Token Storage
+  // Token Storage (Token Getters and Setters)
   getAccessToken: () => localStorage.getItem(ACCESS_TOKEN_KEY),
   setAccessToken: (token) => localStorage.setItem(ACCESS_TOKEN_KEY, token),
   getRefreshToken: () => localStorage.getItem(REFRESH_TOKEN_KEY),
   setRefreshToken: (token) => localStorage.setItem(REFRESH_TOKEN_KEY, token),
   
-  // Token Removal
+  // Token Removal at logout
   clearTokens: () => {
     //console.warn("Limpiando tokens");
     localStorage.removeItem(ACCESS_TOKEN_KEY);
@@ -20,6 +30,12 @@ export const AuthService = {
   isAuthenticated: () => !!localStorage.getItem(ACCESS_TOKEN_KEY),
 
   // Token Refresh
+  /**
+   * Makes an HTTP request automatically injecting the authorization token.
+   * If the request fails due to an expired token (Error 401), it attempts to renew the access token 
+   * using the refresh token and retries the original request.
+   * @async
+   */
   fetchWithAuth: async (url, options = {}) => {
     let token = localStorage.getItem(ACCESS_TOKEN_KEY);
     
@@ -32,12 +48,11 @@ export const AuthService = {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    // Peticion original
+    // Original request
     let response = await fetch(url, { ...options, headers });
 
-    // falla por token expirado
+    // Fail due to expired token
     if (response.status === 401) {
-      console.log("Token expirado (401). Intentando refrescar...");
       const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
       
       if (!refreshToken) {
@@ -48,6 +63,7 @@ export const AuthService = {
       }
 
       try {
+        // Request to Django Simple JWT 
         const refreshResponse = await fetch(`${BASE_URL}/api/token/refresh/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -56,7 +72,6 @@ export const AuthService = {
 
         if (refreshResponse.ok) {
           const data = await refreshResponse.json();
-          console.log("Respuesta de refresco exitosa:", data);
 
           if (data.access) {
             AuthService.setAccessToken(data.access);

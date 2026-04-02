@@ -1,3 +1,13 @@
+/** * App.jsx  
+ * Main application component that sets up routing for the Pudu frontend.
+ *
+ * This file defines the routes for the application, 
+ * including both public and protected routes
+ * The navbar is included at the top of the structure, 
+ * and the main content area is defined to display the appropriate view based on the route.
+ * @component
+ */
+
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import TagView from "./pages/tag_management/TagView";
