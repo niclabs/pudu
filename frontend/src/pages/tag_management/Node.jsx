@@ -1,3 +1,14 @@
+/**
+ * Node.jsx  
+ * Component for rendering a single node in the tag management tree.
+ *
+ * This component is used within the TagView to display each tag as a node in a tree structure.
+ * It handles the display of the node's name, its open/closed state, and selection state.
+ * @component
+ * @returns {JSX.Element} The rendered node.
+ */
+
+
 import { AiFillCaretRight, AiFillCaretDown } from "react-icons/ai";
 
 const Node = ({ node, style, dragHandle, selectedNode, setSelectedNode }) => {

@@ -1,3 +1,18 @@
+/**
+ * TagView.jsx 
+ * Component for rendering the tag management view.
+ * 
+ * main functionality:
+ * - Displays a tree of tags on the left side, allowing users to create, edit, delete, and rearrange tags
+ * - Shows details of the selected tag and a count of associated studies in the top right panel
+ * - Renders a table of studies associated with the selected tag in the bottom right panel
+ *
+ * @component
+ * @returns {JSX.Element} The rendered tag management view.
+ */
+
+
+
 import { AuthService } from "../../utils/authservice";
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
