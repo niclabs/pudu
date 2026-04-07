@@ -1,14 +1,18 @@
 /**
  * TagView.jsx 
- * Component for rendering the tag management view.
+ * @file Component for rendering the tag management view. Used to display the "Tag Management" page on the navbar of the application.
  * 
  * main functionality:
  * - Displays a tree of tags on the left side, allowing users to create, edit, delete, and rearrange tags
  * - Shows details of the selected tag and a count of associated studies in the top right panel
  * - Renders a table of studies associated with the selected tag in the bottom right panel
- *
+ * 
+ * @requires utils/authservice  for making authenticated requests to the backend
+ * @requires pages/tag_management/Node   custom component for rendering nodes in the tag tree
+ * @requires components/custom/dataTable/data-table  the custom data table used to display studies
+ * 
  * @component
- * @returns {JSX.Element} The rendered tag management view.
+ * @returns {JSX.Element} The rendered "Tag Management" view.
  */
 
 
@@ -83,7 +87,6 @@ function TagView() {
   };
 
   const moveTag = async (dragMove) => {
-    console.log("Moving tag with data:", dragMove);
     const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -132,7 +135,6 @@ function TagView() {
       tags_list: study.tags_display.map((tag) => tag.name),
     }));
     setTableData(refineTable);
-    console.log("fetched table data");
   };
 
   const fetchTagCount = async () => {
@@ -171,7 +173,6 @@ function TagView() {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
-    console.log("fetched study detail data", data);
   };
 
   const deleteStudyData = async (id) => {
@@ -308,7 +309,6 @@ function TagView() {
     : tableData;
 
   useEffect(() => {
-    console.log("Current Review ", reviewId);
     fetchTreeData();
     fetchStudyData();
     fetchTagCount();

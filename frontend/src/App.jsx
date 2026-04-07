@@ -1,11 +1,15 @@
-/** * App.jsx  
- * Main application component that sets up routing for the Pudu frontend.
+/** * App 
+ * @description Main application component that sets up routing for the Pudu frontend.
  *
  * This file defines the routes for the application, 
  * including both public and protected routes
  * The navbar is included at the top of the structure, 
  * and the main content area is defined to display the appropriate view based on the route.
+ * 
+ * @requires utils/protectedroute.jsx     guards certain routes based on authentication
+ * @requires components/custom/navbar.jsx   the navigation bar component displayed on all pages
  * @component
+ * @returns {JSX.Element} 
  */
 
 import React from "react";

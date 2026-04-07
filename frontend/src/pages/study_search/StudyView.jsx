@@ -1,3 +1,16 @@
+/** StudyView.jsx
+ * @description This file displays the main interface for managing studies within a review. Used on the "Studies" page on the navbar of the application.
+ * Main functions include:
+ * - Fetching and displaying study data in a table format (using the `<DataTable />` custom component)
+ * - Filtering studies based on their review status (Reviewed, Pending Review, Missing Data, Flagged)
+ * - Importing studies from a JSON file and exporting studies to JSON or CSV formats
+ * 
+ * @requires components/custom/dataTable/data-table the custom data table used to display studies
+ * @requires utils/authservice for making authenticated requests to the backend
+ * @returns {JSX.Element} The rendered "Studies" view.
+ */
+
+
 import { AuthService } from "../../utils/authservice";
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/custom/dataTable/data-table";
@@ -51,7 +64,6 @@ function StudyView() {
       tags: study.tags_display.map((tag) => tag.name).join(", "),
     }));
     setTableData(refineTable);
-    console.log("fetched table data");
   };
 
   const deleteStudyData = async (id) => {
@@ -97,11 +109,9 @@ function StudyView() {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
-    console.log("fetched study detail data", data);
   };
 
   useEffect(() => {
-    console.log("Currently on review ", reviewId);
     fetchStudyData();
     fetchFlagCount();
     if ((studyOpen || deleteOpen) && selectedStudy) {
@@ -113,7 +123,6 @@ function StudyView() {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/flags/count/?review_id=${reviewId}`);
     const data = await response.json();
     setFlagCount(data);
-    console.log(data);
   };
 
   const handleImportSubmit = async () => {
@@ -125,7 +134,6 @@ function StudyView() {
     try {
       const fileText = await importFile.text(); // Read the file as text
       const jsonData = JSON.parse(fileText); // Parse JSON content
-      console.log("Imported JSON Data:", jsonData);
 
       const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/import/?review_id=${reviewId}`, {
         method: "POST",
@@ -136,9 +144,6 @@ function StudyView() {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
-      const result = await response.json();
-      console.log("Import result:", result);
     } catch (error) {
       console.error("Failed to read, parse, or submit the file:", error);
     }

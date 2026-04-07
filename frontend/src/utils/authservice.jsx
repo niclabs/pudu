@@ -1,5 +1,5 @@
 /** * AuthService  
- * Manages authentication tokens and making authenticated requests.
+ * @description Manages authentication tokens and making authenticated requests.
  *
  * Checks authentication status, makes API requests that automatically handle token refresh when the access token expires.
  * It uses localStorage to persist tokens across sessions and provides functions to set, get, and clear tokens.

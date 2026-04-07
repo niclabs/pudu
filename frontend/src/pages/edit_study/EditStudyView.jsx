@@ -1,3 +1,16 @@
+/** EditStudyView
+ * @description Wrapper View for the edition or creation of a study. 
+ * Used when the form for creating or editing a study is diplayed
+ * Main functions include:
+ * - Handling routes to determine if the view is in "Edit" or "Create" mode based on the "studyid" in the URL parameters
+ * - Fetching and verifying the existence of a PDF file associated with an existing study
+ * 
+ * @requires utils/authservice for making authenticated requests to the backend
+ * @requires pages/edit_study/studyForm the form component used for creating or editing a study
+ * @component
+ * @returns {JSX.Element} The rendered "Edit Study" view 
+*/
+
 "use client";
 import { AuthService } from "../../utils/authservice";
 import React, { useEffect, useState } from "react";
@@ -7,8 +20,6 @@ import StudyForm from "./studyForm";
 function EditStudyView() {
   const params = useParams();
   const [fileUrl, setFileUrl] = useState("");
-  //const fileUrl = ""
-
   const reviewId = sessionStorage.getItem('review_id');
 
   const fetchPDFPath = async (id) => {

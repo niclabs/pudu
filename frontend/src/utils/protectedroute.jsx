@@ -1,5 +1,5 @@
-/**
- * Wrapper component that protects private routes (used in App.jsx).
+/** ProtectedRoute
+ * @description Wrapper component that protects private routes (used in App.jsx).
  * It verifies if the current user is authenticated by checking the existence
  * of an access token. If the user is authenticated, loads the protected content.
  * If not, redirects to the login page.

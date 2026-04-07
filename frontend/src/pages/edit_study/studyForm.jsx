@@ -1,3 +1,20 @@
+/** studyForm.jsx
+ * @file Form component for creating or editing a study. Used on the "Studies" page of the application.
+ * Main functionalities include:
+ * - Validating form data before submission to the backend using Zod and React Hook Form
+ * - Managing complex state for form data, modal windows, and dynamic options fetched from the server (authors and tags)
+ * - Handling relationships with tags (using a TreeSelect component) and authors (using a custom MultiSelect component)
+ * - Synchronizing form data with the backend API using AuthService for both fetching existing study details and saving changes (creating or updating)
+ *
+ * @requires utils/authservice for making authenticated requests to the backend
+ * @requires components/custom/multiselect for the authors selection
+ * @component
+ * @param {string|number} [props.studyid] if there's no id, form is set to "Create" mode"
+ * @returns {JSX.Element} the complete form inside a Card component.
+*/
+
+
+
 "use client";
 import { AuthService } from "../../utils/authservice";
 import { useEffect, useState } from "react";
@@ -107,7 +124,6 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       }
 
       const newAuthor = await response.json();
-      console.log("Added author:", newAuthor);
       setAddedAuthor("");
       await fetchAuthors();
       setAuthorOpen(false);
@@ -155,7 +171,6 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
-    console.log(data);
   };
 
   async function deleteAuthors() {
@@ -173,7 +188,6 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       }
 
       const data = await response.json();
-      console.log("Deleted authors:", data.deleted);
 
       await fetchAuthors();
       form.setValue("authors", []);
@@ -196,7 +210,6 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
     const url = studyid
       ? `http://127.0.0.1:8000/api/studies/${studyid}/?review_id=${reviewId}`
       : `http://127.0.0.1:8000/api/studies/?review_id=${reviewId}`;
-      console.log(studyid,method, url)
     const response = await AuthService.fetchWithAuth(url, {
       method,
       headers: { "Content-Type": "application/json" },
@@ -225,7 +238,6 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
 
   async function onSubmit(values) {
     try {
-      console.log("submitting: ", values);
       const result = await saveStudy(studyid, values);
   
       if (refreshPdf) {

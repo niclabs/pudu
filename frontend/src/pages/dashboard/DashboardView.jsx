@@ -1,9 +1,26 @@
+/** DashboardView.jsx
+ * @file This file displays the main interface for the stats, graphs, and charts of the dashboard. 
+ * Used on the "Dashboard" page on the navbar of the application
+ * Main functions include:
+ * - Fetching and displaying global statistics about the studies of the selected review (total, reviewed, pending, flagged/missing)
+ * - Displaying customizable chart and graphs using Highcharts to visualize trends, review progress, etc.
+ * - Delegate the filtering logic of the custom chart to the backend (DashboardStatsView() on views.py) to optimize performance
+ * 
+ * @requires utils/authservice for making authenticated requests to the backend
+ * @component
+ * @returns {JSX.Element} The rendered "Dashboard" view with the stats of the review and interactive graphs
+ * 
+ */
+
+
 import { useEffect, useState } from "react";
 import { AuthService } from "@/utils/authservice";
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileText, CheckCircle, CircleDashed, AlertTriangle } from "lucide-react";
+
+//Sub-component to display an statistics card in the dashboard.
 function StatCard({ title, value, icon, subtitle }) {
     return (
         <Card className="bg-violet-100">
