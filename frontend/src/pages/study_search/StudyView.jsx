@@ -1,5 +1,5 @@
 /** StudyView.jsx
- * @description This file displays the main interface for managing studies within a review. Used on the "Studies" page on the navbar of the application.
+ * @description This file displays the main interface for managing studies within a review. Used for the "Studies" page of the navbar of the application.
  * Main functions include:
  * - Fetching and displaying study data in a table format (using the `<DataTable />` custom component)
  * - Filtering studies based on their review status (Reviewed, Pending Review, Missing Data, Flagged)

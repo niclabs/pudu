@@ -1,3 +1,16 @@
+/** LoginForm
+ * @file Component view for the user authentication form. Used for the Login page
+ * Main functionalities:
+ * - Takes and submits username and password for authentication
+ * - Navigates to the "Review:..." page on success
+ * - Displays error messages on failure
+ * 
+ * @requires utils/authservice.jsx for making authenticated requests to the backend
+ * @component
+ * @returns {JSX.Element} The rendered login form component.
+ */
+
+
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -84,16 +97,16 @@ export function LoginForm() {
             </Button>
           </form>
           <div className="text-center text-sm">
-        Don&apos;t have an account?{" "}
-        <Link to="/register" className="underline underline-offset-4">
-          Sign up
-        </Link>
-        <br />
-        Forgot your password?{" "}
-        <Link to="/request/password_reset" className="underline underline-offset-4">
-          Reset it
-        </Link>
-      </div>
+            Don&apos;t have an account?{" "}
+            <Link to="/register" className="underline underline-offset-4">
+              Sign up
+            </Link>
+            <br />
+            Forgot your password?{" "}
+            <Link to="/request/password_reset" className="underline underline-offset-4">
+              Reset it
+            </Link>
+          </div>
         </Form>
       </CardContent>
     </Card>

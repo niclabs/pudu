@@ -1,13 +1,13 @@
 /** SysRevView.jsx
- * @file Main view for managing reviews and user landing page after login. Displays the "Reviews: ...." page on the navbar of the application
+ * @file Main view for managing reviews and user landing page after login. Displays the "Reviews: ...." page of the navbar of the application
  * Main funcionalities:
  * - Creating new reviews with default values and opening them for editing immediately, redirecting to the "Studies" page
  * - Displaying all reviews associated with the logged user in a card format
  * - Deleting and editing review details such as name, start/end dates, and status (Ongoing/Finished)
  * - Saves the context of the selected review in the sessionStorage for use across the application
- * @requires utils/authservice for making authenticated requests to the backend
+ * @requires utils/authservice.jsx for making authenticated requests to the backend
  * @component
- * @returns {JSX.Element} The rendered App component with routing and navigation.
+ * @returns {JSX.Element} The rendered "Reviews" view with the list of reviews and management options.
  */
 
 "use client"

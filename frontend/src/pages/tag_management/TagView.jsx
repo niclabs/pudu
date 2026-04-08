@@ -1,6 +1,6 @@
 /**
  * TagView.jsx 
- * @file Component for rendering the tag management view. Used to display the "Tag Management" page on the navbar of the application.
+ * @file Component for rendering the tag management view. Used to display the "Tag Management" page of the navbar of the application.
  * 
  * main functionality:
  * - Displays a tree of tags on the left side, allowing users to create, edit, delete, and rearrange tags

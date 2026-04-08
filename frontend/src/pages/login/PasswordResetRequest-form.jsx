@@ -1,3 +1,9 @@
+/** PasswordResetRequest-form.jsx
+ * @description Component handling the form to request a password reset email.
+ * Submits an API request to trigger the password reset email flow
+ * @component
+ * @returns {JSX.Element} The rendered password reset request form component
+ */
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -32,41 +38,41 @@ export function PasswordResetForm() {
 
   return (
     <>
-    <Toaster richColors  />
-    <Card className="max-w-md mx-auto m-4 bg-indigo-100 border-0">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Request Password Reset</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="email"
-              rules={{ required: "Email is required" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="you@example.com" type="email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="font-bold bg-violet-900 text-violet-50 hover:bg-violet-950 w-full">
-              Reset Password
-            </Button>
-          </form>
-          <div className="text-center text-sm">
-        Already have an account?{" "}
-        <Link to="/" className="underline underline-offset-4">
-          Log in
-        </Link>
-      </div>
-        </Form>
-      </CardContent>
-    </Card>
+      <Toaster richColors />
+      <Card className="max-w-md mx-auto m-4 bg-indigo-100 border-0">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Request Password Reset</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                rules={{ required: "Email is required" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="you@example.com" type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="font-bold bg-violet-900 text-violet-50 hover:bg-violet-950 w-full">
+                Reset Password
+              </Button>
+            </form>
+            <div className="text-center text-sm">
+              Already have an account?{" "}
+              <Link to="/" className="underline underline-offset-4">
+                Log in
+              </Link>
+            </div>
+          </Form>
+        </CardContent>
+      </Card>
     </>
   );
 }
