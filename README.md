@@ -10,25 +10,55 @@ Store study metadata, categorize using a heriarchical tag system, and retrieve r
 - **Node.js**  
 - **npm**  
 
-## Instalation and usage: 
+Before starting, ensure the requirements are correctly installed in your terminal:
+```sh
+python --version  # or python3 --version
+node --version
+npm --version
+```
 
-### Backend (Django)  
+## Installation and usage: 
+First, copy the repository and navigate to it with 
+```sh
+git clone https://github.com/niclabs/pudu.git
+cd pudu
+```
+Create and activate a virtual environment, then install the required dependencies.
+
+**Windows:**
 ```sh
 python -m venv venv
 .\venv\Scripts\activate
-pip install -r requirements.txt  # Update using: pip freeze > requirements.txt
-
-While in folder \pudu\backend:
-py manage.py makemigrations
-py manage.py migrate
-py manage.py runserver #Run backend
+pip install -r requirements.txt
 ```
 
-### Frontend (React-Vite)  
+**macOS and Linux:**
 ```sh
-While in folder \pudu\frontend:
-npm install #Install dependencies
-npm run dev #Run Frontend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+If you see errors like "case builtin used outside of a switch block", you are probably using the fish shell. Use `activate.fish` instead of `activate`.
+
+Now, you can start the Django server and the React application.
+
+### Backend (Django)
+Open a new terminal on the pudu directory, activate the virtual environment and paste the following commands.
+
+```sh
+cd backend
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver
+```
+
+### Frontend (React-Vite)
+Open a new terminal on the pudu directory, activate the virtual environment, and paste the following commands.
+
+```sh
+cd frontend
+npm install
+npm run dev
 ```
 
 Este proyecto es parte del trabajo de memoria de Andrés Basáez. Guiado por las profesoras Ivana Bachmann y Jocelyn Simmonds. El diseño se basa en una herramienta de revisión sistematica de la profesora Bachmann: [systematic-review-tool](https://github.com/tami-di/systematic-review-tool/tree/tami-updates)

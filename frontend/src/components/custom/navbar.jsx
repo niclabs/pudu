@@ -1,3 +1,11 @@
+/** 
+ * @description Global navigation bar of the application
+ * Here is the redirection to the main pages, logo, and the user menu with logout display
+ * @requires utils/authservice
+ * @component
+ * @returns {JSX.Element} The top navigation bar with logo
+ */
+
 "use client"
 
 import { useEffect, useState } from "react"

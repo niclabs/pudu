@@ -1,3 +1,11 @@
+/**
+ * @file This file contains the logic for the Data table displayed on the main pages ("Studies" and "Tag Management") 
+ * that shows the list of studies and their metadata. It also includes the advanced search functionality and the sortable headers
+ * @component
+ * @returns {JSX.Element} The rendered table component with pagination and search controls.
+ */
+
+
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
