@@ -15,7 +15,7 @@ This project is part of Andrés Basáez's thesis work. Guided by professors Ivan
 
 Before starting, ensure the requirements are correctly installed in your terminal:
 ```sh
-python --version  # or python3 --version
+python --version  
 node --version
 npm --version
 ```
@@ -41,7 +41,8 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
-If you see errors like "case builtin used outside of a switch block", you are probably using the fish shell. Use `activate.fish` instead of `activate`.
+> [!NOTE]
+> If you see errors like "case builtin used outside of a switch block", you are probably using the fish shell. Use `activate.fish` instead of `activate`.
 
 Now, you can start the Django server and the React application.
 
