@@ -1,4 +1,22 @@
+/** studyForm.jsx
+ * @file Form component for creating or editing a study. Used on the "Studies" page of the application.
+ * Main functionalities include:
+ * - Validating form data before submission to the backend using Zod and React Hook Form
+ * - Managing complex state for form data, modal windows, and dynamic options fetched from the server (authors and tags)
+ * - Handling relationships with tags (using a TreeSelect component) and authors (using a custom MultiSelect component)
+ * - Synchronizing form data with the backend API using AuthService for both fetching existing study details and saving changes (creating or updating)
+ *
+ * @requires utils/authservice for making authenticated requests to the backend
+ * @requires components/custom/multiselect for the authors selection
+ * @component
+ * @param {string|number} [props.studyid] if there's no id, form is set to "Create" mode"
+ * @returns {JSX.Element} the complete form inside a Card component.
+*/
+
+
+
 "use client";
+import { AuthService } from "../../utils/authservice";
 import { useEffect, useState } from "react";
 import { Toaster, toast } from 'sonner'
 import {
@@ -77,7 +95,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   const [tags, setTags] = useState(null);
   const flagslist = ["Reviewed", "Pending Review", "Missing Data", "Flagged"];
   const [addedAuthor, setAddedAuthor] = useState("");
-  const reviewId = localStorage.getItem('review_id');
+  const reviewId = sessionStorage.getItem('review_id');
   const navigate = useNavigate();
 
 
@@ -94,7 +112,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
 
   const addAuthor = async (authorName) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
+      const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: authorName }),
@@ -106,7 +124,6 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       }
 
       const newAuthor = await response.json();
-      console.log("Added author:", newAuthor);
       setAddedAuthor("");
       await fetchAuthors();
       setAuthorOpen(false);
@@ -128,7 +145,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   };
 
   const fetchTreeData = async () => {
-    const response = await fetch(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
     const data = await response.json();
     setTags(data);
   };
@@ -151,16 +168,15 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   });
 
   const fetchStudyDetailed = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
-    console.log(data);
   };
 
   async function deleteAuthors() {
     try {
       const authorIds = form.getValues("authors");
-      const response = await fetch(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
+      const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ authors: authorIds }),
@@ -172,7 +188,6 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       }
 
       const data = await response.json();
-      console.log("Deleted authors:", data.deleted);
 
       await fetchAuthors();
       form.setValue("authors", []);
@@ -195,8 +210,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
     const url = studyid
       ? `http://127.0.0.1:8000/api/studies/${studyid}/?review_id=${reviewId}`
       : `http://127.0.0.1:8000/api/studies/?review_id=${reviewId}`;
-      console.log(studyid,method, url)
-    const response = await fetch(url, {
+    const response = await AuthService.fetchWithAuth(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
@@ -212,7 +226,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   };
 
   const fetchAuthors = async () => {
-    const response = await fetch(`http://localhost:8000/api/authors/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/authors/?review_id=${reviewId}`);
     const data = await response.json();
     const authorsList = data.map((author) => ({
       value: String(author.id),
@@ -224,7 +238,6 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
 
   async function onSubmit(values) {
     try {
-      console.log("submitting: ", values);
       const result = await saveStudy(studyid, values);
   
       if (refreshPdf) {
@@ -561,7 +574,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                         }}
                         treeCheckable
                         treeCheckStrictly
-                        showCheckedStrategy={SHOW_CHILD}
+                        showCheckedStrategy={TreeSelect.SHOW_ALL}
                         placeholder="Select tags for this article"
                         style={{ width: "100%" }}
                       />

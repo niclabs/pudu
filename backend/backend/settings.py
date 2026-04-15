@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -22,16 +27,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x^a%0(f49@u3g@6i@hh0+#@uld_@tnj@1e4tk91tb*-f&xmbss'
+SECRET_KEY = os.getenv('SECRET_KEY', 'your_default_secret_key_here')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = []
 
 
 # Application definition
 
+# https://docs.djangoproject.com/en/6.0/ref/applications/
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,10 +48,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'knox',
+    'django_rest_passwordreset',
     'corsheaders',
     'sysrev',
 ]
 
+# Authentication backends
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -58,16 +68,25 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
+AUTHENTICATION_BACKENDS = [
+    # 'users.authback.EmailBackend',
+    "django.contrib.auth.backends.ModelBackend", 
+]
+
+# CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "http://localhost:5174"
 ]
 
 ROOT_URLCONF = 'backend.urls'
 
+# Templates settings
+# https://docs.djangoproject.com/es/3.1//topics/templates/
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -113,6 +132,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# Django REST Framework and JWT settings
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/getting_started.html
+# https://www.django-rest-framework.org/api-guide/authentication/
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -120,9 +142,14 @@ REST_FRAMEWORK = {
     )
 }
 
+# JWT settings
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),  # <-- esto es pesimo, implementar un sistema de refresco de tokens para no usar tokens de acceso tan largos
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),  
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 # Internationalization
 LANGUAGE_CODE = 'en-us'
@@ -144,6 +171,13 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-
-
+# Email settings for password reset functionality
+# https://docs.djangoproject.com/en/6.0/topics/email/#smtp-backend
+# SECURITY WARNING: keep the secret key used in production secret!
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_USER', 'your_email@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD', 'your_password_here')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'CBI ANALYTICS <your_email@gmail.com>')

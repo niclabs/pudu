@@ -1,3 +1,17 @@
+/** StudyView.jsx
+ * @description This file displays the main interface for managing studies within a review. Used for the "Studies" page of the navbar of the application.
+ * Main functions include:
+ * - Fetching and displaying study data in a table format (using the `<DataTable />` custom component)
+ * - Filtering studies based on their review status (Reviewed, Pending Review, Missing Data, Flagged)
+ * - Importing studies from a JSON file and exporting studies to JSON or CSV formats
+ * 
+ * @requires components/custom/dataTable/data-table the custom data table used to display studies
+ * @requires utils/authservice for making authenticated requests to the backend
+ * @returns {JSX.Element} The rendered "Studies" view.
+ */
+
+
+import { AuthService } from "../../utils/authservice";
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/custom/dataTable/data-table";
 import { columns } from "@/components/custom/dataTable/columns";
@@ -36,10 +50,10 @@ function StudyView() {
   const [flagCount, setFlagCount] = useState([]);
   const [selectedStudyDetail, setSelectedStudyDetail] = useState(null);
 
-  const reviewId = localStorage.getItem('review_id');
+  const reviewId = sessionStorage.getItem('review_id');
 
   const fetchStudyData = async () => {
-    const response = await fetch(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
     const data = await response.json();
     const refineTable = data.map((study) => ({
       id: study.id,
@@ -50,11 +64,10 @@ function StudyView() {
       tags: study.tags_display.map((tag) => tag.name).join(", "),
     }));
     setTableData(refineTable);
-    console.log("fetched table data");
   };
 
   const deleteStudyData = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`, {
       method: "DELETE",
     });
     if (response.ok) {
@@ -93,26 +106,23 @@ function StudyView() {
   };
 
   const fetchStudyDetailed = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
-    console.log("fetched study detail data", data);
   };
 
   useEffect(() => {
-    console.log("Currently on review ",reviewId);
     fetchStudyData();
     fetchFlagCount();
-    if ((studyOpen || deleteOpen ) && selectedStudy) {
+    if ((studyOpen || deleteOpen) && selectedStudy) {
       fetchStudyDetailed(selectedStudy);
     }
   }, [studyOpen, selectedStudy]);
 
   const fetchFlagCount = async () => {
-    const response = await fetch(`http://localhost:8000/api/flags/count/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/flags/count/?review_id=${reviewId}`);
     const data = await response.json();
     setFlagCount(data);
-    console.log(data);
   };
 
   const handleImportSubmit = async () => {
@@ -124,9 +134,8 @@ function StudyView() {
     try {
       const fileText = await importFile.text(); // Read the file as text
       const jsonData = JSON.parse(fileText); // Parse JSON content
-      console.log("Imported JSON Data:", jsonData);
 
-      const response = await fetch(`http://localhost:8000/api/import/?review_id=${reviewId}`, {
+      const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/import/?review_id=${reviewId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(jsonData),
@@ -135,9 +144,6 @@ function StudyView() {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
-      const result = await response.json();
-      console.log("Import result:", result);
     } catch (error) {
       console.error("Failed to read, parse, or submit the file:", error);
     }
@@ -150,7 +156,7 @@ function StudyView() {
   };
 
   const handleExportJSON = async () => {
-    const response = await fetch(`http://localhost:8000/api/export/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export/?review_id=${reviewId}`);
 
     const data = await response.json();
     const json = JSON.stringify(data);
@@ -160,7 +166,8 @@ function StudyView() {
     const link = document.createElement("a");
 
     link.href = href;
-    link.download = "review_export" + ".json"; //remember to add review name when it exists!
+    const reviewName = (sessionStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
+    link.download = `${reviewName}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -169,20 +176,20 @@ function StudyView() {
   };
 
   const handleExportCSV = async () => {
-    const response = await fetch(`http://localhost:8000/api/export_csv/?review_id=${reviewId}`);
-  
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export_csv/?review_id=${reviewId}`);
+
     if (!response.ok) {
       console.error("Export failed:", response.statusText);
       return;
     }
-  
+
     const blob = await response.blob();
     const href = URL.createObjectURL(blob);
     const link = document.createElement("a");
-  
+
     link.href = href;
-    link.download = `review_export_${reviewId}.csv`; // Optional: add review name if available
-    document.body.appendChild(link);
+    const reviewName = (sessionStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
+    link.download = `${reviewName}.csv`;
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(href);
@@ -190,13 +197,13 @@ function StudyView() {
   };
 
   return (
-    <div className="flex flex-col w-full h-full p-4 bg-violet-50 min-h-screen">
+    <div className="flex flex-col w-full p-4 bg-violet-50 h-[calc(100vh-64px)]">
       <h1 className="text-4xl font-bold">Studies</h1>
       <p className=" text-gray-600 mb-6">Browse and manage studies in your review.</p>
       <div className="flex justify-between items-start">
         <div className="flex flex-wrap gap-4">
           <Button
-            className="bg-emerald-400 text-violet-50 font-bold text-xl p-6 hover:bg-emerald-500"
+            className="bg-emerald-400 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-emerald-500"
             onClick={() =>
               setFilterBy(filterBy === "Reviewed" ? null : "Reviewed")
             }
@@ -205,7 +212,7 @@ function StudyView() {
             {flagCount["Reviewed"] || 0}
           </Button>
           <Button
-            className="bg-cyan-500 text-violet-50 font-bold text-xl p-6 hover:bg-cyan-600"
+            className="bg-cyan-500 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-cyan-600"
             onClick={() =>
               setFilterBy(
                 filterBy === "Pending Review" ? null : "Pending Review",
@@ -216,7 +223,7 @@ function StudyView() {
             {flagCount["Pending Review"] || 0}
           </Button>
           <Button
-            className="bg-red-400 text-violet-50 font-bold text-xl p-6 hover:bg-red-500"
+            className="bg-red-400 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-red-500"
             onClick={() =>
               setFilterBy(filterBy === "Missing Data" ? null : "Missing Data")
             }
@@ -225,7 +232,7 @@ function StudyView() {
             {flagCount["Missing Data"] || 0}
           </Button>
           <Button
-            className="bg-orange-400 text-violet-50 font-bold text-xl p-6 hover:bg-orange-500"
+            className="bg-orange-400 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-orange-500"
             onClick={() =>
               setFilterBy(filterBy === "Flagged" ? null : "Flagged")
             }
@@ -236,14 +243,14 @@ function StudyView() {
 
         <div className="flex flex-wrap gap-4">
           <Link to={`/editstudy/`}>
-            <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
+            <Button className="bg-violet-900 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-violet-950">
               <BookText className="mr-2" /> Create Study
             </Button>
           </Link>
 
           <Dialog open={importOpen} onOpenChange={setImportOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-violet-900 text-violet-50 font-bold text-xl p-6 hover:bg-violet-950">
+              <Button className="bg-violet-900 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-violet-950">
                 <Upload className="mr-2" /> Import Studies
               </Button>
             </DialogTrigger>
@@ -293,7 +300,7 @@ function StudyView() {
 
           <Dialog open={exportOpen} onOpenChange={setExportOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-violet-900 text-violet-50 text-xl font-bold p-6 hover:bg-violet-950">
+              <Button className="bg-violet-900 text-violet-50 text-sm font-bold px-3 py-2 hover:bg-violet-950">
                 <Download className="mr-2" /> Export Studies
               </Button>
             </DialogTrigger>
@@ -329,82 +336,82 @@ function StudyView() {
             </DialogContent>
           </Dialog>
           <Dialog open={studyOpen} onOpenChange={setStudyOpen}>
-  <DialogContent className="bg-indigo-100 border-violet-200 max-w-3xl !p-8">
-    <DialogHeader className="space-y-3">
-      <DialogTitle className="font-bold">Study Metadata</DialogTitle>
-      <DialogDescription className="text-gray-600">
-        Detailed metadata for the selected study.
-      </DialogDescription>
-    </DialogHeader>
+            <DialogContent className="bg-indigo-100 border-violet-200 max-w-3xl !p-8">
+              <DialogHeader className="space-y-3">
+                <DialogTitle className="font-bold">Study Metadata</DialogTitle>
+                <DialogDescription className="text-gray-600">
+                  Detailed metadata for the selected study.
+                </DialogDescription>
+              </DialogHeader>
 
-    <div className="space-y-4 py-4 h-[calc(80vh-220px)] overflow-y-auto pr-2">
-      {selectedStudyDetail &&
-        Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
-          <div key={key} className="mb-2">
-            <span className="font-semibold">{labelMap[key] || key}:</span>{" "}
-            {key === "url" ? (
-              <a
-                href={value}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline"
-              >
-                {value}
-              </a>
-            ) : (
-              <span>{String(value)}</span>
-            )}
-          </div>
-        ))}
-    </div>
+              <div className="space-y-4 py-4 h-[calc(80vh-220px)] overflow-y-auto pr-2">
+                {selectedStudyDetail &&
+                  Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
+                    <div key={key} className="mb-2">
+                      <span className="font-semibold">{labelMap[key] || key}:</span>{" "}
+                      {key === "url" ? (
+                        <a
+                          href={value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline"
+                        >
+                          {value}
+                        </a>
+                      ) : (
+                        <span>{String(value)}</span>
+                      )}
+                    </div>
+                  ))}
+              </div>
 
-    <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-      <Button
-        variant="outline"
-        onClick={() => setStudyOpen(false)}
-        className="text-violet-700 hover:bg-violet-100"
-      >
-        Close
-      </Button>
-      <Link to={`/editstudy/${selectedStudyDetail?.id}/`}>
-        <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950 font-bold">
-          Edit Study
-        </Button>
-      </Link>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
-          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-          <DialogContent className="  bg-violet-50  ">
-            <DialogHeader>
-              <DialogTitle>Deleting Study</DialogTitle>
-            </DialogHeader>
-                <b>{selectedStudyDetail?.title}</b>
-                This study is being deleted. This action cannot be undone.
-                <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+              <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
                 <Button
-                variant="outline"
-                onClick={() => setDeleteOpen(false)}
-                className="border-violet-700 text-violet-700 hover:bg-violet-100"
-              >
-                Cancel
-              </Button>
+                  variant="outline"
+                  onClick={() => setStudyOpen(false)}
+                  className="text-violet-700 hover:bg-violet-100"
+                >
+                  Close
+                </Button>
+                <Link to={`/editstudy/${selectedStudyDetail?.id}/`}>
+                  <Button className="bg-violet-900 text-violet-50 hover:bg-violet-950 font-bold">
+                    Edit Study
+                  </Button>
+                </Link>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <DialogContent className="  bg-violet-50  ">
+              <DialogHeader>
+                <DialogTitle>Deleting Study</DialogTitle>
+              </DialogHeader>
+              <b>{selectedStudyDetail?.title}</b>
+              This study is being deleted. This action cannot be undone.
+              <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteOpen(false)}
+                  className="border-violet-700 text-violet-700 hover:bg-violet-100"
+                >
+                  Cancel
+                </Button>
                 <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
                   onClick={() => deleteStudyData(selectedStudyDetail?.id)}>
                   Delete Study
                 </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       <div className="h-[calc(100vh-240px)] m-4 overflow-y-auto">
-      <DataTable
-        columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
-        data={tableData}
-        filterBy={filterBy}
-      />
-    </div>
+        <DataTable
+          columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
+          data={tableData}
+          filterBy={filterBy}
+        />
+      </div>
     </div>
   );
 }

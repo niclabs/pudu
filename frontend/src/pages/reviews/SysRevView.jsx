@@ -1,3 +1,15 @@
+/** SysRevView.jsx
+ * @file Main view for managing reviews and user landing page after login. Displays the "Reviews: ...." page of the navbar of the application
+ * Main funcionalities:
+ * - Creating new reviews with default values and opening them for editing immediately, redirecting to the "Studies" page
+ * - Displaying all reviews associated with the logged user in a card format
+ * - Deleting and editing review details such as name, start/end dates, and status (Ongoing/Finished)
+ * - Saves the context of the selected review in the sessionStorage for use across the application
+ * @requires utils/authservice.jsx for making authenticated requests to the backend
+ * @component
+ * @returns {JSX.Element} The rendered "Reviews" view with the list of reviews and management options.
+ */
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -17,6 +29,7 @@ import { Button } from "@/components/ui/button"
 import { BookText } from "lucide-react"
 import { AuthService } from '/src/utils/authservice.jsx';
 import { Toaster, toast } from 'sonner'
+import { useNavigate } from "react-router-dom";
 
 
 function SysRevView() {
@@ -28,24 +41,26 @@ function SysRevView() {
   const [editingReviewStartDate, setEditingReviewStartDate] = useState(null)
   const [editingReviewEndDate, setEditingReviewEndDate] = useState(null)
   const [editingReviewStatus, setEditingReviewStatus] = useState(false)
-
+  const navigate = useNavigate();
 
   const fetchSysRevData = async () => {
-    const token = AuthService.getAccessToken();
-    const response = await fetch("http://localhost:8000/api/reviews/", {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
+    // const token = AuthService.getAccessToken();
+    // const response = await fetch("http://localhost:8000/api/reviews/", {
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     "Authorization": `Bearer ${token}`,
+    //   },
+    // });
+    const response = await AuthService.fetchWithAuth("http://127.0.0.1:8000/api/reviews/", {
+      method: "GET"
     });
-  
+
     if (!response.ok) {
       console.error("Failed to fetch reviews:", response.statusText);
       return;
     }
-  
+
     const data = await response.json();
-    console.log(data);
     const formattedData = data.map((item) => ({
       id: item.id,
       title: item.name,
@@ -62,25 +77,25 @@ function SysRevView() {
       const reviewData = {
         name: "Untitled Review",
       };
-  
+
       const response = await fetch("http://localhost:8000/api/reviews/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, 
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(reviewData),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Error details:", errorData);
         throw new Error("Failed to create review");
       }
-  
+
       const newReview = await response.json();
       await fetchSysRevData();
-  
+
       // Set current review to open for editing
       setEditingReviewName(newReview.name || "");
       setEditingReviewStartDate(newReview.start_date?.split("T")[0] || null);
@@ -88,7 +103,7 @@ function SysRevView() {
       setEditingReviewStatus(newReview.status);
       setEditingReviewID(newReview.id);
       setReviewOpen(true);
-  
+
     } catch (error) {
       console.error("Error creating review:", error);
     }
@@ -143,8 +158,8 @@ function SysRevView() {
 
 
   const pickReview = (reviewID) => {
-    localStorage.setItem("review_id", reviewID)
-    localStorage.setItem("review_name", reviewData.find((review) => review.id === reviewID).title)
+    sessionStorage.setItem("review_id", reviewID)
+    sessionStorage.setItem("review_name", reviewData.find((review) => review.id === reviewID).title)
     window.dispatchEvent(new Event("reviewNameUpdated"))
     toast.success("Review Picked!")
 
@@ -203,7 +218,7 @@ function SysRevView() {
                     </div>
                     <Button
                       size="sm"
-                      className="bg-violet-800 text-white hover:bg-violet-900"
+                      className="bg-violet-600 text-white hover:bg-violet-900"
                       onClick={(e) => {
                         e.stopPropagation()
                         setReviewOpen(true)
@@ -215,6 +230,19 @@ function SysRevView() {
                       }}
                     >
                       Edit Details
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      className="bg-violet-800 text-white hover:bg-violet-900"
+                      onClick={(e) => {
+                        pickReview(review.id);
+                        e.stopPropagation();
+                        navigate(`/studies?review_id=${review.id}`);
+                      }}
+                    >
+                      Open Study
+
                     </Button>
                   </div>
                 </CardContent>
@@ -268,8 +296,8 @@ function SysRevView() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      
-                    <Badge
+
+                      <Badge
                         className={`text-sm font-medium ${!editingReviewStatus ? "bg-cyan-500 text-slate-100" : "text-black"}`}
                       >
                         Ongoing
@@ -283,14 +311,14 @@ function SysRevView() {
                       >
                         Finished
                       </Badge>
-                     
+
                     </div>
                   </div>
                 </div>
               </div>
 
               <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-              <Button
+                <Button
                   variant="destructive"
                   onClick={() => {
                     setReviewOpen(false)
@@ -316,7 +344,7 @@ function SysRevView() {
                 >
                   Update
                 </Button>
-                
+
               </DialogFooter>
             </DialogContent>
           </Dialog>

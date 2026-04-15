@@ -1,4 +1,18 @@
+/** EditStudyView
+ * @description Wrapper View for the edition or creation of a study. 
+ * Used when the form for creating or editing a study is diplayed
+ * Main functions include:
+ * - Handling routes to determine if the view is in "Edit" or "Create" mode based on the "studyid" in the URL parameters
+ * - Fetching and verifying the existence of a PDF file associated with an existing study
+ * 
+ * @requires utils/authservice for making authenticated requests to the backend
+ * @requires pages/edit_study/studyForm the form component used for creating or editing a study
+ * @component
+ * @returns {JSX.Element} The rendered "Edit Study" view 
+*/
+
 "use client";
+import { AuthService } from "../../utils/authservice";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import StudyForm from "./studyForm";
@@ -6,12 +20,10 @@ import StudyForm from "./studyForm";
 function EditStudyView() {
   const params = useParams();
   const [fileUrl, setFileUrl] = useState("");
-  //const fileUrl = ""
-
-  const reviewId = localStorage.getItem('review_id');
+  const reviewId = sessionStorage.getItem('review_id');
 
   const fetchPDFPath = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}?review_id=${reviewId}`);
     const data = await response.json();
 
     if (data.pathto_pdf) {
@@ -20,7 +32,7 @@ function EditStudyView() {
         : `/${data.pathto_pdf}`;
 
       try {
-        const headResponse = await fetch(filePath, { method: "HEAD" });
+        const headResponse = await AuthService.fetchWithAuth(filePath, { method: "HEAD" });
         const contentType = headResponse.headers.get("Content-Type");
         const contentLength = headResponse.headers.get("Content-Length");
 
@@ -47,7 +59,9 @@ function EditStudyView() {
   };
 
   useEffect(() => {
-    fetchPDFPath(params.studyid);
+    if (params.studyid) {
+          fetchPDFPath(params.studyid);
+        }
   }, [params.studyid]);
 
   function PdfEmbed({ url }) {
@@ -63,7 +77,7 @@ function EditStudyView() {
   }
 
   return (
-    <div className="flex flex-row h-screen bg-violet-50">
+    <div className="flex flex-row h-full bg-violet-50">
       <div className="flex-grow overflow-auto h-full">
         <StudyForm
           studyid={params.studyid}

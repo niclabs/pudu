@@ -1,18 +1,27 @@
+"""
+Django-REST Views.
+
+This file contains all the logic for the API endpoints (URLs) consumed by the Frontend (React).
+It also handles HTTP requests (GET, POST, PUT, PATCH, DELETE).
+
+For more information on this file, see
+https://www.django-rest-framework.org/api-guide/views/
+"""
+
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.decorators import api_view
 from .models import Tag, Study, Author, Review
-from .serializers import TagSerializer, StudySerializer, AuthorSerializer, ReviewSerializer, RegisterSerializer
+from .serializers import SimpleStudySerializer, TagSerializer, StudySerializer, AuthorSerializer, ReviewSerializer, RegisterSerializer
 from django.db.models import Count
+from django.db import transaction
 from collections import Counter
 import csv
 from django.http import HttpResponse
 
-import csv
-from django.http import HttpResponse
-
+# Used on study view for exporting
 class ReviewCSVExportView(APIView):
     def get(self, request):
         review_id = request.query_params.get('review_id')
@@ -46,7 +55,7 @@ class ReviewCSVExportView(APIView):
 
         return response
 
-
+# Used on registration page for creating new users
 class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
@@ -279,7 +288,7 @@ class StudiesView(APIView):
                 return Response({'error': 'Study not found'}, status=404)
         else:
             studies = Study.objects.filter(review_id=review_id)
-            serializer = StudySerializer(studies, many=True)
+            serializer = SimpleStudySerializer(studies, many=True)
             return Response(serializer.data)
 
     def delete(self, request, study_id=None):
@@ -415,7 +424,7 @@ def flag_study_counts(request):
 
     return Response(counter)
 
-
+# Used on the review view for exporting the whole review data in JSON format
 class ReviewExportView(APIView):
     def get(self, request):
         review_id = request.query_params.get('review_id')
@@ -457,6 +466,8 @@ class ReviewExportView(APIView):
             "studies": study_list
         })
 
+# Used on the review view when importing the whole review data in JSON format
+# Clears all existing review data and replaces with imported data
 class ReviewImportView(APIView):
     def post(self, request):
         review_id = request.query_params.get('review_id')
@@ -464,81 +475,203 @@ class ReviewImportView(APIView):
             return Response({'error': 'review_id is required'}, status=400)
 
         data = request.data
-        tag_tree_data = data.get("tag_tree", [])
-        authors_data = data.get("authors", [])
-        studies_data = data.get("studies", [])
+        try:
+            with transaction.atomic():
+                # Clear existing data
+                Study.objects.filter(review_id=review_id).delete()
+                Tag.objects.filter(review_id=review_id).delete()
+                Author.objects.filter(review_id=review_id).delete()
+                
+                tag_tree_data = data.get("tag_tree", [])
+                authors_data = data.get("authors", [])
+                studies_data = data.get("studies", [])
 
-        # Importing tag tree
-        def create_tag_from_tree(data, parent=None):
-            name = data["name"].strip()
-            description = (data.get("description") or "").strip()
+                def create_tag_from_tree(data, parent=None):
+                    name = data["name"].strip()
+                    description = (data.get("description") or "").strip()
+                    tag, _ = Tag.objects.get_or_create( 
+                        name=name,
+                        parent_tag=parent,
+                        review_id=review_id,
+                        defaults={"description": description}
+                    )
+                    for child in data.get("children", []):
+                        create_tag_from_tree(child, parent=tag)
 
-            tag, _ = Tag.objects.get_or_create(
-                name=name,
-                parent_tag=parent,
+                for tag_data in tag_tree_data:
+                    create_tag_from_tree(tag_data)
+
+            tag_map = {(tag.name, tag.parent_tag_id): tag for tag in Tag.objects.filter(review_id=review_id)}
+
+            author_map = {}
+            for author in authors_data:
+                name = author["name"].strip()
+                obj, _ = Author.objects.get_or_create(name=name, review_id=review_id)
+                author_map[name] = obj
+
+            for study_data in studies_data:
+                tag_names = study_data.pop("tags", [])
+                author_names = study_data.pop("authors", [])
+
+                title = study_data.get("title", "").strip()
+                year = study_data.get("year")
+
+                study_defaults = {
+                    key: study_data[key]
+                    for key in study_data
+                    if key not in ["tags", "authors"]
+                }
+                study_defaults["review_id"] = review_id
+
+                study, created = Study.objects.get_or_create(
+                title=title,
+                year=year,
                 review_id=review_id,
-                defaults={"description": description}
-            )
+                defaults=study_defaults
+                )
 
-            for child in data.get("children", []):
-                create_tag_from_tree(child, parent=tag)
+                if not created:
+                    for key, value in study_defaults.items():
+                        setattr(study, key, value)
+                    study.save()
 
-        for tag_data in tag_tree_data:
-            create_tag_from_tree(tag_data)
+                tag_instances = []
+                for tag_name in tag_names:
+                    tag_name = tag_name.strip()
+                    matching_tags = [t for (name, _), t in tag_map.items() if name == tag_name]
+                    if matching_tags:
+                        tag_instances.append(matching_tags[0])
+                study.tags.set(tag_instances)
 
-        # Build a tag lookup (by name + parent) for fast access
-        tag_map = {(tag.name, tag.parent_tag_id): tag for tag in Tag.objects.filter(review_id=review_id)}
+                study.authors.set([
+                    author_map[name.strip()]
+                    for name in author_names
+                    if name.strip() in author_map
+                ])
 
-        # Importing authors
-        author_map = {}
-        for author in authors_data:
-            name = author["name"].strip()
-            obj, _ = Author.objects.get_or_create(name=name, review_id=review_id)
-            author_map[name] = obj
+            return Response({"message": "Review imported successfully."})
+        
+        except Exception as e:
+            print(f"Error importando: {e}") 
+            return Response({'error': f'Import failed: {str(e)}'}, status=400)
+        
+class DashboardStatsView(APIView):
+    """
+    API view for retrieving statistics and available filter options for the dashboard.
+    Get all studies for the review, then apply filters step by step to set up for the graphs stats
+    """
 
-        # Importing Studies
-        for study_data in studies_data:
-            tag_names = study_data.pop("tags", [])
-            author_names = study_data.pop("authors", [])
+    def get(self, request):
+        review_id = request.query_params.get('review_id')
+        studies = Study.objects.filter(review_id=review_id)
 
-            title = study_data.get("title", "").strip()
-            year = study_data.get("year")
+        start_year = request.query_params.get('start_year')
+        end_year = request.query_params.get('end_year')
 
-            # remaining fields go into defaults
-            study_defaults = {
-                key: study_data[key]
-                for key in study_data
-                if key not in ["tags", "authors"]
+        if start_year:
+            studies = studies.filter(year__gte=start_year)
+        if end_year:
+            studies = studies.filter(year__lte=end_year)
+
+        # available options
+        studies_base = studies
+
+        tag_filter = request.query_params.get('tag')
+        parent_tag_filter = request.query_params.get('parent_tag')
+        author_filter = request.query_params.get('author')
+
+        # Logic for available tags:
+        # If an author is selected, only show tags that appear in studies by that author, otherwise show all tags in the review
+        if author_filter:
+            available_tags = studies_base.filter(authors__name=author_filter).values_list('tags__name', flat=True).distinct().order_by('tags__name')
+            available_tags = [t for t in available_tags if t] # Filter out None/empty
+        else:
+            available_tags = studies_base.values_list('tags__name', flat=True).distinct().order_by('tags__name')
+            available_tags = [t for t in available_tags if t]
+            if not available_tags and not start_year and not end_year:
+                 available_tags = Tag.objects.filter(review_id=review_id).values_list('name', flat=True).distinct().order_by('name')
+
+        # Logic for available authors:
+        # If a tag is selected, only show authors that have studies with that tag, otherwise show all authors in the review
+        if tag_filter:
+            available_authors = studies_base.filter(tags__name=tag_filter).values_list('authors__name', flat=True).distinct().order_by('authors__name')
+            available_authors = [a for a in available_authors if a]
+        else:
+            available_authors = studies_base.values_list('authors__name', flat=True).distinct().order_by('authors__name')
+            available_authors = [a for a in available_authors if a]
+
+            if not available_authors and not start_year and not end_year:
+                 available_authors = Author.objects.filter(review_id=review_id).values_list('name', flat=True).distinct().order_by('name')
+
+        # Apply stats filters to the main queryset
+        if tag_filter:
+             studies = studies.filter(tags__name=tag_filter)
+        # Get all descendant tags for parent tag 
+        if parent_tag_filter:
+            try:
+                parent_tag_obj = Tag.objects.get(name=parent_tag_filter, review_id=review_id)
+                
+                def get_descendants(tag):
+                    descendants = {tag.id}
+                    for child in tag.child_tags.all():
+                        descendants.update(get_descendants(child))
+                    return descendants
+                
+                all_descendant_ids = get_descendants(parent_tag_obj)
+                studies = studies.filter(tags__id__in=all_descendant_ids)
+                
+            except Tag.DoesNotExist:
+                studies = studies.none()
+            
+        if author_filter:
+            studies = studies.filter(authors__name=author_filter)
+
+        studies = studies.distinct()
+        all_studies_data = studies.values_list('id', 'flags')
+        
+        total_reviewed = 0
+        total_pending = 0
+        total_flagged = 0
+        total_missing_data = 0
+        
+        for _, flags in all_studies_data:
+            is_reviewed = False
+            if flags and "Reviewed" in flags:
+                total_reviewed += 1
+                is_reviewed = True
+
+            if flags:
+                if "Flagged" in flags:
+                    total_flagged += 1
+                if "Missing Data" in flags:
+                    total_missing_data += 1
+
+            if not is_reviewed:
+                total_pending += 1
+
+        tag_stats = studies.exclude(tags__isnull=True).values(
+            'tags__name', 'tags__parent_tag__name', 'year'
+        ).annotate(count=Count('id')).order_by('tags__parent_tag__name', 'tags__name', 'year')
+
+        authors_stats = studies.exclude(authors__isnull=True).values(
+            'authors__name'
+        ).annotate(count=Count('id')).order_by('authors__name')
+
+        root_tags = Tag.objects.filter(review_id=review_id, parent_tag__isnull=True).values_list('name', flat=True).distinct().order_by('name')
+        tag_hierarchy = Tag.objects.filter(review_id=review_id).values('name', 'parent_tag__name')
+
+        stats = {
+                "total": studies.count(),
+                "reviewed": total_reviewed,
+                "pending": total_pending,
+                "flagged": total_flagged,
+                "missing_data": total_missing_data,
+                "years": studies.values('year').annotate(count=Count('id')).order_by('year'),
+                "tag_stats": list(tag_stats),
+                "authors_stats": list(authors_stats),
+                "available_tags": list(available_tags),
+                "available_authors": list(available_authors),
+                "root_tags": list(root_tags),
+                "tag_hierarchy": list(tag_hierarchy)
             }
-            study_defaults["review_id"] = review_id
-
-            # Creates or updates the study
-            study, created = Study.objects.get_or_create(
-            title=title,
-            year=year,
-            review_id=review_id,
-            defaults=study_defaults
-            )
-
-            if not created:
-                for key, value in study_defaults.items():
-                    setattr(study, key, value)
-                study.save()
-
-            # Assigns study tags
-            tag_instances = []
-            for tag_name in tag_names:
-                tag_name = tag_name.strip()
-                matching_tags = [t for (name, _), t in tag_map.items() if name == tag_name]
-                if matching_tags:
-                    tag_instances.append(matching_tags[0])
-            study.tags.set(tag_instances)
-
-            # Assigns study authors
-            study.authors.set([
-                author_map[name.strip()]
-                for name in author_names
-                if name.strip() in author_map
-            ])
-
-        return Response({"message": "Review imported successfully."})
+        return Response(stats)

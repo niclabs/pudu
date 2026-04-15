@@ -1,6 +1,26 @@
+/**
+ * TagView.jsx 
+ * @file Component for rendering the tag management view. Used to display the "Tag Management" page of the navbar of the application.
+ * 
+ * main functionality:
+ * - Displays a tree of tags on the left side, allowing users to create, edit, delete, and rearrange tags
+ * - Shows details of the selected tag and a count of associated studies in the top right panel
+ * - Renders a table of studies associated with the selected tag in the bottom right panel
+ * 
+ * @requires utils/authservice  for making authenticated requests to the backend
+ * @requires pages/tag_management/Node   custom component for rendering nodes in the tag tree
+ * @requires components/custom/dataTable/data-table  the custom data table used to display studies
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered "Tag Management" view.
+ */
+
+
+
+import { AuthService } from "../../utils/authservice";
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
-import { Tag, Trash2 } from "lucide-react";
+import { Filter, ListFilter, Tag, Trash2 } from "lucide-react";
 import { Tree } from "react-arborist";
 import Node from "./Node";
 import {
@@ -22,6 +42,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
+import { Toaster, toast } from 'sonner';
+import { ta } from "date-fns/locale";
+import { set } from "date-fns";
 
 function TagView() {
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -38,21 +61,22 @@ function TagView() {
   const [studyOpen, setStudyOpen] = useState(false);
   const [selectedStudy, setSelectedStudy] = useState(null);
   const [selectedStudyDetail, setSelectedStudyDetail] = useState(null);
+  const [filterBy, setFilterBy] = useState(null);
 
 
-  const reviewId = localStorage.getItem('review_id');
-
+  const reviewId = sessionStorage.getItem('review_id');
+  // const response = await AuthService.fetchWithAuth(
   const createTag = async (newTag) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newTag),
     });
     return response.json();
   };
-  
+
   const deleteTag = async (tagId) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
     });
@@ -61,44 +85,44 @@ function TagView() {
     }
     return response.json();
   };
-  
+
   const moveTag = async (dragMove) => {
-    console.log("Moving tag with data:", dragMove);
-    const response = await fetch(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/?review_id=${reviewId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dragMove),
     });
     return response.json();
   };
-  
+
   const editTagName = async (tagId, newName) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newName }),
     });
     return response.json();
   };
-  
+
   const editTagDescription = async (tagId, newDescription) => {
-    const response = await fetch(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/tags/${tagId}/?review_id=${reviewId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ description: newDescription }),
     });
     return response.json();
   };
-  
+
 
   const fetchTreeData = async () => {
-    const response = await fetch(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/tags/?review_id=${reviewId}`);
     const data = await response.json();
     setTags(data);
+    setOriginalTags(data);
   };
 
   const fetchStudyData = async () => {
-    const response = await fetch(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
     const data = await response.json();
 
     const refineTable = data.map((study) => ({
@@ -108,13 +132,13 @@ function TagView() {
       authors: study.authors_display.join(", "),
       flags: study.flags,
       tags: study.tags_display.map((tag) => tag.name).join(", "),
+      tags_list: study.tags_display.map((tag) => tag.name),
     }));
     setTableData(refineTable);
-    console.log("fetched table data");
   };
 
   const fetchTagCount = async () => {
-    const response = await fetch(`http://localhost:8000/api/tags/count/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/tags/count/?review_id=${reviewId}`);
     const data = await response.json();
     setTagCount(data);
   };
@@ -146,14 +170,13 @@ function TagView() {
   };
 
   const fetchStudyDetailed = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
     setSelectedStudyDetail(data);
-    console.log("fetched study detail data", data);
   };
 
   const deleteStudyData = async (id) => {
-    const response = await fetch(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`, {
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`, {
       method: "DELETE",
     });
     if (response.ok) {
@@ -172,6 +195,7 @@ function TagView() {
       const result = await createTag(newTag);
       if (result.id) {
         fetchTreeData();
+        setSelectedNode(null);
       }
     } catch (error) {
       console.error("Error creating tag:", error);
@@ -186,7 +210,7 @@ function TagView() {
       if (result.success) {
         fetchTreeData();
         setSelectedNode(null);
-        
+
 
       } else {
         console.error("Error deleting tag:", result.error);
@@ -194,7 +218,7 @@ function TagView() {
     } catch (error) {
       console.error("Error deleting tag:", error);
     }
-    
+
     setTagDeleteOpen(false)
   };
 
@@ -250,13 +274,62 @@ function TagView() {
     }
   };
 
+
+  const [originalTags, setOriginalTags] = useState([]);
+  const [isSortMenuOpen, setSortMenuOpen] = useState(false);
+  const handleSort = (order) => {
+    if (order === 'reset') {
+      setTags(originalTags);
+      setSortMenuOpen(false);
+      return;
+    }
+    const sortNodes = (nodes) => {
+      return [...nodes].sort((a, b) => {
+        const nameA = a.name ? a.name.toLowerCase() : "";
+        const nameB = b.name ? b.name.toLowerCase() : "";
+
+        if (order === 'asc') return nameA.localeCompare(nameB); // A-Z
+        if (order === 'desc') return nameB.localeCompare(nameA); // Z-A
+        return 0;
+      }).map(node => ({
+        ...node,
+        children: node.children ? sortNodes(node.children) : []
+      }));
+    };
+
+    const sortedTags = sortNodes(tags);
+    setTags(sortedTags);
+    setSortMenuOpen(false);
+  };
+
+  const fetchDescendantTags = (nodeData) => {
+    let names = [nodeData.name];
+    
+    if (nodeData.children && nodeData.children.length > 0) {
+      nodeData.children.forEach((child) => {
+        names = names.concat(fetchDescendantTags(child));
+      });
+    }
+    
+    return names;
+  };
+  
+  const filteredData = selectedNode
+    ? tableData.filter((item) => {
+      if ((!item.tags_list) || item.tags_list.length === 0) {
+        return false;
+      }
+      const descendantTags = fetchDescendantTags(selectedNode.data);
+      return descendantTags.some(tagName => item.tags_list.includes(tagName));
+    })
+    : tableData;
+
   useEffect(() => {
-    console.log("Current Review ",reviewId);
     fetchTreeData();
     fetchStudyData();
     fetchTagCount();
     setLoading(false);
-    if ((studyOpen | deleteOpen ) && selectedStudy) {
+    if ((studyOpen | deleteOpen) && selectedStudy) {
       fetchStudyDetailed(selectedStudy);
     }
   }, [studyOpen, selectedStudy]);
@@ -264,34 +337,72 @@ function TagView() {
   if (loading) return <div>Loading tree...</div>;
 
   return (
-    <div className="flex flex-row w-full h-full bg-violet-50 ">
+    <div className="flex flex-row w-full h-[calc(100vh-64px)] bg-violet-50 ">
+      <Toaster richColors />
       {/* Tree */}
       <div className="m-4 p-4 tree-component flex-1 bg-indigo-100 rounded-xl shadow-lg relative">
         <div className="flex justify-between items-start">
           <div className="demo-instructions">
             <h1 className="text-2xl font-bold">Tag Management</h1>
-            
+
           </div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 relative">
+
             <Button
-              onClick={onCreate}
+            onClick={() => {
+              if (selectedNode) {
+                toast.success(`Tag created as a child of ${selectedNode.data.name}!`);
+              }
+              else{
+                toast.success("Tag created on root level!");
+              }
+              onCreate();
+            }}
               className="bg-violet-900 text-violet-50 text-xs font-bold hover:bg-violet-950 flex"
             >
-              <Tag className="" /> Add Tag
+              <Tag className="mr-2 h-4 w-4" /> Add Tag
             </Button>
-            <Button
-              onClick={() => {setTagDeleteOpen(true)}}
-              className="bg-red-600 text-violet-50 text-xs font-bold hover:bg-red-800 flex"
-            >
-              <Trash2 className="" /> Delete Tag
-            </Button>
+
+            <div className="relative">
+              <Button
+                onClick={() => setSortMenuOpen(!isSortMenuOpen)}
+                className="bg-violet-900 text-violet-50 text-xs font-bold hover:bg-violet-950 flex"
+              >
+                <Filter className="mr-2 h-4 w-4" /> Sort Tag
+              </Button>
+              {isSortMenuOpen && (
+                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded shadow-lg z-10">
+                  <button
+                    onClick={() => handleSort('asc')}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    A-Z
+                  </button>
+                  <button
+                    onClick={() => handleSort('desc')}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    Z-A
+                  </button>
+
+                  <button
+                    onClick={() => handleSort('reset')}
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  >
+                    Created (desc)
+                  </button>
+                </div>
+              )}
+
+
+            </div>
           </div>
-          
+
         </div>
         <p className=" text-gray-600">Organize your review with a custom tag tree.</p>
         <p className=" text-gray-600"> Drag and Drop tags to edit the tree's structure.</p>
         <div className="tree-container flex-grow overflow-auto mt-4">
-          
+
           <Tree
             data={tags}
             openByDefault={false}
@@ -312,6 +423,18 @@ function TagView() {
             )}
           </Tree>
         </div>
+        <Button
+          onClick={() => {
+            if (!selectedNode) {
+              toast.error("No tag selected for deletion.");
+              return;
+            }
+            setTagDeleteOpen(true);
+          }}
+          className="absolute bottom-4 right-4 bg-red-600 text-violet-50 text-xs font-bold hover:bg-red-800 flex"
+        >
+          <Trash2 className="" /> Delete Tag
+        </Button>
       </div>
       {/*  Card and Table */}
       <div className="p-4 flex-1/2">
@@ -427,7 +550,7 @@ function TagView() {
                 )}
             </div>
             <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-            <Button
+              <Button
                 variant="outline"
                 onClick={() => setStudyOpen(false)}
                 className="border-violet-700 text-violet-700 hover:bg-violet-100"
@@ -448,20 +571,20 @@ function TagView() {
             <DialogHeader>
               <DialogTitle>Deleting Study</DialogTitle>
             </DialogHeader>
-                <b>{selectedStudyDetail?.title}</b>
-                <div>This study is being deleted. This action cannot be undone.</div>
-                <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-                <Button
+            <b>{selectedStudyDetail?.title}</b>
+            <div>This study is being deleted. This action cannot be undone.</div>
+            <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+              <Button
                 variant="outline"
                 onClick={() => setDeleteOpen(false)}
                 className="border-violet-700 text-violet-700 hover:bg-violet-100"
               >
                 Cancel
               </Button>
-                <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
-                  onClick={() => deleteStudyData(selectedStudyDetail?.id)}>
-                  Delete Study
-                </Button>
+              <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                onClick={() => deleteStudyData(selectedStudyDetail?.id)}>
+                Delete Study
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -471,30 +594,30 @@ function TagView() {
             <DialogHeader>
               <DialogTitle>Deleting Tag</DialogTitle>
             </DialogHeader>
-                <b>{selectedNode?.data?.name}</b>
-                <div>This tag and any children it has are being deleted.</div>
-                <div>This action cannot be undone.</div>
-                <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-                <Button
+            <b>{selectedNode?.data?.name}</b>
+            <div>This tag and any children it has are being deleted.</div>
+            <div>This action cannot be undone.</div>
+            <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
+              <Button
                 variant="outline"
                 onClick={() => setTagDeleteOpen(false)}
                 className="border-violet-700 text-violet-700 hover:bg-violet-100"
               >
                 Cancel
               </Button>
-                <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
-                  onClick={() => onDelete()}>
-                  Delete Tag
-                </Button>
+              <Button className="bg-red-600 text-violet-50 hover:bg-red-800"
+                onClick={() => onDelete()}>
+                Delete Tag
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        <div className="h-[calc(100vh-400px)]">
+        <div className="h-[calc(100vh-400px)] m-4 overflow-y-auto">
           <DataTable
             columns={columns(setStudyOpen, setSelectedStudy, setDeleteOpen)}
-            data={tableData}
-            selectedTag={selectedNode?.data?.name}
+            data={filteredData}
+            filterBy={null}
           />
         </div>
       </div>
