@@ -302,10 +302,26 @@ function TagView() {
     setSortMenuOpen(false);
   };
 
+  const fetchDescendantTags = (nodeData) => {
+    let names = [nodeData.name];
+    
+    if (nodeData.children && nodeData.children.length > 0) {
+      nodeData.children.forEach((child) => {
+        names = names.concat(fetchDescendantTags(child));
+      });
+    }
+    
+    return names;
+  };
+  
   const filteredData = selectedNode
-    ? tableData.filter((item) =>
-      item.tags_list && item.tags_list.includes(selectedNode.data.name)
-    )
+    ? tableData.filter((item) => {
+      if ((!item.tags_list) || item.tags_list.length === 0) {
+        return false;
+      }
+      const descendantTags = fetchDescendantTags(selectedNode.data);
+      return descendantTags.some(tagName => item.tags_list.includes(tagName));
+    })
     : tableData;
 
   useEffect(() => {
