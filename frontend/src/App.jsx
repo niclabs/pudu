@@ -30,7 +30,7 @@ export default function App() {
   return (
     <Router>
       <title>pudu</title>
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-full">
         <Navbar />
         <main className="flex-grow overflow-hidden">
           <Routes>

@@ -77,7 +77,7 @@ function EditStudyView() {
   }
 
   return (
-    <div className="flex flex-row h-screen bg-violet-50">
+    <div className="flex flex-row h-full bg-violet-50">
       <div className="flex-grow overflow-auto h-full">
         <StudyForm
           studyid={params.studyid}
