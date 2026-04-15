@@ -333,7 +333,15 @@ function TagView() {
           <div className="flex space-x-2 relative">
 
             <Button
-              onClick={onCreate}
+            onClick={() => {
+              if (selectedNode) {
+                toast.success(`Tag created as a child of ${selectedNode.data.name}!`);
+              }
+              else{
+                toast.success("Tag created on root level!");
+              }
+              onCreate();
+            }}
               className="bg-violet-900 text-violet-50 text-xs font-bold hover:bg-violet-950 flex"
             >
               <Tag className="mr-2 h-4 w-4" /> Add Tag
