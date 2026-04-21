@@ -246,7 +246,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   
       const newStudyId = result?.id || studyid;
   
-      navigate(`/editstudy/${newStudyId}`);
+      navigate(`/studies`);
       toast.success("Saved successfully!")
     } catch (error) {
       toast.error("Error saving study: " + error.message);

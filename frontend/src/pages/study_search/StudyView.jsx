@@ -62,6 +62,7 @@ function StudyView() {
       authors: study.authors_display.join(", "),
       flags: study.flags,
       tags: study.tags_display.map((tag) => tag.name).join(", "),
+      notes: study.summary,
     }));
     setTableData(refineTable);
   };
@@ -344,7 +345,7 @@ function StudyView() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4 py-4 h-[calc(80vh-220px)] overflow-y-auto pr-2">
+              <div style={{ whiteSpace: "pre-line" }} className="space-y-4 py-4 h-[calc(80vh-220px)] overflow-y-auto pr-2">
                 {selectedStudyDetail &&
                   Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
                     <div key={key} className="mb-2">
