@@ -133,6 +133,7 @@ function TagView() {
       flags: study.flags,
       tags: study.tags_display.map((tag) => tag.name).join(", "),
       tags_list: study.tags_display.map((tag) => tag.name),
+      notes: study.summary,
     }));
     setTableData(refineTable);
   };

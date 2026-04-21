@@ -99,4 +99,4 @@ class SimpleStudySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Study
-        fields = ['id', 'title', 'year', 'authors_display', 'tags_display', 'doi', 'url', 'flags', 'review']
+        fields = ['id', 'title', 'year', 'authors_display', 'tags_display', 'doi', 'url', 'flags', 'summary', 'review']
