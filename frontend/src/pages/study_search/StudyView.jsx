@@ -197,6 +197,9 @@ function StudyView() {
     setExportOpen(false);
   };
 
+  const handleExportBibtex = async () => {
+  };
+
   return (
     <div className="flex flex-col w-full p-4 bg-violet-50 h-[calc(100vh-64px)]">
       <h1 className="text-4xl font-bold">Studies</h1>
@@ -305,22 +308,22 @@ function StudyView() {
                 <Download className="mr-2" /> Export Studies
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-violet-50">
+            <DialogContent className="sm:max-w-[450px] bg-violet-50">
               <DialogHeader>
                 <DialogTitle>Export Studies</DialogTitle>
                 <DialogDescription>
-                  Download a JSON file with data on authors, tags and studies
+                  Download a file with data on authors, tags and studies
                   for this review.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-                <Button
+                {/* <Button
                   variant="outline"
                   onClick={() => setExportOpen(false)}
                   className="border-violet-700 text-violet-700 hover:bg-violet-200"
                 >
                   Cancel
-                </Button>
+                </Button> */}
                 <Button
                   onClick={handleExportJSON}
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
@@ -332,6 +335,12 @@ function StudyView() {
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
                 >
                   Export as CSV
+                </Button>
+                <Button
+                  onClick={handleExportBibtex}
+                  className="bg-violet-900 text-violet-50 hover:bg-violet-950"
+                >
+                  Export as BibTeX
                 </Button>
               </DialogFooter>
             </DialogContent>
