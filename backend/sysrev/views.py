@@ -21,39 +21,6 @@ from collections import Counter
 import csv
 from django.http import HttpResponse
 
-# Used on study view for exporting
-class ReviewCSVExportView(APIView):
-    def get(self, request):
-        review_id = request.query_params.get('review_id')
-        if not review_id:
-            return Response({'error': 'review_id is required'}, status=400)
-
-        studies = Study.objects.filter(review_id=review_id)
-
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="review_{review_id}_export.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow([
-            'Title', 'Year', 'Summary', 'Abstract', 'Flags',
-            'Tags', 'Authors', 'DOI', 'URL', 'Pages'
-        ])
-
-        for study in studies:
-            writer.writerow([
-                study.title,
-                study.year,
-                study.summary,
-                study.abstract,
-                ", ".join(study.flags),
-                ", ".join(tag.name for tag in study.tags.all()),
-                ", ".join(author.name for author in study.authors.all()),
-                study.doi,
-                study.url,
-                study.pages
-            ])
-
-        return response
 
 # Used on registration page for creating new users
 class RegisterView(generics.CreateAPIView):
@@ -424,48 +391,6 @@ def flag_study_counts(request):
 
     return Response(counter)
 
-# Used on the review view for exporting the whole review data in JSON format
-class ReviewExportView(APIView):
-    def get(self, request):
-        review_id = request.query_params.get('review_id')
-        if not review_id:
-            return Response({'error': 'review_id is required'}, status=400)
-
-        # Serialize tag tree
-        root_tags = Tag.objects.filter(parent_tag__isnull=True, review_id=review_id)
-        def strip_ids(tree):
-            tree.pop('id', None)
-            for child in tree.get('children', []):
-                strip_ids(child)
-            return tree
-        tag_tree = [strip_ids(tag.get_tree()) for tag in root_tags]
-
-        # Serialize authors
-        authors = Author.objects.filter(review_id=review_id).values('name')
-
-        # Serialize studies
-        studies = Study.objects.filter(review_id=review_id)
-        study_list = []
-        for study in studies:
-            study_list.append({
-                "title": study.title,
-                "year": study.year,
-                "summary": study.summary,
-                "abstract": study.abstract,
-                "flags": study.flags,
-                "tags": [tag.name for tag in study.tags.all()],
-                "authors": [author.name for author in study.authors.all()],
-                "doi": study.doi,
-                "url": study.url,
-                "pages": study.pages
-            })
-
-        return Response({
-            "tag_tree": tag_tree,
-            "authors": list(authors),
-            "studies": study_list
-        })
-
 # Used on the review view when importing the whole review data in JSON format
 # Clears all existing review data and replaces with imported data
 class ReviewImportView(APIView):
@@ -554,6 +479,116 @@ class ReviewImportView(APIView):
         except Exception as e:
             print(f"Error importando: {e}") 
             return Response({'error': f'Import failed: {str(e)}'}, status=400)
+
+
+# Used on the review view for exporting the whole review data in JSON format
+class ReviewJSONExportView(APIView):
+    def get(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
+        # Serialize tag tree
+        root_tags = Tag.objects.filter(parent_tag__isnull=True, review_id=review_id)
+        def strip_ids(tree):
+            tree.pop('id', None)
+            for child in tree.get('children', []):
+                strip_ids(child)
+            return tree
+        tag_tree = [strip_ids(tag.get_tree()) for tag in root_tags]
+
+        # Serialize authors
+        authors = Author.objects.filter(review_id=review_id).values('name')
+
+        # Serialize studies
+        studies = Study.objects.filter(review_id=review_id)
+        study_list = []
+        for study in studies:
+            study_list.append({
+                "title": study.title,
+                "year": study.year,
+                "summary": study.summary,
+                "abstract": study.abstract,
+                "flags": study.flags,
+                "tags": [tag.name for tag in study.tags.all()],
+                "authors": [author.name for author in study.authors.all()],
+                "doi": study.doi,
+                "url": study.url,
+                "pages": study.pages
+            })
+
+        return Response({
+            "tag_tree": tag_tree,
+            "authors": list(authors),
+            "studies": study_list
+        })
+
+# Used on study view for exporting
+class ReviewCSVExportView(APIView):
+    def get(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
+        studies = Study.objects.filter(review_id=review_id)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="review_{review_id}_export.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Title', 'Year', 'Summary', 'Abstract', 'Flags',
+            'Tags', 'Authors', 'DOI', 'URL', 'Pages'
+        ])
+
+        for study in studies:
+            writer.writerow([
+                study.title,
+                study.year,
+                study.summary,
+                study.abstract,
+                ", ".join(study.flags),
+                ", ".join(tag.name for tag in study.tags.all()),
+                ", ".join(author.name for author in study.authors.all()),
+                study.doi,
+                study.url,
+                study.pages
+            ])
+
+        return response
+
+class ReviewBibtexExportView(APIView):
+    def get(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
+        studies = Study.objects.filter(review_id=review_id)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="review_{review_id}_export.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Title', 'Year', 'Summary', 'Abstract', 'Flags',
+            'Tags', 'Authors', 'DOI', 'URL', 'Pages'
+        ])
+
+        for study in studies:
+            writer.writerow([
+                study.title,
+                study.year,
+                study.summary,
+                study.abstract,
+                ", ".join(study.flags),
+                ", ".join(tag.name for tag in study.tags.all()),
+                ", ".join(author.name for author in study.authors.all()),
+                study.doi,
+                study.url,
+                study.pages
+            ])
+
+        return response
         
 class DashboardStatsView(APIView):
     """

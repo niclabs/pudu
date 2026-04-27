@@ -156,33 +156,8 @@ function StudyView() {
     setImportOpen(false);
   };
 
-  const handleExportJSON = async () => {
-    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export/?review_id=${reviewId}`);
-
-    const data = await response.json();
-    const json = JSON.stringify(data);
-
-    const blob = new Blob([json], { type: "application/json" });
-    const href = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = href;
-    const reviewName = (sessionStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
-    link.download = `${reviewName}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(href);
-    setExportOpen(false);
-  };
-
-  const handleExportCSV = async () => {
-    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export_csv/?review_id=${reviewId}`);
-
-    if (!response.ok) {
-      console.error("Export failed:", response.statusText);
-      return;
-    }
+  const handleExport = async (format) => {
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export_${format}/?review_id=${reviewId}`);
 
     const blob = await response.blob();
     const href = URL.createObjectURL(blob);
@@ -190,15 +165,12 @@ function StudyView() {
 
     link.href = href;
     const reviewName = (sessionStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
-    link.download = `${reviewName}.csv`;
+    link.download = `${reviewName}.${format}`;
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(href);
     setExportOpen(false);
-  };
-
-  const handleExportBibtex = async () => {
-  };
+  }
 
   return (
     <div className="flex flex-col w-full p-4 bg-violet-50 h-[calc(100vh-64px)]">
@@ -325,19 +297,19 @@ function StudyView() {
                   Cancel
                 </Button> */}
                 <Button
-                  onClick={handleExportJSON}
+                  onClick={() => handleExport("json")}
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
                 >
                   Export as JSON
                 </Button>
                 <Button
-                  onClick={handleExportCSV}
+                  onClick={() => handleExport("csv")}
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
                 >
                   Export as CSV
                 </Button>
                 <Button
-                  onClick={handleExportBibtex}
+                  onClick={() => handleExport("bibtex")}
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
                 >
                   Export as BibTeX
