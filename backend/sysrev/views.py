@@ -19,6 +19,7 @@ from django.db.models import Count
 from django.db import transaction
 from collections import Counter
 import csv
+import bibtexparser
 from django.http import HttpResponse
 
 
@@ -565,28 +566,27 @@ class ReviewBibtexExportView(APIView):
 
         studies = Study.objects.filter(review_id=review_id)
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="review_{review_id}_export.csv"'
+        response = HttpResponse(content_type='text/bibtex')
+        response['Content-Disposition'] = f'attachment; filename="review_{review_id}_export.bib"'
 
-        writer = csv.writer(response)
-        writer.writerow([
-            'Title', 'Year', 'Summary', 'Abstract', 'Flags',
-            'Tags', 'Authors', 'DOI', 'URL', 'Pages'
-        ])
-
+        bibtex_str = ""
         for study in studies:
-            writer.writerow([
-                study.title,
-                study.year,
-                study.summary,
-                study.abstract,
-                ", ".join(study.flags),
-                ", ".join(tag.name for tag in study.tags.all()),
-                ", ".join(author.name for author in study.authors.all()),
-                study.doi,
-                study.url,
-                study.pages
-            ])
+            bibtex_to_add = f"""@article{{{study.id},
+                author = "{', '.join(author.name for author in study.authors.all())}",
+                title = "{study.title}",
+                journal = "",  
+                year = "{study.year}",
+                pages = "{study.pages}",
+                doi = "{study.doi}",
+                howpublished = "{study.url}",
+                keywords = "{', '.join(tag.name for tag in study.tags.all())}",
+                annote = "{study.abstract}",
+                note = "{study.summary}"
+            }}
+            """
+            bibtex_str += bibtex_to_add + "\n"
+        ## agrego flags?
+        response.write(bibtex_str)
 
         return response
         

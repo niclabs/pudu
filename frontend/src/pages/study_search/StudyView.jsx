@@ -309,7 +309,7 @@ function StudyView() {
                   Export as CSV
                 </Button>
                 <Button
-                  onClick={() => handleExport("bibtex")}
+                  onClick={() => handleExport("bib")}
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
                 >
                   Export as BibTeX
