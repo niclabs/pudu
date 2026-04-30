@@ -115,7 +115,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: authorName }),
+        body: JSON.stringify({ name: authorName, review_id: reviewId }),
       });
 
       if (!response.ok) {
@@ -679,7 +679,8 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                           const author = authorsList.find((a) => a.value === id);
                           return <li key={id}>{author?.label || `ID ${id}`}</li>;
                         })}
-                        These authors are being deleted. This action cannot be undone.
+                        These authors are being deleted from the database, this action cannot be undone. 
+                        <br /> You will have to add them back manually on the "Add authors" button.
                         <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
                         <Button
                         variant="outline"

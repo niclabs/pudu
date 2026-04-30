@@ -338,16 +338,9 @@ class AuthorsView(APIView):
         if not review_id:
             return Response({'error': 'review_id is required'}, status=400)
 
-        data = request.data
-        if isinstance(data, list):
-            for d in data:
-                d['review'] = review_id
-        else:
-            data['review'] = review_id
-
-        serializer = AuthorSerializer(data=data, many=isinstance(data, list))
+        serializer = AuthorSerializer(data=request.data, many=isinstance(request.data, list))
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(review_id=review_id)
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
