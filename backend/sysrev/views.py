@@ -564,7 +564,7 @@ class ReviewBibtexExportView(APIView):
 
         bibtex_str = ""
         for study in studies:
-            bibtype = study.bibtexType if study.bibtexType == "" else "article"
+            bibtype = study.bibtexType if study.bibtexType else "article"
             bibtex_to_add = f"""@{bibtype}{{{study.id},
                 author = "{', '.join(author.name for author in study.authors.all())}",
                 title = "{study.title}",
