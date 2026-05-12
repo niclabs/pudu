@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
+import { Toaster, toast } from 'sonner'
 
 function StudyView() {
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -106,6 +107,7 @@ function StudyView() {
     tags: "Tags",
   };
 
+
   const fetchStudyDetailed = async (id) => {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
@@ -126,25 +128,27 @@ function StudyView() {
     setFlagCount(data);
   };
 
-  const handleImportSubmit = async () => {
+  const handleImport = async () => {
     if (!importFile) {
       setImportFile(null);
       return;
     }
 
     try {
-      const fileText = await importFile.text(); // Read the file as text
-      const jsonData = JSON.parse(fileText); // Parse JSON content
+
+      const formData = new FormData();
+      formData.append('file', importFile);
+      formData.append('format', fileExtension);
 
       const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/import/?review_id=${reviewId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(jsonData),
+        body: formData,
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+      toast.success("Studies imported successfully");
     } catch (error) {
       console.error("Failed to read, parse, or submit the file:", error);
     }
@@ -165,6 +169,7 @@ function StudyView() {
 
     link.href = href;
     const reviewName = (sessionStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
+    toast.success("Studies exported successfully");
     link.download = `${reviewName}.${format}`;
     link.click();
     document.body.removeChild(link);
@@ -230,11 +235,11 @@ function StudyView() {
                 <Upload className="mr-2" /> Import Studies
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-violet-50">
+            <DialogContent className="sm:max-w-[450px] bg-violet-50">
               <DialogHeader>
                 <DialogTitle>Import Studies</DialogTitle>
                 <DialogDescription>
-                  Upload a JSON file to import studies, tags and authors.
+                  Upload a JSON, CSV or BibTeX file to import multiple studies, tags and authors.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -243,7 +248,7 @@ function StudyView() {
                     <Input
                       id="file-upload"
                       type="file"
-                      accept=".json"
+                      accept=".json, .csv, .bib"
                       onChange={(e) => setImportFile(e.target.files[0])}
                       className="cursor-pointer"
                     />
@@ -265,7 +270,7 @@ function StudyView() {
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleImportSubmit}
+                  onClick={handleImport}
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
                 >
                   Import
@@ -394,7 +399,7 @@ function StudyView() {
           filterBy={filterBy}
         />
       </div>
-    </div>
+    </div >
   );
 }
 
