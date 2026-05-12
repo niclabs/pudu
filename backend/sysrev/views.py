@@ -568,7 +568,6 @@ class ReviewBibtexExportView(APIView):
             bibtex_to_add = f"""@{bibtype}{{{study.id},
                 author = "{', '.join(author.name for author in study.authors.all())}",
                 title = "{study.title}",
-                journal = "",  
                 year = "{study.year}",
                 pages = "{study.pages}",
                 doi = "{study.doi}",
