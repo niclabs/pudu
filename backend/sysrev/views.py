@@ -19,6 +19,8 @@ from django.db.models import Count
 from django.db import transaction
 from collections import Counter
 import csv
+import json
+import io
 import bibtexparser
 from django.http import HttpResponse
 
@@ -393,7 +395,45 @@ class ReviewImportView(APIView):
         if not review_id:
             return Response({'error': 'review_id is required'}, status=400)
 
-        data = request.data
+        uploaded_file = request.FILES.get('file')
+        file_format = request.data.get('format')
+        print("uploaded_file", uploaded_file)
+        print("file_format", file_format)
+
+        if not uploaded_file or not file_format:
+            return Response({'error': 'File and format parameters are required.'}, status=400)
+
+        data = {"tag_tree": [], "authors": [], "studies": []}
+
+        try:
+            if file_format == 'json':
+                data = json.load(uploaded_file)
+                print("json data:", data)
+            
+            elif file_format == 'csv':
+                decoded_file = uploaded_file.read().decode('utf-8')
+                reader = csv.DictReader(io.StringIO(decoded_file))
+                data = self._parse_csv(reader)
+            
+            elif file_format == 'bib':
+                decoded_file = uploaded_file.read().decode('utf-8')
+                bib_db = bibtexparser.loads(decoded_file)
+                data = self._parse_bibtex(bib_db.entries)
+            else:
+                return Response({'error': f'Unsupported format: {file_format}'}, status=400)
+
+        except Exception as e:
+            return Response({'error': f'Failed to parse file: {str(e)}'}, status=400)
+
+        return self._execute_import(review_id, data)
+
+    def _parse_csv(self, reader):
+        pass
+
+    def _parse_bibtex(self, entries):
+        pass
+
+    def _execute_import(self, review_id, data):
         try:
             with transaction.atomic():
                 # Clear existing data
@@ -405,68 +445,63 @@ class ReviewImportView(APIView):
                 authors_data = data.get("authors", [])
                 studies_data = data.get("studies", [])
 
-                def create_tag_from_tree(data, parent=None):
-                    name = data["name"].strip()
-                    description = (data.get("description") or "").strip()
+                def create_tag_from_tree(node_data, parent=None):
+                    name = node_data["name"].strip()
+                    description = (node_data.get("description") or "").strip()
                     tag, _ = Tag.objects.get_or_create( 
                         name=name,
                         parent_tag=parent,
                         review_id=review_id,
                         defaults={"description": description}
                     )
-                    for child in data.get("children", []):
+                    for child in node_data.get("children", []):
                         create_tag_from_tree(child, parent=tag)
 
                 for tag_data in tag_tree_data:
                     create_tag_from_tree(tag_data)
 
-            tag_map = {(tag.name, tag.parent_tag_id): tag for tag in Tag.objects.filter(review_id=review_id)}
+                tag_map = {(tag.name, tag.parent_tag_id): tag for tag in Tag.objects.filter(review_id=review_id)}
 
-            author_map = {}
-            for author in authors_data:
-                name = author["name"].strip()
-                obj, _ = Author.objects.get_or_create(name=name, review_id=review_id)
-                author_map[name] = obj
+                author_map = {}
+                for author in authors_data:
+                    name = author["name"].strip()
+                    obj, _ = Author.objects.get_or_create(name=name, review_id=review_id)
+                    author_map[name] = obj
 
-            for study_data in studies_data:
-                tag_names = study_data.pop("tags", [])
-                author_names = study_data.pop("authors", [])
+                for study_data in studies_data:
+                    tag_names = study_data.pop("tags", [])
+                    author_names = study_data.pop("authors", [])
+                    title = study_data.pop("title", "").strip()
+                    year = study_data.pop("year", None)
 
-                title = study_data.get("title", "").strip()
-                year = study_data.get("year")
+                    study_defaults = {k: v for k, v in study_data.items() if k not in ["tags", "authors", "title", "year"]}
+                    study_defaults["review_id"] = review_id
 
-                study_defaults = {
-                    key: study_data[key]
-                    for key in study_data
-                    if key not in ["tags", "authors"]
-                }
-                study_defaults["review_id"] = review_id
+                    study, created = Study.objects.get_or_create(
+                        title=title,
+                        year=year,
+                        review_id=review_id,
+                        defaults=study_defaults
+                    )
 
-                study, created = Study.objects.get_or_create(
-                title=title,
-                year=year,
-                review_id=review_id,
-                defaults=study_defaults
-                )
+                    if not created:
+                        for key, value in study_defaults.items():
+                            setattr(study, key, value)
+                        study.save()
 
-                if not created:
-                    for key, value in study_defaults.items():
-                        setattr(study, key, value)
-                    study.save()
+                    tag_instances = []
+                    for tag_name in tag_names:
+                        tag_name = tag_name.strip()
+                        matching_tags = [t for (name, _), t in tag_map.items() if name == tag_name]
+                        if matching_tags:
+                            tag_instances.append(matching_tags[0])
+                    study.tags.set(tag_instances)
 
-                tag_instances = []
-                for tag_name in tag_names:
-                    tag_name = tag_name.strip()
-                    matching_tags = [t for (name, _), t in tag_map.items() if name == tag_name]
-                    if matching_tags:
-                        tag_instances.append(matching_tags[0])
-                study.tags.set(tag_instances)
-
-                study.authors.set([
-                    author_map[name.strip()]
-                    for name in author_names
-                    if name.strip() in author_map
-                ])
+                    study.authors.set([
+                        author_map[name.strip()]
+                        for name in author_names
+                        if name.strip() in author_map
+                    ])
 
             return Response({"message": "Review imported successfully."})
         

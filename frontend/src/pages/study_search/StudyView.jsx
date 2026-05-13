@@ -137,6 +137,8 @@ function StudyView() {
     try {
 
       const formData = new FormData();
+      const fileExtension = importFile.name.split('.').pop().toLowerCase();
+
       formData.append('file', importFile);
       formData.append('format', fileExtension);
 
