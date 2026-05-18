@@ -21,6 +21,7 @@ from collections import Counter
 import csv
 import json
 import io
+import re
 import bibtexparser
 from django.http import HttpResponse
 
@@ -408,8 +409,7 @@ class ReviewImportView(APIView):
         try:
             if file_format == 'json':
                 data = json.load(uploaded_file)
-                print("json data:", data)
-            
+                            
             elif file_format == 'csv':
                 decoded_file = uploaded_file.read().decode('utf-8')
                 reader = csv.DictReader(io.StringIO(decoded_file))
@@ -417,21 +417,134 @@ class ReviewImportView(APIView):
             
             elif file_format == 'bib':
                 decoded_file = uploaded_file.read().decode('utf-8')
-                bib_db = bibtexparser.loads(decoded_file)
-                data = self._parse_bibtex(bib_db.entries)
+                library = bibtexparser.parse_string(decoded_file)
+                print("bib data:", library.entries)
+                data = self._parse_bibtex(library.entries)
             else:
                 return Response({'error': f'Unsupported format: {file_format}'}, status=400)
 
         except Exception as e:
+            print(f"IMPORT ERROR: {type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
             return Response({'error': f'Failed to parse file: {str(e)}'}, status=400)
 
         return self._execute_import(review_id, data)
 
     def _parse_csv(self, reader):
-        pass
+        studies = []
+        authors_set = set()
+        tags_set = set()
+
+        for row in reader:
+            # Parse authors and tags from strings
+            author_names = [a.strip() for a in (row.get('Authors', '') or '').split(',') if a.strip()]
+            tag_names = [t.strip() for t in (row.get('Tags', '') or '').split(',') if t.strip()]
+            flag_names = [f.strip() for f in (row.get('Flags', '') or '').split(',') if f.strip()]
+            bibtex_type = (row.get('BibtexType', '') or row.get('BibTeX Type', '')).strip()
+
+            authors_set.update(author_names)
+            tags_set.update(tag_names)
+
+            if not bibtex_type:
+                bibtex_type = 'article'
+
+            year = row.get('Year', None)
+            if year:
+                try:
+                    year = int(year)
+                except (ValueError, TypeError):
+                    year = None
+            else:
+                year = None
+
+            studies.append({
+                'title': (row.get('Title', '') or '').strip(),
+                'year': year,
+                'summary': (row.get('Summary', '') or '').strip(),
+                'abstract': (row.get('Abstract', '') or '').strip(),
+                'flags': flag_names,
+                'tags': tag_names,
+                'authors': author_names,
+                'doi': (row.get('DOI', '') or '').strip(),
+                'url': (row.get('URL', '') or '').strip(),
+                'pages': (row.get('Pages', '') or '').strip(),
+                'bibtexType': bibtex_type,
+            })
+
+        return {
+            'tag_tree': [{'name': t, 'description': '', 'children': []} for t in tags_set],
+            'authors': [{'name': a} for a in authors_set],
+            'studies': studies,
+        }
 
     def _parse_bibtex(self, entries):
-        pass
+        studies = []
+        authors_set = set()
+        tags_set = set()
+
+        def get_field(entry, key, default=''):
+            field = entry.fields_dict.get(key)
+            return field.value if field else default
+
+        for entry in entries:
+            # parse authors
+            raw_authors = get_field(entry, 'author', '')
+            if ' and ' in raw_authors:
+                author_names = [a.strip() for a in raw_authors.split(' and ') if a.strip()]
+            else:
+                author_names = [a.strip() for a in raw_authors.split(',') if a.strip()]
+
+            # Parse keywords/tags
+            raw_keywords = get_field(entry, 'keywords', '')
+            tag_names = [k.strip() for k in re.split(r'[,;]', raw_keywords) if k.strip()]
+
+            authors_set.update(author_names)
+            tags_set.update(tag_names)
+
+
+            # Extract URL in title (ex: "NetworkX, https://networkx.org/")
+            raw_title = get_field(entry, 'title', '').strip()
+            title_url = ''
+            url_match = re.search(r',?\s*((?:https?://|www\.)\S+)', raw_title)
+            if url_match:
+                title_url = url_match.group(1).strip()
+                title = raw_title[:url_match.start()].strip().rstrip(',').strip()
+            else:
+                title = raw_title
+
+            year = get_field(entry, 'year', None)
+            if year:
+                try:
+                    year = int(year)
+                except (ValueError, TypeError):
+                    year = None
+            else:
+                year = None
+
+            # annote -> abstract, note -> summary 
+            abstract = get_field(entry, 'annote', '') or get_field(entry, 'abstract', '')
+            url = get_field(entry, 'howpublished', '') or get_field(entry, 'url', '') or title_url
+
+            studies.append({
+                'title': title,
+                'year': year,
+                'abstract': abstract.strip(),
+                'summary': get_field(entry, 'note', '').strip(),
+                'doi': get_field(entry, 'doi', '').strip(),
+                'url': url.strip(),
+                'pages': get_field(entry, 'pages', '').strip(),
+                'flags': [],
+                'tags': tag_names,
+                'authors': author_names,
+                'bibtexType': entry.entry_type or 'article',
+            })
+
+        return {
+            'tag_tree': [{'name': t, 'description': '', 'children': []} for t in tags_set],
+            'authors': [{'name': a} for a in authors_set],
+            'studies': studies,
+        }
 
     def _execute_import(self, review_id, data):
         try:
