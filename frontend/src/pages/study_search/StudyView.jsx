@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
+import { Toaster, toast } from 'sonner'
 
 function StudyView() {
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -62,6 +63,7 @@ function StudyView() {
       authors: study.authors_display.join(", "),
       flags: study.flags,
       tags: study.tags_display.map((tag) => tag.name).join(", "),
+      notes: study.summary,
     }));
     setTableData(refineTable);
   };
@@ -105,6 +107,7 @@ function StudyView() {
     tags: "Tags",
   };
 
+
   const fetchStudyDetailed = async (id) => {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/${id}/?review_id=${reviewId}`);
     const data = await response.json();
@@ -125,25 +128,29 @@ function StudyView() {
     setFlagCount(data);
   };
 
-  const handleImportSubmit = async () => {
+  const handleImport = async () => {
     if (!importFile) {
       setImportFile(null);
       return;
     }
 
     try {
-      const fileText = await importFile.text(); // Read the file as text
-      const jsonData = JSON.parse(fileText); // Parse JSON content
+
+      const formData = new FormData();
+      const fileExtension = importFile.name.split('.').pop().toLowerCase();
+
+      formData.append('file', importFile);
+      formData.append('format', fileExtension);
 
       const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/import/?review_id=${reviewId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(jsonData),
+        body: formData,
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+      toast.success("Studies imported successfully");
     } catch (error) {
       console.error("Failed to read, parse, or submit the file:", error);
     }
@@ -155,33 +162,8 @@ function StudyView() {
     setImportOpen(false);
   };
 
-  const handleExportJSON = async () => {
-    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export/?review_id=${reviewId}`);
-
-    const data = await response.json();
-    const json = JSON.stringify(data);
-
-    const blob = new Blob([json], { type: "application/json" });
-    const href = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = href;
-    const reviewName = (sessionStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
-    link.download = `${reviewName}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(href);
-    setExportOpen(false);
-  };
-
-  const handleExportCSV = async () => {
-    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export_csv/?review_id=${reviewId}`);
-
-    if (!response.ok) {
-      console.error("Export failed:", response.statusText);
-      return;
-    }
+  const handleExport = async (format) => {
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/export_${format}/?review_id=${reviewId}`);
 
     const blob = await response.blob();
     const href = URL.createObjectURL(blob);
@@ -189,12 +171,13 @@ function StudyView() {
 
     link.href = href;
     const reviewName = (sessionStorage.getItem("review_name") || `review_${reviewId}`).replace(/[/\\?%*:|"<>]/g, "_");
-    link.download = `${reviewName}.csv`;
+    toast.success("Studies exported successfully");
+    link.download = `${reviewName}.${format}`;
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(href);
     setExportOpen(false);
-  };
+  }
 
   return (
     <div className="flex flex-col w-full p-4 bg-violet-50 h-[calc(100vh-64px)]">
@@ -254,11 +237,13 @@ function StudyView() {
                 <Upload className="mr-2" /> Import Studies
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-violet-50">
+            <DialogContent className="sm:max-w-[450px] bg-violet-50">
               <DialogHeader>
                 <DialogTitle>Import Studies</DialogTitle>
                 <DialogDescription>
-                  Upload a JSON file to import studies, tags and authors.
+                  Upload a JSON, CSV or BibTeX file to import multiple studies, tags and authors.
+                  <br />
+                  <b>WARNING: This action will erase all current studies in the review.</b>
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -267,7 +252,7 @@ function StudyView() {
                     <Input
                       id="file-upload"
                       type="file"
-                      accept=".json"
+                      accept=".json, .csv, .bib"
                       onChange={(e) => setImportFile(e.target.files[0])}
                       className="cursor-pointer"
                     />
@@ -289,7 +274,7 @@ function StudyView() {
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleImportSubmit}
+                  onClick={handleImport}
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
                 >
                   Import
@@ -304,33 +289,39 @@ function StudyView() {
                 <Download className="mr-2" /> Export Studies
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-violet-50">
+            <DialogContent className="sm:max-w-[450px] bg-violet-50">
               <DialogHeader>
                 <DialogTitle>Export Studies</DialogTitle>
                 <DialogDescription>
-                  Download a JSON file with data on authors, tags and studies
+                  Download a file with data on authors, tags and studies
                   for this review.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
-                <Button
+                {/* <Button
                   variant="outline"
                   onClick={() => setExportOpen(false)}
                   className="border-violet-700 text-violet-700 hover:bg-violet-200"
                 >
                   Cancel
-                </Button>
+                </Button> */}
                 <Button
-                  onClick={handleExportJSON}
+                  onClick={() => handleExport("json")}
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
                 >
                   Export as JSON
                 </Button>
                 <Button
-                  onClick={handleExportCSV}
+                  onClick={() => handleExport("csv")}
                   className="bg-violet-900 text-violet-50 hover:bg-violet-950"
                 >
                   Export as CSV
+                </Button>
+                <Button
+                  onClick={() => handleExport("bib")}
+                  className="bg-violet-900 text-violet-50 hover:bg-violet-950"
+                >
+                  Export as BibTeX
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -344,7 +335,7 @@ function StudyView() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4 py-4 h-[calc(80vh-220px)] overflow-y-auto pr-2">
+              <div style={{ whiteSpace: "pre-line" }} className="space-y-4 py-4 h-[calc(80vh-220px)] overflow-y-auto pr-2">
                 {selectedStudyDetail &&
                   Object.entries(refineStudy(selectedStudyDetail)).map(([key, value]) => (
                     <div key={key} className="mb-2">
@@ -412,7 +403,7 @@ function StudyView() {
           filterBy={filterBy}
         />
       </div>
-    </div>
+    </div >
   );
 }
 

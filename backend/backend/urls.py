@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from sysrev.views import TagTreeView, StudiesView, AuthorsView, SysRevView, tag_study_counts,flag_study_counts, ReviewExportView, ReviewImportView, RegisterView, ReviewCSVExportView, DashboardStatsView
+from sysrev.views import TagTreeView, StudiesView, AuthorsView, SysRevView, tag_study_counts,flag_study_counts, ReviewJSONExportView, ReviewBibtexExportView, ReviewCSVExportView, ReviewImportView, RegisterView, DashboardStatsView
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -36,12 +36,13 @@ urlpatterns = [
     path('api/flags/count/', flag_study_counts, name='flag-study-counts'),
     path('api/authors/', AuthorsView.as_view(), name='author-list'),
     path('api/authors/<int:author_id>/', AuthorsView.as_view(), name='author-detail'),
-    path('api/export/', ReviewExportView.as_view(), name='review-export'),
+    path('api/export_json/', ReviewJSONExportView.as_view(), name='review-export-json'),
+    path('api/export_csv/', ReviewCSVExportView.as_view(), name='review-export-csv'),
+    path('api/export_bib/', ReviewBibtexExportView.as_view(), name='review-export-bibtex'),
     path('api/import/', ReviewImportView.as_view(), name='review-import'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/register/', RegisterView.as_view(), name='register'),
-    path('api/export_csv/', ReviewCSVExportView.as_view(), name='review-export-csv'),
     path('api/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     path('api/dashboard/stats/', DashboardStatsView.as_view(), name='dashboard-stats'),
 

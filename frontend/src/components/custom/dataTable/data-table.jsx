@@ -1,6 +1,7 @@
 /**
  * @file This file contains the logic for the Data table displayed on the main pages ("Studies" and "Tag Management") 
  * that shows the list of studies and their metadata. It also includes the advanced search functionality and the sortable headers
+ * data is passed from studyView.jsx
  * @component
  * @returns {JSX.Element} The rendered table component with pagination and search controls.
  */
@@ -35,7 +36,7 @@ import {
 } from "@/components/ui/select";
 import { SlidersHorizontal, Plus, Trash2, Search } from "lucide-react";
 
-
+// the fields that can be searched in the advanced search
 const SEARCH_FIELDS = [
   { value: "title", label: "Title" },
   { value: "year", label: "Year" },
@@ -56,7 +57,7 @@ function crossColumnAndFilter(row, columnId, filterValue, addMeta) {
   if (searchTerms.length === 0) return true;
 
   return searchTerms.every((term) => {
-    return row.getAllCells().some((cell) => {
+    const matchInCells = row.getAllCells().some((cell) => {
       const cellValue = cell.getValue();
       return (
         cellValue !== null &&
@@ -64,6 +65,15 @@ function crossColumnAndFilter(row, columnId, filterValue, addMeta) {
         cellValue.toString().toLowerCase().includes(term)
       );
     });
+
+    // notes are not in the cells
+    let matchInNotes = row.original.notes;
+    if (matchInNotes !== null && matchInNotes !== undefined) {
+      const text = matchInNotes.toString().toLowerCase();
+      matchInNotes = text.includes(term);
+    }
+
+    return matchInCells || matchInNotes;
   });
 }
 

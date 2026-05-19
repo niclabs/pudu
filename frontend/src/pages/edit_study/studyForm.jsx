@@ -58,6 +58,8 @@ import {
   X,
   FilePlus,
   Info,
+  AtSign,
+  HelpCircle,
 } from "lucide-react";
 import { TreeSelect } from "antd";
 import {
@@ -67,6 +69,13 @@ import {
   TooltipTrigger,
 } from "@/components/custom/tooltip";
 import { useNavigate } from "react-router-dom";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -76,6 +85,7 @@ const formSchema = z.object({
   ).optional(),
   doi: z.string().optional(),
   url: z.string().optional(),
+  bibtexType: z.string().optional(),
   pages: z.string().optional(),
   abstract: z.string().optional(),
   summary: z.string().optional(),
@@ -85,6 +95,25 @@ const formSchema = z.object({
   pathto_pdf: z.string().optional(),
 });
 
+const BIBTEX_TYPES = [
+  { value: "article",       label: "Article" },
+  { value: "book",          label: "Book" },
+  { value: "booklet",       label: "Booklet" },
+  { value: "conference",    label: "Conference Paper" },
+  { value: "inbook",        label: "In Book" },
+  { value: "incollection",  label: "In Collection" },
+  { value: "inproceedings", label: "In Proceedings" },
+  { value: "manual",        label: "Manual" },
+  { value: "mastersthesis", label: "Master's Thesis" },
+  { value: "misc",          label: "Miscellaneous" },
+  { value: "phdthesis",     label: "PhD Thesis" },
+  { value: "proceedings",   label: "Proceedings" },
+  { value: "techreport",    label: "Technical Report" },
+  { value: "unpublished",   label: "Unpublished" },
+];
+
+const FLAGS_LIST = ["Reviewed", "Pending Review", "Missing Data", "Flagged"];
+
 export default function StudyForm({ studyid = "", refreshPdf }) {
   const [studyDetail, setSelectedStudyDetail] = useState(null);
   const [authorsList, setAuthorsList] = useState([]);
@@ -93,7 +122,6 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const { SHOW_CHILD } = TreeSelect;
   const [tags, setTags] = useState(null);
-  const flagslist = ["Reviewed", "Pending Review", "Missing Data", "Flagged"];
   const [addedAuthor, setAddedAuthor] = useState("");
   const reviewId = sessionStorage.getItem('review_id');
   const navigate = useNavigate();
@@ -115,7 +143,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       const response = await AuthService.fetchWithAuth(`http://127.0.0.1:8000/api/authors/?review_id=${reviewId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: authorName }),
+        body: JSON.stringify({ name: authorName, review_id: reviewId }),
       });
 
       if (!response.ok) {
@@ -160,6 +188,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
       pages: "",
       abstract: "",
       summary: "",
+      bibtexType: "",
       authors: [],
       tags: [],
       flags: ["Pending Review"],
@@ -246,7 +275,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   
       const newStudyId = result?.id || studyid;
   
-      navigate(`/editstudy/${newStudyId}`);
+      navigate(`/studies`);
       toast.success("Saved successfully!")
     } catch (error) {
       toast.error("Error saving study: " + error.message);
@@ -289,6 +318,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
         tags: studyDetail.tags_display?.map((tag) => String(tag.id)) || [],
         flags: Array.isArray(studyDetail.flags) ? studyDetail.flags : ["Pending Review"],
         pathto_pdf: studyDetail.pathto_pdf || "",
+        bibtexType: studyDetail.bibtexType || "",
       });
     }
   }, [studyDetail, form]);
@@ -436,7 +466,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                 name="authors"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-2 font-bold">
                       <FormLabel className="flex items-center gap-2 font-bold">
                         <GraduationCap className="h-4 w-4 text-violet-950" />
                         Authors
@@ -507,6 +537,55 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                       />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="bibtexType"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-2 mb-2">
+                        <FormLabel className="flex items-center gap-2 font-bold">
+                          <AtSign  className="h-4 w-4 text-violet-950" />
+                          BibTeX Type
+                        </FormLabel>
+                        <a
+                          href="https://www.bibtex.com/e/entry-types/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="About BibTeX types"
+                          className="text-violet-600 hover:text-violet-900 transition-colors "
+                        >
+                          <HelpCircle className="h-4 w-4" />
+                        </a>
+                        <FormMessage className="ml-auto" />
+                     </div>
+
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className={`w-full transition-colors ${
+                            field.value
+                              ? "border-gray-900 bg-violet-100 text-violet-950 font-medium"
+                              : "border-gray-900 bg-violet-50 text-slate-500"
+                          }`}>
+                            <SelectValue placeholder="Select a publication type..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-violet-50 p-2 [&_[data-radix-select-viewport]]:grid [&_[data-radix-select-viewport]]:grid-cols-2 [&_[data-radix-select-viewport]]:gap-1">
+                          {BIBTEX_TYPES.map(({ value, label }) => (
+                            <SelectItem
+                              key={value}
+                              value={value}
+                              className="cursor-pointer focus:bg-violet-200 focus:text-violet-950 transition-colors"
+                            >
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                    </Select>
+
                   </FormItem>
                 )}
               />
@@ -595,10 +674,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                       </FormLabel>
                       <FormControl>
                         <MultiSelect
-                          options={flagslist.map((flag) => ({
-                            value: flag,
-                            label: flag,
-                          }))}
+                          options={FLAGS_LIST.map((flag) => ({ value: flag, label: flag }))}
                           value={field.value}
                           onValueChange={field.onChange}
                           placeholder="Select flags"
@@ -679,7 +755,8 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                           const author = authorsList.find((a) => a.value === id);
                           return <li key={id}>{author?.label || `ID ${id}`}</li>;
                         })}
-                        These authors are being deleted. This action cannot be undone.
+                        These authors are being deleted from the database, this action cannot be undone. 
+                        <br /> You will have to add them back manually on the "Add authors" button.
                         <DialogFooter className="flex gap-3 pt-6 border-t border-violet-200">
                         <Button
                         variant="outline"

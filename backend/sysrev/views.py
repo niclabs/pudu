@@ -19,41 +19,12 @@ from django.db.models import Count
 from django.db import transaction
 from collections import Counter
 import csv
+import json
+import io
+import re
+import bibtexparser
 from django.http import HttpResponse
 
-# Used on study view for exporting
-class ReviewCSVExportView(APIView):
-    def get(self, request):
-        review_id = request.query_params.get('review_id')
-        if not review_id:
-            return Response({'error': 'review_id is required'}, status=400)
-
-        studies = Study.objects.filter(review_id=review_id)
-
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="review_{review_id}_export.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow([
-            'Title', 'Year', 'Summary', 'Abstract', 'Flags',
-            'Tags', 'Authors', 'DOI', 'URL', 'Pages'
-        ])
-
-        for study in studies:
-            writer.writerow([
-                study.title,
-                study.year,
-                study.summary,
-                study.abstract,
-                ", ".join(study.flags),
-                ", ".join(tag.name for tag in study.tags.all()),
-                ", ".join(author.name for author in study.authors.all()),
-                study.doi,
-                study.url,
-                study.pages
-            ])
-
-        return response
 
 # Used on registration page for creating new users
 class RegisterView(generics.CreateAPIView):
@@ -370,16 +341,9 @@ class AuthorsView(APIView):
         if not review_id:
             return Response({'error': 'review_id is required'}, status=400)
 
-        data = request.data
-        if isinstance(data, list):
-            for d in data:
-                d['review'] = review_id
-        else:
-            data['review'] = review_id
-
-        serializer = AuthorSerializer(data=data, many=isinstance(data, list))
+        serializer = AuthorSerializer(data=request.data, many=isinstance(request.data, list))
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(review_id=review_id)
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
@@ -424,8 +388,243 @@ def flag_study_counts(request):
 
     return Response(counter)
 
+# Used on the review view when importing the whole review data in JSON format
+# Clears all existing review data and replaces with imported data
+class ReviewImportView(APIView):
+    def post(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
+
+        uploaded_file = request.FILES.get('file')
+        file_format = request.data.get('format')
+        print("uploaded_file", uploaded_file)
+        print("file_format", file_format)
+
+        if not uploaded_file or not file_format:
+            return Response({'error': 'File and format parameters are required.'}, status=400)
+
+        data = {"tag_tree": [], "authors": [], "studies": []}
+
+        try:
+            if file_format == 'json':
+                data = json.load(uploaded_file)
+                            
+            elif file_format == 'csv':
+                decoded_file = uploaded_file.read().decode('utf-8')
+                reader = csv.DictReader(io.StringIO(decoded_file))
+                data = self._parse_csv(reader)
+            
+            elif file_format == 'bib':
+                decoded_file = uploaded_file.read().decode('utf-8')
+                library = bibtexparser.parse_string(decoded_file)
+                print("bib data:", library.entries)
+                data = self._parse_bibtex(library.entries)
+            else:
+                return Response({'error': f'Unsupported format: {file_format}'}, status=400)
+
+        except Exception as e:
+            print(f"IMPORT ERROR: {type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
+            return Response({'error': f'Failed to parse file: {str(e)}'}, status=400)
+
+        return self._execute_import(review_id, data)
+
+    def _parse_csv(self, reader):
+        studies = []
+        authors_set = set()
+        tags_set = set()
+
+        for row in reader:
+            # Parse authors and tags from strings
+            author_names = [a.strip() for a in (row.get('Authors', '') or '').split(',') if a.strip()]
+            tag_names = [t.strip() for t in (row.get('Tags', '') or '').split(',') if t.strip()]
+            flag_names = [f.strip() for f in (row.get('Flags', '') or '').split(',') if f.strip()]
+            bibtex_type = (row.get('BibtexType', '') or row.get('BibTeX Type', '')).strip()
+
+            authors_set.update(author_names)
+            tags_set.update(tag_names)
+
+            if not bibtex_type:
+                bibtex_type = 'article'
+
+            year = row.get('Year', None)
+            if year:
+                try:
+                    year = int(year)
+                except (ValueError, TypeError):
+                    year = None
+            else:
+                year = None
+
+            studies.append({
+                'title': (row.get('Title', '') or '').strip(),
+                'year': year,
+                'summary': (row.get('Summary', '') or '').strip(),
+                'abstract': (row.get('Abstract', '') or '').strip(),
+                'flags': flag_names,
+                'tags': tag_names,
+                'authors': author_names,
+                'doi': (row.get('DOI', '') or '').strip(),
+                'url': (row.get('URL', '') or '').strip(),
+                'pages': (row.get('Pages', '') or '').strip(),
+                'bibtexType': bibtex_type,
+            })
+
+        return {
+            'tag_tree': [{'name': t, 'description': '', 'children': []} for t in tags_set],
+            'authors': [{'name': a} for a in authors_set],
+            'studies': studies,
+        }
+
+    def _parse_bibtex(self, entries):
+        studies = []
+        authors_set = set()
+        tags_set = set()
+
+        def get_field(entry, key, default=''):
+            field = entry.fields_dict.get(key)
+            return field.value if field else default
+
+        for entry in entries:
+            # parse authors
+            raw_authors = get_field(entry, 'author', '')
+            if ' and ' in raw_authors:
+                author_names = [a.strip() for a in raw_authors.split(' and ') if a.strip()]
+            else:
+                author_names = [a.strip() for a in raw_authors.split(',') if a.strip()]
+
+            # Parse keywords/tags
+            raw_keywords = get_field(entry, 'keywords', '')
+            tag_names = [k.strip() for k in re.split(r'[,;]', raw_keywords) if k.strip()]
+
+            authors_set.update(author_names)
+            tags_set.update(tag_names)
+
+
+            # Extract URL in title (ex: "NetworkX, https://networkx.org/")
+            raw_title = get_field(entry, 'title', '').strip()
+            title_url = ''
+            url_match = re.search(r',?\s*((?:https?://|www\.)\S+)', raw_title)
+            if url_match:
+                title_url = url_match.group(1).strip()
+                title = raw_title[:url_match.start()].strip().rstrip(',').strip()
+            else:
+                title = raw_title
+
+            year = get_field(entry, 'year', None)
+            if year:
+                try:
+                    year = int(year)
+                except (ValueError, TypeError):
+                    year = None
+            else:
+                year = None
+
+            # annote -> abstract, note -> summary 
+            abstract = get_field(entry, 'annote', '') or get_field(entry, 'abstract', '')
+            url = get_field(entry, 'howpublished', '') or get_field(entry, 'url', '') or title_url
+
+            studies.append({
+                'title': title,
+                'year': year,
+                'abstract': abstract.strip(),
+                'summary': get_field(entry, 'note', '').strip(),
+                'doi': get_field(entry, 'doi', '').strip(),
+                'url': url.strip(),
+                'pages': get_field(entry, 'pages', '').strip(),
+                'flags': [],
+                'tags': tag_names,
+                'authors': author_names,
+                'bibtexType': entry.entry_type or 'article',
+            })
+
+        return {
+            'tag_tree': [{'name': t, 'description': '', 'children': []} for t in tags_set],
+            'authors': [{'name': a} for a in authors_set],
+            'studies': studies,
+        }
+
+    def _execute_import(self, review_id, data):
+        try:
+            with transaction.atomic():
+                # Clear existing data
+                Study.objects.filter(review_id=review_id).delete()
+                Tag.objects.filter(review_id=review_id).delete()
+                Author.objects.filter(review_id=review_id).delete()
+                
+                tag_tree_data = data.get("tag_tree", [])
+                authors_data = data.get("authors", [])
+                studies_data = data.get("studies", [])
+
+                def create_tag_from_tree(node_data, parent=None):
+                    name = node_data["name"].strip()
+                    description = (node_data.get("description") or "").strip()
+                    tag, _ = Tag.objects.get_or_create( 
+                        name=name,
+                        parent_tag=parent,
+                        review_id=review_id,
+                        defaults={"description": description}
+                    )
+                    for child in node_data.get("children", []):
+                        create_tag_from_tree(child, parent=tag)
+
+                for tag_data in tag_tree_data:
+                    create_tag_from_tree(tag_data)
+
+                tag_map = {(tag.name, tag.parent_tag_id): tag for tag in Tag.objects.filter(review_id=review_id)}
+
+                author_map = {}
+                for author in authors_data:
+                    name = author["name"].strip()
+                    obj, _ = Author.objects.get_or_create(name=name, review_id=review_id)
+                    author_map[name] = obj
+
+                for study_data in studies_data:
+                    tag_names = study_data.pop("tags", [])
+                    author_names = study_data.pop("authors", [])
+                    title = study_data.pop("title", "").strip()
+                    year = study_data.pop("year", None)
+
+                    study_defaults = {k: v for k, v in study_data.items() if k not in ["tags", "authors", "title", "year"]}
+                    study_defaults["review_id"] = review_id
+
+                    study, created = Study.objects.get_or_create(
+                        title=title,
+                        year=year,
+                        review_id=review_id,
+                        defaults=study_defaults
+                    )
+
+                    if not created:
+                        for key, value in study_defaults.items():
+                            setattr(study, key, value)
+                        study.save()
+
+                    tag_instances = []
+                    for tag_name in tag_names:
+                        tag_name = tag_name.strip()
+                        matching_tags = [t for (name, _), t in tag_map.items() if name == tag_name]
+                        if matching_tags:
+                            tag_instances.append(matching_tags[0])
+                    study.tags.set(tag_instances)
+
+                    study.authors.set([
+                        author_map[name.strip()]
+                        for name in author_names
+                        if name.strip() in author_map
+                    ])
+
+            return Response({"message": "Review imported successfully."})
+        
+        except Exception as e:
+            print(f"Error importando: {e}") 
+            return Response({'error': f'Import failed: {str(e)}'}, status=400)
+
+
 # Used on the review view for exporting the whole review data in JSON format
-class ReviewExportView(APIView):
+class ReviewJSONExportView(APIView):
     def get(self, request):
         review_id = request.query_params.get('review_id')
         if not review_id:
@@ -466,94 +665,71 @@ class ReviewExportView(APIView):
             "studies": study_list
         })
 
-# Used on the review view when importing the whole review data in JSON format
-# Clears all existing review data and replaces with imported data
-class ReviewImportView(APIView):
-    def post(self, request):
+# Used on study view for exporting
+class ReviewCSVExportView(APIView):
+    def get(self, request):
         review_id = request.query_params.get('review_id')
         if not review_id:
             return Response({'error': 'review_id is required'}, status=400)
 
-        data = request.data
-        try:
-            with transaction.atomic():
-                # Clear existing data
-                Study.objects.filter(review_id=review_id).delete()
-                Tag.objects.filter(review_id=review_id).delete()
-                Author.objects.filter(review_id=review_id).delete()
-                
-                tag_tree_data = data.get("tag_tree", [])
-                authors_data = data.get("authors", [])
-                studies_data = data.get("studies", [])
+        studies = Study.objects.filter(review_id=review_id)
 
-                def create_tag_from_tree(data, parent=None):
-                    name = data["name"].strip()
-                    description = (data.get("description") or "").strip()
-                    tag, _ = Tag.objects.get_or_create( 
-                        name=name,
-                        parent_tag=parent,
-                        review_id=review_id,
-                        defaults={"description": description}
-                    )
-                    for child in data.get("children", []):
-                        create_tag_from_tree(child, parent=tag)
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="review_{review_id}_export.csv"'
 
-                for tag_data in tag_tree_data:
-                    create_tag_from_tree(tag_data)
+        writer = csv.writer(response)
+        writer.writerow([
+            'Title', 'Year', 'Summary', 'Abstract', 'Flags',
+            'Tags', 'Authors', 'DOI', 'URL', 'Pages'
+        ])
 
-            tag_map = {(tag.name, tag.parent_tag_id): tag for tag in Tag.objects.filter(review_id=review_id)}
+        for study in studies:
+            writer.writerow([
+                study.title,
+                study.year,
+                study.summary,
+                study.abstract,
+                ", ".join(study.flags),
+                ", ".join(tag.name for tag in study.tags.all()),
+                ", ".join(author.name for author in study.authors.all()),
+                study.doi,
+                study.url,
+                study.pages
+            ])
 
-            author_map = {}
-            for author in authors_data:
-                name = author["name"].strip()
-                obj, _ = Author.objects.get_or_create(name=name, review_id=review_id)
-                author_map[name] = obj
+        return response
 
-            for study_data in studies_data:
-                tag_names = study_data.pop("tags", [])
-                author_names = study_data.pop("authors", [])
+class ReviewBibtexExportView(APIView):
+    def get(self, request):
+        review_id = request.query_params.get('review_id')
+        if not review_id:
+            return Response({'error': 'review_id is required'}, status=400)
 
-                title = study_data.get("title", "").strip()
-                year = study_data.get("year")
+        studies = Study.objects.filter(review_id=review_id)
 
-                study_defaults = {
-                    key: study_data[key]
-                    for key in study_data
-                    if key not in ["tags", "authors"]
-                }
-                study_defaults["review_id"] = review_id
+        response = HttpResponse(content_type='text/bibtex')
+        response['Content-Disposition'] = f'attachment; filename="review_{review_id}_export.bib"'
 
-                study, created = Study.objects.get_or_create(
-                title=title,
-                year=year,
-                review_id=review_id,
-                defaults=study_defaults
-                )
+        bibtex_str = ""
+        for study in studies:
+            bibtype = study.bibtexType if study.bibtexType else "article"
+            bibtex_to_add = f"""@{bibtype}{{{study.id},
+                author = "{', '.join(author.name for author in study.authors.all())}",
+                title = "{study.title}",
+                year = "{study.year}",
+                pages = "{study.pages}",
+                doi = "{study.doi}",
+                howpublished = "{study.url}",
+                keywords = "{', '.join(tag.name for tag in study.tags.all())}",
+                annote = "{study.abstract}",
+                note = "{study.summary}"
+            }}
+            """
+            bibtex_str += bibtex_to_add + "\n"
+        ## agrego flags?
+        response.write(bibtex_str)
 
-                if not created:
-                    for key, value in study_defaults.items():
-                        setattr(study, key, value)
-                    study.save()
-
-                tag_instances = []
-                for tag_name in tag_names:
-                    tag_name = tag_name.strip()
-                    matching_tags = [t for (name, _), t in tag_map.items() if name == tag_name]
-                    if matching_tags:
-                        tag_instances.append(matching_tags[0])
-                study.tags.set(tag_instances)
-
-                study.authors.set([
-                    author_map[name.strip()]
-                    for name in author_names
-                    if name.strip() in author_map
-                ])
-
-            return Response({"message": "Review imported successfully."})
-        
-        except Exception as e:
-            print(f"Error importando: {e}") 
-            return Response({'error': f'Import failed: {str(e)}'}, status=400)
+        return response
         
 class DashboardStatsView(APIView):
     """
