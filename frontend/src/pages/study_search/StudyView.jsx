@@ -242,6 +242,8 @@ function StudyView() {
                 <DialogTitle>Import Studies</DialogTitle>
                 <DialogDescription>
                   Upload a JSON, CSV or BibTeX file to import multiple studies, tags and authors.
+                  <br />
+                  <b>WARNING: This action will erase all current studies in the review.</b>
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
