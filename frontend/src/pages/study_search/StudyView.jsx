@@ -222,6 +222,14 @@ function StudyView() {
           >
             <Flag className="mr-2" /> Flagged: {flagCount["Flagged"] || 0}
           </Button>
+          <Button
+            className="bg-gray-400 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-gray-500"
+            onClick={() =>
+              setFilterBy(filterBy === "Under Review" ? null : "Under Review")
+            }
+          >
+            <Flag className="mr-2" /> Under Review: {flagCount["Under Review"] || 0}
+          </Button>
         </div>
 
         <div className="flex flex-wrap gap-4">

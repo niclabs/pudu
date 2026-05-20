@@ -76,7 +76,7 @@ class StudySerializer(serializers.ModelSerializer):
         model = Study
         fields = ['id', 'title', 'year', 'summary', 'abstract', 'flags', 'tags', 'tags_display', 'authors', 'authors_display', 'doi', 'url', 'pages', 'pathto_pdf', 'review', 'bibtexType']
 
-    VALID_FLAGS = {"Reviewed", "Pending Review", "Missing Data", "Flagged"}
+    VALID_FLAGS = {"Reviewed", "Pending Review", "Missing Data", "Flagged", "Under Review"}
 
     def validate_flags(self, value):
         if not isinstance(value, list):
