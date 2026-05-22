@@ -20,7 +20,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['id', 'name', 'start_date', 'end_date', 'status', 'owner']  
+        fields = ['id', 'name', 'start_date', 'end_date', 'status', 'owner', 'custom_flag_name']  
 
 # Serializer for tags, with a recursive field to display child tags
 class TagSerializer(serializers.ModelSerializer):
@@ -76,12 +76,17 @@ class StudySerializer(serializers.ModelSerializer):
         model = Study
         fields = ['id', 'title', 'year', 'summary', 'abstract', 'flags', 'tags', 'tags_display', 'authors', 'authors_display', 'doi', 'url', 'pages', 'pathto_pdf', 'review', 'bibtexType']
 
-    VALID_FLAGS = {"Reviewed", "Pending Review", "Missing Data", "Flagged", "Under Review"}
 
     def validate_flags(self, value):
+        review_id = self.initial_data.get('review') or (self.instance.review_id if self.instance else None)
+        review = Review.objects.get(id=review_id)
+        custom_flag = review.custom_flag_name
+
+        VALID_FLAGS = {"Reviewed", "Pending Review", "Missing Data", "Flagged", custom_flag}
+        
         if not isinstance(value, list):
             raise serializers.ValidationError("Flags must be a list.")
-        invalid = [flag for flag in value if flag not in self.VALID_FLAGS]
+        invalid = [flag for flag in value if flag not in VALID_FLAGS]
         if invalid:
             raise serializers.ValidationError(f"Invalid flag(s): {', '.join(invalid)}")
         return value

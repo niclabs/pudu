@@ -50,8 +50,16 @@ function StudyView() {
   const [filterBy, setFilterBy] = useState(null);
   const [flagCount, setFlagCount] = useState([]);
   const [selectedStudyDetail, setSelectedStudyDetail] = useState(null);
+  const [customFlagName, setCustomFlagName] = useState("Under Review"); //por defecto
+
 
   const reviewId = sessionStorage.getItem('review_id');
+
+  const fetchReviewSettings = async () => {
+    const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/reviews/${reviewId}/?review_id=${reviewId}`);
+    const data = await response.json();
+    setCustomFlagName(data.custom_flag_name);
+  };
 
   const fetchStudyData = async () => {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/studies/?review_id=${reviewId}`);
@@ -225,10 +233,10 @@ function StudyView() {
           <Button
             className="bg-gray-400 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-gray-500"
             onClick={() =>
-              setFilterBy(filterBy === "Under Review" ? null : "Under Review")
+              setFilterBy(filterBy === customFlagName ? null : customFlagName)
             }
           >
-            <Flag className="mr-2" /> Under Review: {flagCount["Under Review"] || 0}
+            <Flag className="mr-2" /> {customFlagName}: {flagCount[customFlagName] || 0}
           </Button>
         </div>
 
