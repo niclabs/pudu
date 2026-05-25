@@ -112,7 +112,6 @@ const BIBTEX_TYPES = [
   { value: "unpublished",   label: "Unpublished" },
 ];
 
-const FLAGS_LIST = ["Reviewed", "Pending Review", "Missing Data", "Flagged"];
 
 export default function StudyForm({ studyid = "", refreshPdf }) {
   const [studyDetail, setSelectedStudyDetail] = useState(null);
@@ -125,7 +124,22 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
   const [addedAuthor, setAddedAuthor] = useState("");
   const reviewId = sessionStorage.getItem('review_id');
   const navigate = useNavigate();
+  const [flagsList, setFlagsList] = useState(["Reviewed", "Pending Review", "Missing Data", "Flagged"]);
 
+  
+  const fetchReviewSettings = async () => {
+    try {
+      const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/reviews/${reviewId}/?review_id=${reviewId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.custom_flag_name) {
+          setFlagsList(["Reviewed", "Pending Review", "Missing Data", "Flagged", data.custom_flag_name]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching review settings:", error);
+    }
+  };
 
   const handleAuthorSubmit = async () => {
     const authorName = addedAuthor.trim();
@@ -285,6 +299,8 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
 
   useEffect(() => {
     fetchTreeData();
+    fetchReviewSettings();
+
   }, []);
 
   useEffect(() => {
@@ -674,7 +690,7 @@ export default function StudyForm({ studyid = "", refreshPdf }) {
                       </FormLabel>
                       <FormControl>
                         <MultiSelect
-                          options={FLAGS_LIST.map((flag) => ({ value: flag, label: flag }))}
+                          options={flagsList.map((flag) => ({ value: flag, label: flag }))}
                           value={field.value}
                           onValueChange={field.onChange}
                           placeholder="Select flags"
