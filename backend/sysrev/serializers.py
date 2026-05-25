@@ -74,7 +74,7 @@ class StudySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Study
-        fields = ['id', 'title', 'year', 'summary', 'abstract', 'flags', 'tags', 'tags_display', 'authors', 'authors_display', 'doi', 'url', 'pages', 'pathto_pdf', 'review']
+        fields = ['id', 'title', 'year', 'summary', 'abstract', 'flags', 'tags', 'tags_display', 'authors', 'authors_display', 'doi', 'url', 'pages', 'pathto_pdf', 'review', 'bibtexType']
 
     VALID_FLAGS = {"Reviewed", "Pending Review", "Missing Data", "Flagged"}
 
@@ -99,4 +99,4 @@ class SimpleStudySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Study
-        fields = ['id', 'title', 'year', 'authors_display', 'tags_display', 'doi', 'url', 'flags', 'review']
+        fields = ['id', 'title', 'year', 'authors_display', 'tags_display', 'doi', 'url', 'flags', 'summary', 'review']

@@ -45,6 +45,7 @@ class Study(models.Model):
     pathto_pdf = models.CharField(max_length=255, blank=True)
     review = models.ForeignKey('Review', on_delete=models.CASCADE, related_name='studies')
     # timescited = models.IntegerField(default=0) # May not be too useful to consider
+    bibtexType = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
         return self.title

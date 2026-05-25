@@ -41,7 +41,6 @@ export const AuthService = {
     
     const headers = {
       ...options.headers,
-      "Content-Type": "application/json",
     };
 
     if (token) {
