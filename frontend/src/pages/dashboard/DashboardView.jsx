@@ -16,7 +16,8 @@
 import { useEffect, useState } from "react";
 import { AuthService } from "@/utils/authservice";
 import Highcharts from "highcharts";
-import HighchartsReact from "highcharts-react-official";
+import HighchartsReactModule from "highcharts-react-official";
+const HighchartsReact = HighchartsReactModule.HighchartsReact || HighchartsReactModule.default || HighchartsReactModule;
 import highchartsExporting from 'highcharts/modules/exporting';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileText, CheckCircle, CircleDashed, AlertTriangle } from "lucide-react";
