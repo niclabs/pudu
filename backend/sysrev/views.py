@@ -83,6 +83,15 @@ class SysRevView(APIView):
 
         serializer = ReviewSerializer(review, data=request.data, partial=True)
         if serializer.is_valid():
+            # If custom_flag_name changes, update all studies that use the old name
+            new_flag_name = request.data.get('custom_flag_name')
+            if new_flag_name and new_flag_name != review.custom_flag_name:
+                old_flag_name = review.custom_flag_name
+                studies = Study.objects.filter(review_id=review_id)
+                for study in studies:
+                    if old_flag_name in study.flags:
+                        study.flags = [new_flag_name if f == old_flag_name else f for f in study.flags]
+                        study.save()
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

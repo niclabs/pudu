@@ -28,6 +28,7 @@ class Review(models.Model):
     start_date = models.DateTimeField(default=now, null=True, blank=True)
     end_date = models.DateTimeField(blank=True, null=True)
     status = models.BooleanField(default=False)  # True for completed, False for ongoing
+    custom_flag_name = models.CharField(max_length=50, default="Under Review")
 
 # Represents an individual study within a systematic review, with its metadata and relationships to tags and authors
 class Study(models.Model):
