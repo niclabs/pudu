@@ -25,6 +25,9 @@ import {
   BookOpenCheck,
   BookOpenText,
   BookOpen,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import {
   Dialog,
@@ -51,6 +54,8 @@ function StudyView() {
   const [flagCount, setFlagCount] = useState([]);
   const [selectedStudyDetail, setSelectedStudyDetail] = useState(null);
   const [customFlagName, setCustomFlagName] = useState("Under Review"); //por defecto
+  const [isEditingFlag, setIsEditingFlag] = useState(false);
+  const [editFlagValue, setEditFlagValue] = useState("");
 
 
   const reviewId = sessionStorage.getItem('review_id');
@@ -59,6 +64,33 @@ function StudyView() {
     const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/reviews/${reviewId}/?review_id=${reviewId}`);
     const data = await response.json();
     setCustomFlagName(data.custom_flag_name);
+  };
+
+  const handleSaveCustomFlagName = async () => {
+    const trimmed = editFlagValue.trim();
+    if (!trimmed || trimmed === customFlagName) {
+      setIsEditingFlag(false);
+      return;
+    }
+    try {
+      const response = await AuthService.fetchWithAuth(`http://localhost:8000/api/reviews/${reviewId}/?review_id=${reviewId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ custom_flag_name: trimmed }),
+      });
+      if (response.ok) {
+        setCustomFlagName(trimmed);
+        toast.success(`Flag renamed to "${trimmed}"`);
+        fetchStudyData();
+        fetchFlagCount();
+      } else {
+        toast.error("Failed to rename flag");
+      }
+    } catch (error) {
+      console.error("Error renaming flag:", error);
+      toast.error("Error renaming flag");
+    }
+    setIsEditingFlag(false);
   };
 
   const fetchStudyData = async () => {
@@ -125,6 +157,7 @@ function StudyView() {
   useEffect(() => {
     fetchStudyData();
     fetchFlagCount();
+    fetchReviewSettings();
     if ((studyOpen || deleteOpen) && selectedStudy) {
       fetchStudyDetailed(selectedStudy);
     }
@@ -230,14 +263,59 @@ function StudyView() {
           >
             <Flag className="mr-2" /> Flagged: {flagCount["Flagged"] || 0}
           </Button>
-          <Button
-            className="bg-gray-400 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-gray-500"
-            onClick={() =>
-              setFilterBy(filterBy === customFlagName ? null : customFlagName)
-            }
-          >
-            <Flag className="mr-2" /> {customFlagName}: {flagCount[customFlagName] || 0}
-          </Button>
+          <div className="flex items-center gap-1">
+            {isEditingFlag ? (
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  value={editFlagValue}
+                  onChange={(e) => setEditFlagValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveCustomFlagName();
+                    if (e.key === "Escape") setIsEditingFlag(false);
+                  }}
+                  autoFocus
+                  className="border border-gray-300 rounded px-2 py-1 text-sm w-36 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  placeholder="Flag name..."
+                />
+                <button
+                  onClick={handleSaveCustomFlagName}
+                  className="p-1 rounded hover:bg-emerald-100 text-emerald-600 transition-colors"
+                  title="Save"
+                >
+                  <Check size={16} />
+                </button>
+                <button
+                  onClick={() => setIsEditingFlag(false)}
+                  className="p-1 rounded hover:bg-red-100 text-red-500 transition-colors"
+                  title="Cancel"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <>
+                <Button
+                  className="bg-gray-400 text-violet-50 font-bold text-sm px-3 py-2 hover:bg-gray-500"
+                  onClick={() =>
+                    setFilterBy(filterBy === customFlagName ? null : customFlagName)
+                  }
+                >
+                  <Flag className="mr-2" /> {customFlagName}: {flagCount[customFlagName] || 0}
+                </Button>
+                <button
+                  onClick={() => {
+                    setEditFlagValue(customFlagName);
+                    setIsEditingFlag(true);
+                  }}
+                  className="p-1.5 rounded-md hover:bg-violet-200 text-gray-500 hover:text-violet-700 transition-colors"
+                  title="Rename this flag"
+                >
+                  <Pencil size={14} />
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-4">
